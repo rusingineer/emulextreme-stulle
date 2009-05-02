@@ -298,6 +298,9 @@ protected:
 	// END SiRoB: Flush Thread
 	afx_msg LRESULT OnFlushDone(WPARAM wParam,LPARAM lParam);
 	// END SiRoB: Flush Thread
+	//MORPH START - Added by SiRoB, Import Parts - added by zz_fly
+	afx_msg LRESULT OnImportPart(WPARAM wParam,LPARAM lParam);
+	//MORPH END   - Added by SiRoB, Import Parts
 
 	afx_msg LRESULT OnFileAllocExc(WPARAM wParam,LPARAM lParam);
 	afx_msg LRESULT OnFileCompleted(WPARAM wParam,LPARAM lParam);
@@ -358,6 +361,7 @@ enum EEMuleAppMsgs
 	// END SLUGFILLER: SafeHash
 	TM_READBLOCKFROMFILEDONE, // SiRoB: ReadBlockFromFileThread
 	TM_FLUSHDONE, // SiRoB: Flush Thread
+	TM_IMPORTPART, //MORPH - Added by SiRoB, Import Parts - added by zz_fly
 	TM_DOTIMER, //Xman process timer code via messages (Xanatos)
 	TM_FRAMEGRABFINISHED,
 	TM_FILEALLOCEXC,

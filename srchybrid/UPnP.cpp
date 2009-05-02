@@ -35,8 +35,8 @@
 #include "upnp.h"
 #include "Resource.h" //zz_fly :: localize output
 
-//#define UPNPPORTMAP0   _T("WANIPConnection")
-//#define UPNPPORTMAP1   _T("WANPPPConnection")
+#define UPNPPORTMAP0   _T("WANIPConnection")
+#define UPNPPORTMAP1   _T("WANPPPConnection")
 #define UPNPGETEXTERNALIP _T("GetExternalIPAddress"),_T("NewExternalIPAddress")
 #define UPNPADDPORTMAP _T("AddPortMapping")
 #define UPNPDELPORTMAP _T("DeletePortMapping")
@@ -169,30 +169,30 @@ bool MyUPnP::InternalSearch(int version)
 	if(version<=0)version = 1;
 	m_version = version;
 
-	#define NUMBEROFDEVICES	3
-
-	CString devices[] = {
-		L"service:WANIPConnection:1",
-		L"service:WANPPPConnection:1",
-		L"device:InternetGatewayDevice:1"
+#define NUMBEROFDEVICES	2
+	CString devices[][2] = {
+		{UPNPPORTMAP1, _T("service")},
+		{UPNPPORTMAP0, _T("service")},
+		{_T("InternetGatewayDevice"), _T("device")},
 	};
 
-	SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	int s = socket(AF_INET, SOCK_DGRAM, 0);
 	u_long lv = 1;
 	ioctlsocket(s, FIONBIO, &lv);
 
 	int rlen = 0;
-	//zz_fly, use old codes here, send more request and check the response again and again
-	for (int j=0; rlen<=0 && j<100; j++) {
-		if (!(j%20)) {
+	for (int i=0; rlen<=0 && i<500; i++) {
+		if (!(i%100)) {
 			for (int i=0; i<NUMBEROFDEVICES; i++) {
-				m_name.Format(L"%s%s", URNPREFIX, devices[i]);
+				m_name.Format(_T("%s%s:%s:%d"), URNPREFIX, devices[i][1], devices[i][0], version);
 				CString request;
-				request.Format(L"M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: \"ssdp:discover\"\r\nMX: 0\r\nST: %s\r\n\r\n", m_name);
-				SSDP_sendRequest(s, inet_addr("239.255.255.250"), UPNPPORT, request);
+				request.Format(_T("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: \"ssdp:discover\"\r\nMX: %d\r\nST: %s\r\n\r\n"),
+					6, m_name);
+				SSDP_sendRequest(s, UPNPADDR, UPNPPORT, request);
 			}
 		}
-		Sleep(50);
+
+		Sleep(10);
 
 		char buffer[10240];
 		rlen = recv(s, buffer, sizeof(buffer), 0);
@@ -202,15 +202,16 @@ bool MyUPnP::InternalSearch(int version)
 		CString response = CString(CStringA(buffer, rlen));
 		CString result;
 		if (!parseHTTPResponse(response, result)) return false;
+
 		for (int d=0; d<NUMBEROFDEVICES; d++) {
-			m_name.Format(L"%s%s", URNPREFIX, devices[d]);
+			m_name.Format(_T("%s%s:%s:%d"), URNPREFIX, devices[d][1], devices[d][0], version);
 			if (result.Find(m_name) >= 0) {
 				for (int pos = 0;;) {
-					CString line = result.Tokenize(L"\r\n", pos);
+					CString line = result.Tokenize(_T("\r\n"), pos);
 					if (line.IsEmpty()) return false;
 					CString name = line.Mid(0, 9);
 					name.MakeUpper();
-					if (name == L"LOCATION:") {
+					if (name == _T("LOCATION:")) {
 						line.Delete(0, 9);
 						m_description = line;
 						m_description.Trim();
@@ -219,10 +220,9 @@ bool MyUPnP::InternalSearch(int version)
 				}
 			}
 		}
-		return false;
 	}
-	//zz_fly end
 	closesocket(s);
+
 	return false;
 }
 

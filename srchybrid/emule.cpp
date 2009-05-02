@@ -2537,3 +2537,11 @@ void CemuleApp::ForeAllDiscAccessThreadsToFinish()
 
 	threadqueuelock.Unlock();
 }
+
+// Commander - Added: FriendLinks [emulEspaa] - Start - added by zz_fly
+bool CemuleApp::IsEd2kFriendLinkInClipboard()
+{
+	static const CHAR _szEd2kFriendLink[] = "ed2k://|friend|";
+	return IsEd2kLinkInClipboard(_szEd2kFriendLink, ARRSIZE(_szEd2kFriendLink)-1);
+}
+// Commander - Added: FriendLinks [emulEspaa] - End

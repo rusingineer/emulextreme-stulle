@@ -602,9 +602,13 @@ public:
 	static bool		m_bSkipWANPPPSetup;
 	static bool		m_bEnableUPnP;
 	static bool		m_bCloseUPnPOnExit;
+	//Xman official UPNP removed
+	/*
 	static bool		m_bIsWinServImplDisabled;
 	static bool		m_bIsMinilibImplDisabled;
 	static int		m_nLastWorkingImpl;
+	*/
+	//Xman end
 
 	// Spam
 	static bool		m_bEnableSearchResultFilter;
@@ -1645,6 +1649,7 @@ public:
 	static bool		IsServerCryptLayerTCPRequested()	{return IsClientCryptLayerRequested();}
 	static uint32	GetKadUDPKey()						{return m_dwKadUDPKey;}
 	static uint8	GetCryptTCPPaddingLength()			{return m_byCryptTCPPaddingLength;}
+	static void		SetCryptTCPPaddingLength(int in)	{m_byCryptTCPPaddingLength = (uint8)((in>=10 && in<=254) ? in : 128);} //zz_fly :: hardlimit on CryptTCPPaddingLength
 
 	// UPnP
 	static bool		GetSkipWANIPSetup()					{return m_bSkipWANIPSetup;}
@@ -1653,10 +1658,14 @@ public:
 	static void		SetSkipWANIPSetup(bool nv)			{m_bSkipWANIPSetup = nv;}
 	static void		SetSkipWANPPPSetup(bool nv)			{m_bSkipWANPPPSetup = nv;}
 	static bool		CloseUPnPOnExit()					{return m_bCloseUPnPOnExit;}
+	//Xman official UPNP removed
+	/*
 	static bool		IsWinServUPnPImplDisabled()			{return m_bIsWinServImplDisabled;}
 	static bool		IsMinilibUPnPImplDisabled()			{return m_bIsMinilibImplDisabled;}
 	static int		GetLastWorkingUPnPImpl()			{return m_nLastWorkingImpl;}
 	static void		SetLastWorkingUPnPImpl(int val)		{m_nLastWorkingImpl = val;}
+	*/
+	//Xman end
 
 	// Spamfilter
 	static bool		IsSearchSpamFilterEnabled()			{return m_bEnableSearchResultFilter;}

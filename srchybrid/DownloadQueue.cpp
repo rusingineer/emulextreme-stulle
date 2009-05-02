@@ -788,6 +788,8 @@ bool CDownloadQueue::CheckAndAddSource(CPartFile* sender,CUpDownClient* source){
 
 	// "Filter LAN IPs" and/or "IPfilter" is not required here, because it was already done in parent functions
 
+	srcLock.Lock();	//zz_fly :: make source add action thread safe :: Enig123
+
 	// uses this only for temp. clients
 	for (POSITION pos = filelist.GetHeadPosition();pos != 0;){
 		CPartFile* cur_file = filelist.GetNext(pos);
@@ -796,6 +798,7 @@ bool CDownloadQueue::CheckAndAddSource(CPartFile* sender,CUpDownClient* source){
 			if (cur_client->Compare(source, true) || cur_client->Compare(source, false)){
 				if (cur_file == sender){ // this file has already this source
 					delete source;
+					srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 					return false;
 				}
 				// set request for this source
@@ -809,10 +812,12 @@ bool CDownloadQueue::CheckAndAddSource(CPartFile* sender,CUpDownClient* source){
                     }
                     */
                     //Xman end
+					srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 					return false;
 				}
 				else{
 					delete source;
+					srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 					return false;
 				}
 			}
@@ -839,6 +844,7 @@ bool CDownloadQueue::CheckAndAddSource(CPartFile* sender,CUpDownClient* source){
 			|| (((::GetTickCount() - source->GetLastAskedTime())<(150*60*1000)) /*last asked was shorter than 150 minutes */ && (source->IsEmuleClient()==false || source->IsLeecher()))	))
 		{
 			//AddDebugLogLine(false, _T("-o- rejected dropped client %s, %s reentering downloadqueue after time: %u min"), source->GetClientVerString(), source->GetUserName(), (::GetTickCount()-source->droptime)/60000);
+			srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 			return false;
 		}
 		//Xman end
@@ -866,6 +872,8 @@ bool CDownloadQueue::CheckAndAddSource(CPartFile* sender,CUpDownClient* source){
 	//Xman end
 
 	sender->srclist.AddTail(source);
+
+	srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 	theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(sender,source,false);
 
 	//Xman GlobalMaxHarlimit for fairness
@@ -928,12 +936,19 @@ bool CDownloadQueue::CheckAndAddKnownSource(CPartFile* sender,CUpDownClient* sou
 		}
 	}
 
+	srcLock.Lock();	//zz_fly :: make source add action thread safe :: Enig123
+
 	// use this for client which are already know (downloading for example)
 	for (POSITION pos = filelist.GetHeadPosition();pos != 0;){
 		CPartFile* cur_file = filelist.GetNext(pos);
 		if (cur_file->srclist.Find(source)){
 			if (cur_file == sender)
+			//zz_fly :: make source add action thread safe :: Enig123
+			{
+				srcLock.Unlock();
+			//zz_fly :: make source add action thread safe :: Enig123
 				return false;
+			} //zz_fly :: make source add action thread safe :: Enig123
 			if (source->AddRequestForAnotherFile(sender))
 				theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(sender,source,true);
                 //Xman
@@ -943,6 +958,7 @@ bool CDownloadQueue::CheckAndAddKnownSource(CPartFile* sender,CUpDownClient* sou
                 }
                 */
                 //Xman end
+			srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 			return false;
 		}
 	}
@@ -970,6 +986,7 @@ bool CDownloadQueue::CheckAndAddKnownSource(CPartFile* sender,CUpDownClient* sou
 		DEBUG_ONLY(AddDebugLogLine(false, _T("*** CDownloadQueue::CheckAndAddKnownSource -- New added source (%u, %s) had still value in partcount"), source->GetUserIDHybrid(), sender->GetFileName()));
 	}
 #endif
+	srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 
 	//Xman Xtreme Downloadmanager
 	//if(source->droptime>0)
@@ -994,6 +1011,7 @@ bool CDownloadQueue::CheckAndAddKnownSource(CPartFile* sender,CUpDownClient* sou
 bool CDownloadQueue::RemoveSource(CUpDownClient* toremove, bool bDoStatsUpdate)
 {
 	bool bRemovedSrcFromPartFile = false;
+	srcLock.Lock();	//zz_fly :: make source add action thread safe :: Enig123
 	//Xman Code Improvement
 	/*
 	for (POSITION pos = filelist.GetHeadPosition();pos != 0;){
@@ -1027,6 +1045,7 @@ bool CDownloadQueue::RemoveSource(CUpDownClient* toremove, bool bDoStatsUpdate)
 		if ( bDoStatsUpdate )
 			cur_file->UpdateAvailablePartsCount();
 	}
+	srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
 	
 	// remove this source on all files in the downloadqueue who link this source
 	// pretty slow but no way arround, maybe using a Map is better, but that's slower on other parts
@@ -1092,8 +1111,16 @@ void CDownloadQueue::RemoveFile(CPartFile* toremove)
 	*/
 	POSITION pos = filelist.Find(toremove);
 	if (pos != NULL){
+		//zz_fly :: free unused memory when a download is cancelled/completed :: Enig123 :: start
+		/*
 		ASSERT(filelist.GetAt(pos)->srclist.IsEmpty());
 		filelist.GetAt(pos)->srclist.RemoveAll(); // Security 
+		*/
+		CPartFile* pFile = filelist.GetAt(pos);
+		if(!pFile->srclist.IsEmpty())
+			pFile->srclist.RemoveAll(); // Security 
+		pFile->RemoveAllRequestedBlocks();	//Enig123??
+		//zz_fly :: free unused memory when a download is cancelled/completed :: Enig123 :: end
 		filelist.RemoveAt(pos);
 	}
 	// Maella end
@@ -2093,6 +2120,16 @@ void CDownloadQueue::KademliaSearchFile(uint32 searchID, const Kademlia::CUInt12
 			//Xman end
 		return;
 	}
+
+	//zz_fly :: skip banned source
+	// X-Ray :: Optimizations :: Start
+	if (theApp.clientlist->IsBannedClient(ED2Kip)){
+		if (thePrefs.GetLogFilteredIPs() && thePrefs.GetLogBannedClients())
+			AddDebugLogLine(false, _T("Banned source IP=%s (%s) received from Kademlia"), ipstr(ED2Kip), theApp.ipfilter->GetLastHit());
+		return;
+	}
+	// X-Ray :: Optimizations :: End
+
 	if( (ip == Kademlia::CKademlia::GetIPAddress() || ED2Kip == theApp.serverconnect->GetClientID()) && tcp == thePrefs.GetPort())
 		return;
 	CUpDownClient* ctemp = NULL; 

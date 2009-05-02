@@ -320,6 +320,11 @@ private:
 	CCriticalSection					 threadqueuelock;
 	uint16								 m_uRunningNonBlockedDiscAccessThreads;
 	//Xman end
+
+// MORPH START - Added by Commander, Friendlinks [emulEspaa] - added by zz_fly
+public:
+	bool	IsEd2kFriendLinkInClipboard();
+// MORPH END - Added by Commander, Friendlinks [emulEspaa]
 };
 
 extern CemuleApp theApp;

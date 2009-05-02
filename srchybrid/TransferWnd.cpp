@@ -476,7 +476,7 @@ void CTransferWnd::UpdateFilesCount(int iCount)
 		m_btnWnd1->SetWindowText(strBuffer);
 	}
 }
-5t*/
+*/
 void CTransferWnd::UpdateFilesCount(UINT iCount, UINT countsources, UINT countreadyfiles) 
 {
 	if (m_dwShowListIDC == IDC_DOWNLOADLIST || m_dwShowListIDC == IDC_DOWNLOADLIST + IDC_UPLOADLIST)

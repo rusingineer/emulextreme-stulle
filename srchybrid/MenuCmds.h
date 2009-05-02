@@ -221,4 +221,8 @@
 #define	MP_PREALOCATE			14018 //Xman manual file allocation (Xanatos)
 #define MP_MASSRENAME    		14019 //Xman Mass Rename (Morph)
 
-
+// MORPH START - Added by Commander, Friendlinks [emulEspaa] - added by zz_fly
+#define MP_GETFRIENDED2KLINK		15008
+#define MP_GETHTMLFRIENDED2KLINK	15009
+#define MP_GETEMFRIENDMETFROMURL	15010
+// MORPH END - Added by Commander, Friendlinks [emulEspaa]

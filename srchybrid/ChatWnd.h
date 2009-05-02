@@ -79,4 +79,11 @@ protected:
 	afx_msg void OnBnClickedClose();
 	afx_msg void OnBnClickedSend();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+
+// MORPH START - Added by Commander, Friendlinks [emulEspaa] - added by zz_fly
+public:
+	bool	UpdateEmfriendsMetFromURL(const CString& strURL);
+protected:
+	afx_msg void	OnBnClickedBnmenu();
+// MORPH END - Added by Commander, Friendlinks [emulEspaa]
 };

@@ -604,9 +604,13 @@ bool	CPreferences::m_bSkipWANIPSetup;
 bool	CPreferences::m_bSkipWANPPPSetup;
 bool	CPreferences::m_bEnableUPnP;
 bool	CPreferences::m_bCloseUPnPOnExit;
+//Xman official UPNP removed
+/*
 bool	CPreferences::m_bIsWinServImplDisabled;
 bool	CPreferences::m_bIsMinilibImplDisabled;
 int		CPreferences::m_nLastWorkingImpl;
+*/
+//Xman end
 
 bool	CPreferences::m_bEnableSearchResultFilter;
 
@@ -636,7 +640,12 @@ LPCTSTR CPreferences::GetConfigFile()
 
 void CPreferences::Init()
 {
+	//zz_fly :: avoid userhash collision :: start
+	/*
 	srand((uint32)time(0)); // we need random numbers sometimes
+	*/
+	srand((uint32)time(0)+(uint32)(GetFreeDiskSpaceX(GetMuleDirectory(EMULE_CONFIGDIR))%1073741824 /*1G, avoid overflow*/ )); // DreaMule: Users with same userhash !
+	//zz_fly :: avoid userhash collision :: end
 
 	prefsExt = new Preferences_Ext_Struct;
 	memset(prefsExt, 0, sizeof *prefsExt);
@@ -656,7 +665,12 @@ void CPreferences::Init()
 	}
 	ff.Close();
 
+	//zz_fly :: userhash initializing :: Enig123 :: start
+	/*
 	CreateUserHash();
+	*/	
+	md4clr(userhash);	//clear userhash
+	//zz_fly :: userhash initializing :: Enig123 :: end
 
 	// load preferences.dat or set standart values
 	CString strFullPath;
@@ -671,13 +685,29 @@ void CPreferences::Init()
 	else{
 		if (fread(prefsExt,sizeof(Preferences_Ext_Struct),1,preffile) != 1 || ferror(preffile))
 			SetStandartValues();
-
-		md4cpy(userhash, prefsExt->userhash);
-		EmuleWindowPlacement = prefsExt->EmuleWindowPlacement;
-
+		else { //Enig123 :: Fix
+			md4cpy(userhash, prefsExt->userhash);
+			EmuleWindowPlacement = prefsExt->EmuleWindowPlacement;
+		} //Enig123 :: Fix
 		fclose(preffile);
 		smartidstate = 0;
 	}
+
+	//zz_fly :: check userhash after initialized :: Enig123 :: start
+	userhash[5] = 0;
+	userhash[14] = 0;
+
+	//Xman Bugfix by ilmira, right place
+	/*
+	if (((int*)userhash[0]) == 0 && ((int*)userhash[1]) == 0 && ((int*)userhash[2]) == 0 && ((int*)userhash[3]) == 0)
+	*/
+	if (((int*)userhash)[0] == 0 && ((int*)userhash)[1] == 0 && ((int*)userhash)[2] == 0 && ((int*)userhash)[3] == 0)
+	//Xman end
+		CreateUserHash();
+
+	userhash[5] = 14;
+	userhash[14] = 111;
+	//zz_fly :: check userhash after initialized :: Enig123 :: end
 
 	// shared directories
 	strFullPath = GetMuleDirectory(EMULE_CONFIGDIR) + L"shareddir.dat";
@@ -758,9 +788,12 @@ void CPreferences::Init()
 		sdirfile->Close();
 	}
 	delete sdirfile;
-
+	//zz_fly :: move up
+	/*
 	userhash[5] = 14;
 	userhash[14] = 111;
+	*/
+	//zz_fly :: end
 
 	// Explicitly inform the user about errors with incoming/temp folders!
 	if (!PathFileExists(GetMuleDirectory(EMULE_INCOMINGDIR)) && !::CreateDirectory(GetMuleDirectory(EMULE_INCOMINGDIR),0)) {
@@ -797,13 +830,12 @@ void CPreferences::Init()
 	}
 
 
-	//Xman Bugfix by ilmira
+	//zz_fly :: move up
 	/*
-	if (((int*)userhash[0]) == 0 && ((int*)userhash[1]) == 0 && ((int*)userhash[2]) == 0 && ((int*)userhash[3]) == 0)
-	*/
 	if (((int*)userhash)[0] == 0 && ((int*)userhash)[1] == 0 && ((int*)userhash)[2] == 0 && ((int*)userhash)[3] == 0)
-	//Xman end
 		CreateUserHash();
+	*/
+	//zz_fly :: end
 }
 
 void CPreferences::Uninit()
@@ -818,7 +850,11 @@ void CPreferences::Uninit()
 
 void CPreferences::SetStandartValues()
 {
+	//zz_fly :: userhash initializing :: Enig123 :: start
+	/*
 	CreateUserHash();
+	*/
+	//zz_fly :: userhash initializing :: Enig123 :: end
 
 	WINDOWPLACEMENT defaultWPM;
 	defaultWPM.length = sizeof(WINDOWPLACEMENT);
@@ -2124,7 +2160,11 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"SkipWANIPSetup", m_bSkipWANIPSetup);
 	ini.WriteBool(L"SkipWANPPPSetup", m_bSkipWANPPPSetup);
 	ini.WriteBool(L"CloseUPnPOnExit", m_bCloseUPnPOnExit);
+	//Xman official UPNP removed
+	/*
 	ini.WriteInt(L"LastWorkingImplementation", m_nLastWorkingImpl);
+	*/
+	//Xmane end
 	
 	//Xman Xtreme Mod:
 	//--------------------------------------------------------------------------
@@ -2835,7 +2875,8 @@ void CPreferences::LoadPreferences()
 		ff.Close();
 	}
 
-	messageFilter=ini.GetStringLong(L"MessageFilter",L"fastest download speed|fastest eMule");
+	//messageFilter=ini.GetStringLong(L"MessageFilter",L"fastest download speed|fastest eMule");
+	messageFilter=ini.GetStringLong(L"MessageFilter",L"Your client has an infinite queue|Your client is connecting too fast|fastest download speed");
 	commentFilter = ini.GetStringLong(L"CommentFilter",L"http://|https://|ftp://|www.|ftp.");
 	commentFilter.MakeLower();
 	filenameCleanups=ini.GetStringLong(L"FilenameCleanups",L"http|www.|.com|.de|.org|.net|shared|powered|sponsored|sharelive|filedonkey|");
@@ -2935,7 +2976,12 @@ void CPreferences::LoadPreferences()
 	m_bCryptLayerRequired = ini.GetBool(L"CryptLayerRequired", false);
 	m_bCryptLayerSupported = ini.GetBool(L"CryptLayerSupported", true);
 	m_dwKadUDPKey = ini.GetInt(L"KadUDPKey", GetRandomUInt32());
+	//zz_fly :: hardlimit on CryptTCPPaddingLength
+	/*
 	m_byCryptTCPPaddingLength = (uint8)ini.GetInt(L"CryptTCPPaddingLength", 128);
+	*/
+	SetCryptTCPPaddingLength(ini.GetInt(L"CryptTCPPaddingLength", 128));
+	//zz_fly :: end
 
 	m_bEnableSearchResultFilter = ini.GetBool(L"EnableSearchResultSpamFilter", true);
 
@@ -3019,9 +3065,13 @@ void CPreferences::LoadPreferences()
 	m_bSkipWANIPSetup = ini.GetBool(L"SkipWANIPSetup", false);
 	m_bSkipWANPPPSetup = ini.GetBool(L"SkipWANPPPSetup", false);
 	m_bCloseUPnPOnExit = ini.GetBool(L"CloseUPnPOnExit", true);
-	m_nLastWorkingImpl = ini.GetInt(L"LastWorkingImplementation", 1 /*MiniUPnPLib*/);
+	//Xman official UPNP removed
+	/*
+	m_nLastWorkingImpl = ini.GetInt(L"LastWorkingImplementation", 1 /*MiniUPnPLib*//*);
 	m_bIsMinilibImplDisabled = ini.GetBool(L"DisableMiniUPNPLibImpl", false);
 	m_bIsWinServImplDisabled = ini.GetBool(L"DisableWinServImpl", false);
+	*/
+	//Xman end
 
 	LoadCats();
 	//Xman done above
@@ -3050,6 +3100,7 @@ void CPreferences::LoadPreferences()
 	case 6000:
 	case 8192:
 	case 12000:
+	case 24000: //zz_fly :: support 24k send buffer
 		break;
 	default:
 		m_sendbuffersize=8192;
@@ -3205,8 +3256,7 @@ void CPreferences::LoadPreferences()
 	//Xman end
 
 	//Xman versions check
-	updatenotifymod = ini.GetBool(L"updatenotifymod",false); //zz_fly :: no needed, you know why....
-
+	updatenotifymod = ini.GetBool(L"updatenotifymod",true);
 
 	//Xman don't overwrite bak files if last sessions crashed
 	m_last_session_aborted_in_an_unnormal_way = ini.GetBool(L"last_session_aborted_in_an_unnormal_way",false);

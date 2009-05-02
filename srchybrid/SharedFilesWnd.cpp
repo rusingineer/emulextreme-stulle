@@ -69,7 +69,12 @@ CSharedFilesWnd::CSharedFilesWnd(CWnd* pParent /*=NULL*/)
 
 CSharedFilesWnd::~CSharedFilesWnd()
 {
+	//zz_fly, fix minor official draw bug around SharedFiles Filter on Language change
+	// X-Ray :: FiXeS :: Bugfix :: Start :: WiZaRd
+	/*
 	m_ctlSharedListHeader.Detach();
+	*/
+	// X-Ray :: FiXeS :: Bugfix :: End :: WiZaRd
 	if (icon_files)
 		VERIFY( DestroyIcon(icon_files) );
 }
@@ -99,11 +104,22 @@ BOOL CSharedFilesWnd::OnInitDialog()
 	if (thePrefs.GetUseSystemFontForMainControls())
 		m_ctlSharedDirTree.SendMessage(WM_SETFONT, NULL, FALSE);
 
+	//zz_fly, fix minor official draw bug around SharedFiles Filter on Language change
+	// X-Ray :: FiXeS :: Bugfix :: Start :: WiZaRd
+	/*
 	m_ctlSharedListHeader.Attach(sharedfilesctrl.GetHeaderCtrl()->Detach());
+	*/
+	// X-Ray :: FiXeS :: Bugfix :: End :: WiZaRd
 	CArray<int, int> aIgnore; // ignored no-text columns for filter edit
 	aIgnore.Add(8); // shared parts
 	aIgnore.Add(11); // shared ed2k/kad
+	//zz_fly, fix minor official draw bug around SharedFiles Filter on Language change
+	// X-Ray :: FiXeS :: Bugfix :: Start :: WiZaRd
+	/*
 	m_ctlFilter.OnInit(&m_ctlSharedListHeader, &aIgnore);
+	*/
+	m_ctlFilter.OnInit(sharedfilesctrl.GetHeaderCtrl(), &aIgnore);
+	// X-Ray :: FiXeS :: Bugfix :: End :: WiZaRd
 	
 	pop_bar.SetGradientColors(RGB(255,255,240),RGB(255,255,0));
 	pop_bar.SetTextColor(RGB(20,70,255));
