@@ -26,7 +26,7 @@
 #include <atlimage.h>
 #include "emule.h"
 #include "opcodes.h"
-#include "mdump.h" 
+#include "mdump.h"
 #include "Scheduler.h"
 #include "SearchList.h"
 #include "kademlia/kademlia/Kademlia.h"
@@ -74,11 +74,7 @@
 #include "Collection.h"
 #include "LangIDs.h"
 #include "HelpIDs.h"
-//Xman official UPNP removed
-/*
 #include "UPnPImplWrapper.h"
-*/
-//Xman end
 #include "VisualStylesXP.h"
 
 //Xman
@@ -88,16 +84,29 @@
 //Xman new slpash-screen arrangement
 #include "SplashScreenEx.h"
 
-CLogFile theLog;
-CLogFile theVerboseLog;
-bool g_bLowColorDesktop = false;
-bool g_bGdiPlusInstalled = false;
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+
+#if _MSC_VER>=1400 && defined(_UNICODE)
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+#endif
+
+CLogFile theLog;
+CLogFile theVerboseLog;
+bool g_bLowColorDesktop = false;
+bool g_bGdiPlusInstalled = false;
 
 //#define USE_16COLOR_ICONS
 
@@ -174,8 +183,147 @@ int eMuleAllocHook(int mode, void* pUserData, size_t nSize, int nBlockUse, long 
 //CString _strCrtDebugReportFilePath(_T("eMule CRT Debug Log.log"));
 // don't use a CString for that memory - it will not be available on application termination!
 #define APP_CRT_DEBUG_LOG_FILE _T("eMule CRT Debug Log.log")
-static TCHAR _szCrtDebugReportFilePath[MAX_PATH] = APP_CRT_DEBUG_LOG_FILE;
+static TCHAR s_szCrtDebugReportFilePath[MAX_PATH] = APP_CRT_DEBUG_LOG_FILE;
 #endif //_DEBUG
+
+
+///////////////////////////////////////////////////////////////////////////////
+// SafeSEH - Safe Exception Handlers
+//
+// This security feature must be enabled at compile time, due to using the
+// linker command line option "/SafeSEH". Depending on the used libraries and
+// object files which are used to link eMule.exe, the linker may or may not
+// throw some errors about 'safeseh'. Those errors have to get resolved until
+// the linker is capable of linking eMule.exe *with* "/SafeSEH".
+//
+// At runtime, we just can check if the linker created an according SafeSEH
+// exception table in the '__safe_se_handler_table' object. If SafeSEH was not
+// specified at all during link time, the address of '__safe_se_handler_table'
+// is NULL -> hence, no SafeSEH is enabled.
+///////////////////////////////////////////////////////////////////////////////
+extern "C" PVOID __safe_se_handler_table[];
+extern "C" BYTE  __safe_se_handler_count;
+
+void InitSafeSEH()
+{
+	// Need to workaround the optimizer of the C-compiler...
+	volatile PVOID safe_se_handler_table = __safe_se_handler_table;
+	if (safe_se_handler_table == NULL)
+	{
+		AfxMessageBox(_T("eMule.exe was not linked with /SafeSEH!"), MB_ICONSTOP);
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// DEP - Data Execution Prevention
+// 
+// For Windows XP SP2 and later. Does *not* have any performance impact!
+//
+// VS2003:	DEP must be enabled dynamically because the linker does not support 
+//			the "/NXCOMPAT" command line option.
+// VS2005:	DEP can get enabled at link time by using the "/NXCOMPAT" command 
+//			line option.
+// VS2008:	DEP can get enabled at link time by using the "DEP" option within
+//			'Visual Studio Linker Advanced Options'.
+//
+#ifndef PROCESS_DEP_ENABLE
+#define	PROCESS_DEP_ENABLE						0x00000001
+#define	PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION	0x00000002
+BOOL WINAPI GetProcessDEPPolicy(HANDLE hProcess, LPDWORD lpFlags, PBOOL lpPermanent);
+BOOL WINAPI SetProcessDEPPolicy(DWORD dwFlags);
+#endif//!PROCESS_DEP_ENABLE
+
+void InitDEP()
+{
+	BOOL (WINAPI *pfnGetProcessDEPPolicy)(HANDLE hProcess, LPDWORD lpFlags, PBOOL lpPermanent);
+	BOOL (WINAPI *pfnSetProcessDEPPolicy)(DWORD dwFlags);
+	(FARPROC&)pfnGetProcessDEPPolicy = GetProcAddress(GetModuleHandle(_T("kernel32")), "GetProcessDEPPolicy");
+	(FARPROC&)pfnSetProcessDEPPolicy = GetProcAddress(GetModuleHandle(_T("kernel32")), "SetProcessDEPPolicy");
+	if (pfnGetProcessDEPPolicy && pfnSetProcessDEPPolicy)
+	{
+		DWORD dwFlags;
+		BOOL bPermanent;
+		if ((*pfnGetProcessDEPPolicy)(GetCurrentProcess(), &dwFlags, &bPermanent))
+		{
+			// Vista SP1
+			// ===============================================================
+			//
+			// BOOT.INI nx=OptIn,  VS2003/VS2005
+			// ---------------------------------
+			// DEP flags: 00000000
+			// Permanent: 0
+			//
+			// BOOT.INI nx=OptOut, VS2003/VS2005
+			// ---------------------------------
+			// DEP flags: 00000001 (PROCESS_DEP_ENABLE)
+			// Permanent: 0
+			//
+			// BOOT.INI nx=OptIn/OptOut, VS2003 + EditBinX/NXCOMPAT
+			// ----------------------------------------------------
+			// DEP flags: 00000003 (PROCESS_DEP_ENABLE | *PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION*)
+			// Permanent: *1*
+			// ---
+			// There is no way to remove the PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION flag at runtime,
+			// because the DEP policy is already permanent due to the NXCOMPAT flag.
+			//
+			// BOOT.INI nx=OptIn/OptOut, VS2005 + /NXCOMPAT
+			// --------------------------------------------
+			// DEP flags: 00000003 (PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION)
+			// Permanent: *1*
+			//
+			// NOTE: It is ultimately important to explicitly enable the DEP policy even if the
+			// process' DEP policy is already enabled. If the DEP policy is already enabled due
+			// to an OptOut system policy, the DEP policy is though not yet permanent. As long as
+			// the DEP policy is not permanent it could get changed during runtime...
+			//
+			// So, if the DEP policy for the current process is already enabled but not permanent,
+			// it has to be explicitly enabled by calling 'SetProcessDEPPolicy' to make it permanent.
+			//
+			if (  ((dwFlags & PROCESS_DEP_ENABLE) == 0 || !bPermanent)
+#if _ATL_VER>0x0710
+				|| (dwFlags & PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION) == 0
+#endif
+			   )
+			{
+				// VS2003:	Enable DEP (with ATL-thunk emulation) if not already set by system policy
+				//			or if the policy is not yet permanent.
+				//
+				// VS2005:	Enable DEP (without ATL-thunk emulation) if not already set by system policy 
+				//			or linker "/NXCOMPAT" option or if the policy is not yet permanent. We should
+				//			not reach this code path at all because the "/NXCOMPAT" option is specified.
+				//			However, the code path is here for safety reasons.
+				dwFlags = PROCESS_DEP_ENABLE;
+#if _ATL_VER>0x0710
+				// VS2005: Disable ATL-thunks.
+				dwFlags |= PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION;
+#endif
+				(*pfnSetProcessDEPPolicy)(dwFlags);
+			}
+		}
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Heap Corruption Detection
+//
+// For Windows Vista and later. Does *not* have any performance impact!
+// 
+#ifndef HeapEnableTerminationOnCorruption
+#define HeapEnableTerminationOnCorruption (HEAP_INFORMATION_CLASS)1
+WINBASEAPI BOOL WINAPI HeapSetInformation(HANDLE HeapHandle, HEAP_INFORMATION_CLASS HeapInformationClass, PVOID HeapInformation, SIZE_T HeapInformationLength);
+#endif//!HeapEnableTerminationOnCorruption
+
+void InitHeapCorruptionDetection()
+{
+	BOOL (WINAPI *pfnHeapSetInformation)(HANDLE HeapHandle, HEAP_INFORMATION_CLASS HeapInformationClass, PVOID HeapInformation, SIZE_T HeapInformationLength);
+	(FARPROC&)pfnHeapSetInformation = GetProcAddress(GetModuleHandle(_T("kernel32")), "HeapSetInformation");
+	if (pfnHeapSetInformation)
+	{
+		(*pfnHeapSetInformation)(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+	}
+}
 
 
 struct SLogItem
@@ -218,6 +366,13 @@ END_MESSAGE_MAP()
 CemuleApp::CemuleApp(LPCTSTR lpszAppName)
 	:CWinApp(lpszAppName)
 {
+	// Initialize Windows security features.
+#ifndef _DEBUG
+	InitSafeSEH();
+#endif
+	InitDEP();
+	InitHeapCorruptionDetection();
+
 	// This does not seem to work well with multithreading, although there is no reason why it should not.
 	//_set_sbh_threshold(768);
 
@@ -400,9 +555,9 @@ BOOL CemuleApp::InitInstance()
 #endif
 		//Xman ModId
 		/*
-		theCrashDumper.Enable(_T("eMule ") + m_strCurVersionLongDbg, true);
+		theCrashDumper.Enable(_T("eMule ") + m_strCurVersionLongDbg, true, thePrefs.GetMuleDirectory(EMULE_CONFIGDIR));
 		*/
-		theCrashDumper.Enable(_T("eMule ") + m_strCurVersionLongDbg + _T(" ") + MOD_VERSION, true);
+		theCrashDumper.Enable(_T("eMule ") + m_strCurVersionLongDbg + _T(" ") + MOD_VERSION, true, thePrefs.GetMuleDirectory(EMULE_CONFIGDIR));
 		//Xman end
 
 	///////////////////////////////////////////////////////////////////////////
@@ -437,21 +592,16 @@ BOOL CemuleApp::InitInstance()
 	if (ProcessCommandline())
 		return false;
 
-	// Should not be needed any longer as Unicode eMule was already released since quite some
-	// time. Right now, that warning (if it gets triggered) is indeed just annoying and I
-	// guess nobody ever understood that warning text nor for what it was really used for.
-	// So, just use the default code page.
-	//extern bool CheckThreadLocale();
-	//if (!CheckThreadLocale())
-	//	return false;
-
 	///////////////////////////////////////////////////////////////////////////
 	// Common Controls initialization
 	//
-	//          Mjr Min
-	// -------------------------
-	// XP SP3	6   0
-	// Vista    6   16
+	//						Mjr Min
+	// ----------------------------
+	// W98 SE, IE5			5	8
+	// W2K SP4, IE6 SP1		5	81
+	// XP SP2 				6   0
+	// XP SP3				6   0
+	// Vista SP1			6   16
 	InitCommonControls();
 	DWORD dwComCtrlMjr = 4;
 	DWORD dwComCtrlMin = 0;
@@ -461,13 +611,22 @@ BOOL CemuleApp::InitInstance()
 	{
 		if (GetProfileInt(_T("eMule"), _T("CheckComctl32"), 1)) // just in case some user's can not install that package and have to survive without it..
 		{
-			if (AfxMessageBox(GetResString(IDS_COMCTRL32_DLL_TOOOLD),MB_ICONSTOP | MB_YESNO) == IDYES)
+			if (AfxMessageBox(GetResString(IDS_COMCTRL32_DLL_TOOOLD), MB_ICONSTOP | MB_YESNO) == IDYES)
 				ShellOpenFile(_T("http://www.microsoft.com/downloads/details.aspx?FamilyID=cb2cf3a2-8025-4e8f-8511-9b476a8d35d2"));
 
 			// No need to exit eMule, it will most likely work as expected but it will have some GUI glitches here and there..
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	// Shell32 initialization
+	//
+	//						Mjr Min
+	// ----------------------------
+	// W98 SE, IE5			4	72
+	// W2K SP4, IE6 SP1		5	0
+	// XP SP2 				6   0
+	// Vista SP1			6   0
 	DWORD dwShellMjr = 4;
 	DWORD dwShellMin = 0;
 	AtlGetShellVersion(&dwShellMjr, &dwShellMin);
@@ -527,7 +686,7 @@ BOOL CemuleApp::InitInstance()
 	extern bool SelfTest();
 	if (!SelfTest())
 		return FALSE; // DO *NOT* START !!!
-	
+
 	// create & initalize all the important stuff 
 	thePrefs.Init();
 	theStats.Init();
@@ -583,7 +742,7 @@ BOOL CemuleApp::InitInstance()
 	//Xman end
 
 #ifdef _DEBUG
-	_sntprintf(_szCrtDebugReportFilePath, _countof(_szCrtDebugReportFilePath) - 1, _T("%s%s"), thePrefs.GetMuleDirectory(EMULE_LOGDIR, false), APP_CRT_DEBUG_LOG_FILE);
+	_sntprintf(s_szCrtDebugReportFilePath, _countof(s_szCrtDebugReportFilePath) - 1, _T("%s%s"), thePrefs.GetMuleDirectory(EMULE_LOGDIR, false), APP_CRT_DEBUG_LOG_FILE);
 #endif
 	VERIFY( theLog.SetFilePath(thePrefs.GetMuleDirectory(EMULE_LOGDIR, thePrefs.GetLog2Disk()) + _T("eMule.log")) );
 	VERIFY( theVerboseLog.SetFilePath(thePrefs.GetMuleDirectory(EMULE_LOGDIR, false) + _T("eMule_Verbose.log")) );
@@ -641,42 +800,36 @@ BOOL CemuleApp::InitInstance()
 	}
 
 	// UPnP Port forwarding
-	//Xman official UPNP removed
-	/*
 	m_pUPnPFinder = new CUPnPImplWrapper();
-	*/
-	//Xman end
 
-	// Highres scheduling gives better resolution for Sleep(...) calls, and timeGetTime() calls
-	m_wTimerRes = 0;
+    // Highres scheduling gives better resolution for Sleep(...) calls, and timeGetTime() calls
+    m_wTimerRes = 0;
     if(thePrefs.GetHighresTimer()) {
-		TIMECAPS tc;
-		if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) == TIMERR_NOERROR) 
-		{
-			m_wTimerRes = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
-			if(m_wTimerRes > 0) {
-				MMRESULT mmResult = timeBeginPeriod(m_wTimerRes); 
-				if(thePrefs.GetVerbose()) {
-					if(mmResult == TIMERR_NOERROR) {
-						theApp.QueueDebugLogLine(false,_T("Succeeded to set timer/scheduler resolution to %i ms."), m_wTimerRes);
-					} else {
-						theApp.QueueDebugLogLine(false,_T("Failed to set timer/scheduler resolution to %i ms."), m_wTimerRes);
-						m_wTimerRes = 0;
-					}
-				}
-			} else {
-				theApp.QueueDebugLogLine(false,_T("m_wTimerRes == 0. Not setting timer/scheduler resolution."));
-			}
-		}
-	}
-
-	UpdateSplash(_T("Loading bandwidthcontrol ...")); //Xman new slpash-screen arrangement
+        TIMECAPS tc;
+        if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) == TIMERR_NOERROR) 
+        {
+            m_wTimerRes = min(max(tc.wPeriodMin, 1), tc.wPeriodMax);
+            if(m_wTimerRes > 0) {
+                MMRESULT mmResult = timeBeginPeriod(m_wTimerRes); 
+                if(thePrefs.GetVerbose()) {
+                    if(mmResult == TIMERR_NOERROR) {
+                        theApp.QueueDebugLogLine(false,_T("Succeeded to set timer/scheduler resolution to %i ms."), m_wTimerRes);
+                    } else {
+                        theApp.QueueDebugLogLine(false,_T("Failed to set timer/scheduler resolution to %i ms."), m_wTimerRes);
+                        m_wTimerRes = 0;
+                    }
+                }
+            } else {
+                theApp.QueueDebugLogLine(false,_T("m_wTimerRes == 0. Not setting timer/scheduler resolution."));
+            }
+        }
+    }
 
 	// ZZ:UploadSpeedSense -->
 	//Xman
 	// - Maella [patch] -Bandwidth: overall bandwidth measure-	// Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 	/*
-	lastCommonRouteFinder = new LastCommonRouteFinder();
+    lastCommonRouteFinder = new LastCommonRouteFinder();
 	*/
 	pBandWidthControl = new CBandWidthControl();
 	// Maella end
@@ -756,8 +909,8 @@ int CemuleApp::ExitInstance()
 	AddDebugLogLine(DLP_VERYLOW, _T("%hs"), __FUNCTION__);
 
 	if (m_wTimerRes != 0) {
-		timeEndPeriod(m_wTimerRes);
-	}
+        timeEndPeriod(m_wTimerRes);
+    }
 
 	return CWinApp::ExitInstance();
 }
@@ -765,7 +918,7 @@ int CemuleApp::ExitInstance()
 #ifdef _DEBUG
 int CrtDebugReportCB(int reportType, char* message, int* returnValue)
 {
-	FILE* fp = _tfsopen(_szCrtDebugReportFilePath, _T("a"), _SH_DENYWR);
+	FILE* fp = _tfsopen(s_szCrtDebugReportFilePath, _T("a"), _SH_DENYWR);
 	if (fp){
 		time_t tNow = time(NULL);
 		TCHAR szTime[40];
@@ -817,8 +970,8 @@ bool CemuleApp::ProcessCommandline()
 	}
 
 	CCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
-
+    ParseCommandLine(cmdInfo);
+    
 	// If we create our TCP listen socket with SO_REUSEADDR, we have to ensure that there are
 	// not 2 emules are running using the same port.
 	// NOTE: This will not prevent from some other application using that port!
@@ -826,48 +979,48 @@ bool CemuleApp::ProcessCommandline()
 	CString strMutextName;
 	strMutextName.Format(_T("%s:%u"), EMULE_GUID, uTcpPort);
 	m_hMutexOneInstance = ::CreateMutex(NULL, FALSE, strMutextName);
-
+	
 	HWND maininst = NULL;
 	bool bAlreadyRunning = false;
 	if (!bIgnoreRunningInstances){
 		bAlreadyRunning = (::GetLastError() == ERROR_ALREADY_EXISTS ||::GetLastError() == ERROR_ACCESS_DENIED);
-		if (bAlreadyRunning) EnumWindows(SearchEmuleWindow, (LPARAM)&maininst);
+    	if (bAlreadyRunning) EnumWindows(SearchEmuleWindow, (LPARAM)&maininst);
 	}
 
-	if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen) {
+    if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen) {
 		CString* command = new CString(cmdInfo.m_strFileName);
 		if (command->Find(_T("://"))>0) {
 			sendstruct.cbData = (command->GetLength() + 1)*sizeof(TCHAR);
-			sendstruct.dwData = OP_ED2KLINK; 
-			sendstruct.lpData = const_cast<LPTSTR>((LPCTSTR)*command); 
-			if (maininst){
-				SendMessage(maininst, WM_COPYDATA, (WPARAM)0, (LPARAM)(PCOPYDATASTRUCT)&sendstruct);
+			sendstruct.dwData = OP_ED2KLINK;
+			sendstruct.lpData = const_cast<LPTSTR>((LPCTSTR)*command);
+    		if (maininst){
+      			SendMessage(maininst, WM_COPYDATA, (WPARAM)0, (LPARAM)(PCOPYDATASTRUCT)&sendstruct);
 				delete command;
-				return true; 
-			} 
-			else 
-				pstrPendingLink = command;
+      			return true;
+			}
+    		else
+      			pstrPendingLink = command;
 		}
 		else if (CCollection::HasCollectionExtention(*command)) {
 			sendstruct.cbData = (command->GetLength() + 1)*sizeof(TCHAR);
-			sendstruct.dwData = OP_COLLECTION; 
-			sendstruct.lpData = const_cast<LPTSTR>((LPCTSTR)*command); 
-			if (maininst){
-				SendMessage(maininst, WM_COPYDATA, (WPARAM)0, (LPARAM)(PCOPYDATASTRUCT)&sendstruct);
-				delete command;
-				return true; 
-			} 
-			else 
-				pstrPendingLink = command;
+			sendstruct.dwData = OP_COLLECTION;
+			sendstruct.lpData = const_cast<LPTSTR>((LPCTSTR)*command);
+    		if (maininst){
+      			SendMessage(maininst, WM_COPYDATA, (WPARAM)0, (LPARAM)(PCOPYDATASTRUCT)&sendstruct);
+      			delete command;
+				return true;
+			}
+    		else
+      			pstrPendingLink = command;
 		}
 		else {
 			sendstruct.cbData = (command->GetLength() + 1)*sizeof(TCHAR);
 			sendstruct.dwData = OP_CLCOMMAND;
-			sendstruct.lpData = const_cast<LPTSTR>((LPCTSTR)*command); 
-			if (maininst){
-				SendMessage(maininst, WM_COPYDATA, (WPARAM)0, (LPARAM)(PCOPYDATASTRUCT)&sendstruct);
-				delete command;
-				return true; 
+			sendstruct.lpData = const_cast<LPTSTR>((LPCTSTR)*command);
+    		if (maininst){
+      			SendMessage(maininst, WM_COPYDATA, (WPARAM)0, (LPARAM)(PCOPYDATASTRUCT)&sendstruct);
+      			delete command;
+				return true;
 			}
 			// Don't start if we were invoked with 'exit' command.
 			if (command->CompareNoCase(_T("exit")) == 0) {
@@ -876,8 +1029,8 @@ bool CemuleApp::ProcessCommandline()
 			}
 			delete command;
 		}
-	}
-	return (maininst || bAlreadyRunning);
+    }
+    return (maininst || bAlreadyRunning);
 }
 
 BOOL CALLBACK CemuleApp::SearchEmuleWindow(HWND hWnd, LPARAM lParam){
@@ -1099,7 +1252,7 @@ void CemuleApp::OnlineSig() // Added By Bouc7
 		return;
 
 	static const TCHAR _szFileName[] = _T("onlinesig.dat");
-	CString strFullPath = thePrefs.GetMuleDirectory(EMULE_CONFIGBASEDIR);
+	CString strFullPath =  thePrefs.GetMuleDirectory(EMULE_CONFIGBASEDIR);
 	strFullPath += _szFileName;
 
 	// The 'onlinesig.dat' is potentially read by other applications at more or less frequent intervals.
@@ -1159,15 +1312,18 @@ void CemuleApp::OnlineSig() // Added By Bouc7
 		} 
 		else 
 			file.Write("0",1); 
+		file.Write("\n",1); 
 
 		//Xman
 		// Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 		/*
-		file.Write("\n",1); 
-		sprintf(buffer,"%.1f",(float)downloadqueue->GetDatarate()/1024); 
-		file.Write(buffer,strlen(buffer)); 
-		file.Write("|",1); 
-		sprintf(buffer,"%.1f",(float)uploadqueue->GetDatarate()/1024); 
+		_snprintf(buffer, _countof(buffer), "%.1f", (float)downloadqueue->GetDatarate() / 1024);
+		buffer[_countof(buffer) - 1] = '\0';
+		file.Write(buffer, strlen(buffer)); 
+		file.Write("|", 1);
+
+		_snprintf(buffer, _countof(buffer), "%.1f", (float)uploadqueue->GetDatarate() / 1024); 
+		buffer[_countof(buffer) - 1] = '\0';
 		*/
 		uint32 eMuleIn;
 		uint32 eMuleOut;
@@ -1176,16 +1332,18 @@ void CemuleApp::OnlineSig() // Added By Bouc7
 			eMuleIn, notUsed,
 			eMuleOut, notUsed,
 			notUsed, notUsed);
-		file.Write(("\n"),1); 
-		sprintf(buffer,"%.1f", (float)eMuleIn/1024.0f); 
-		file.Write(buffer,strlen(buffer)); 
-		file.Write(("|"),1); 
-		sprintf(buffer,"%.1f", (float)eMuleOut/1024.0f);
+		_snprintf(buffer, _countof(buffer), "%.1f", (float)eMuleIn/1024.0f); 
+		buffer[_countof(buffer) - 1] = '\0';
+		file.Write(buffer, strlen(buffer)); 
+		file.Write("|", 1);
+		_snprintf(buffer, _countof(buffer), "%.1f", (float)eMuleOut/1024.0f);
+		buffer[_countof(buffer) - 1] = '\0';
 		//Xman end
-		file.Write(buffer,strlen(buffer)); 
-		file.Write("|",1); 
-		_itoa(uploadqueue->GetWaitingUserCount(),buffer,10); 
-		file.Write(buffer,strlen(buffer)); 
+		file.Write(buffer, strlen(buffer));
+		file.Write("|", 1);
+
+		_itoa(uploadqueue->GetWaitingUserCount(), buffer, 10);
+		file.Write(buffer, strlen(buffer));
 
 		file.Close(); 
 	}
@@ -1280,7 +1438,6 @@ bool CemuleApp::ShowWebHelp(UINT uTopic)
 
 int CemuleApp::GetFileTypeSystemImageIdx(LPCTSTR pszFilePath, int iLength /* = -1 */, bool bNormalsSize)
 {
-	//TODO: This has to be MBCS aware..
 	DWORD dwFileAttributes;
 	LPCTSTR pszCacheExt = NULL;
 	if (iLength == -1)
@@ -1310,10 +1467,10 @@ int CemuleApp::GetFileTypeSystemImageIdx(LPCTSTR pszFilePath, int iLength /* = -
 	LPVOID vData;
 	if (bNormalsSize){
 		if (!m_aBigExtToSysImgIdx.Lookup(pszCacheExt, vData)){
-			// Get index for the system's small icon image list
+			// Get index for the system's big icon image list
 			SHFILEINFO sfi;
 			DWORD dwResult = SHGetFileInfo(pszFilePath, dwFileAttributes, &sfi, sizeof(sfi),
-				SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX);
+										SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX);
 			if (dwResult == 0)
 				return 0;
 			ASSERT( m_hBigSystemImageList == NULL || m_hBigSystemImageList == (HIMAGELIST)dwResult );
@@ -1329,7 +1486,7 @@ int CemuleApp::GetFileTypeSystemImageIdx(LPCTSTR pszFilePath, int iLength /* = -
 			// Get index for the system's small icon image list
 			SHFILEINFO sfi;
 			DWORD dwResult = SHGetFileInfo(pszFilePath, dwFileAttributes, &sfi, sizeof(sfi),
-				SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+										SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
 			if (dwResult == 0)
 				return 0;
 			ASSERT( m_hSystemImageList == NULL || m_hSystemImageList == (HIMAGELIST)dwResult );
@@ -1341,9 +1498,7 @@ int CemuleApp::GetFileTypeSystemImageIdx(LPCTSTR pszFilePath, int iLength /* = -
 		}
 	}
 
-
 	// Return already cached value
-	// Elandal: Assumes sizeof(void*) == sizeof(int)
 	return (int)vData;
 }
 
@@ -1571,7 +1726,8 @@ HICON CemuleApp::LoadIcon(LPCTSTR lpszResourceName, int cx, int cy, UINT uFlags)
 			{
 				if (uFlags != 0 || !(cx == cy && (cx == 16 || cx == 32)))
 				{
-					static UINT (WINAPI *_pfnPrivateExtractIcons)(LPCTSTR, int, int, int, HICON*, UINT*, UINT, UINT) = (UINT (WINAPI *)(LPCTSTR, int, int, int, HICON*, UINT*, UINT, UINT))GetProcAddress(GetModuleHandle(_T("user32")), _TWINAPI("PrivateExtractIcons"));
+					static UINT (WINAPI *_pfnPrivateExtractIcons)(LPCTSTR, int, int, int, HICON*, UINT*, UINT, UINT) 
+						= (UINT (WINAPI *)(LPCTSTR, int, int, int, HICON*, UINT*, UINT, UINT))GetProcAddress(GetModuleHandle(_T("user32")), _TWINAPI("PrivateExtractIcons"));
 					if (_pfnPrivateExtractIcons)
 					{
 						UINT uIconId;
@@ -1823,10 +1979,10 @@ void CemuleApp::AddEd2kLinksToDownload(CString strLinks, int cat, bool askIfAlre
 					if ( askIfAlreadyDownloaded )
 					{
 						if ( knownfiles->CheckAlreadyDownloadedFileQuestion(pLink->GetFileLink()->GetHashKey(), pLink->GetFileLink()->GetName()) )
-							downloadqueue->AddFileLinkToDownload(pLink->GetFileLink(),cat);
+							downloadqueue->AddFileLinkToDownload(pLink->GetFileLink(), cat);
 					}
 					else
-						theApp.downloadqueue->AddFileLinkToDownload(pLink->GetFileLink(),cat);
+						theApp.downloadqueue->AddFileLinkToDownload(pLink->GetFileLink(), cat);
 					//Xman end
 				}
 				else
@@ -1940,35 +2096,6 @@ bool CemuleApp::IsEd2kServerLinkInClipboard()
 	static const CHAR _szEd2kServerLink[] = "ed2k://|server|"; // Use the ANSI string
 	return IsEd2kLinkInClipboard(_szEd2kServerLink, _countof(_szEd2kServerLink)-1);
 }
-
-//Xman
-//upnp_start
-BOOL CemuleApp::AddUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping, bool tryRandom){
-	CString args;
-
-	if(m_UPnPNat.AddNATPortMapping(mapping, tryRandom) == MyUPnP::UNAT_OK ){
-		if(theApp.emuledlg->IsRunning()){
-			AddLogLine(false, _T("Added UPnP NAT Support: (%s) NAT ROUTER/FIREWALL:%i -> %s:%i"),
-				mapping->description, mapping->externalPort, m_UPnPNat.GetLocalIPStr(), mapping->internalPort);
-		}
-		return true;
-	}
-	else{
-		if(theApp.emuledlg->IsRunning()){
-			AddLogLine(false, _T("Error adding UPnP NAT Support: (%s) NAT ROUTER/FIREWALL:%i -> %s:%i (%s)"),
-				mapping->description, mapping->externalPort, m_UPnPNat.GetLocalIPStr(), mapping->internalPort, m_UPnPNat.GetLastError());
-		}
-		return false;
-	}
-}
-
-BOOL CemuleApp::RemoveUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping){
-	if(m_UPnPNat.RemoveNATPortMapping(*mapping) == MyUPnP::UNAT_OK )
-		return true;
-	else
-		return false;
-}
-//upnp_end
 
 // Elandal:ThreadSafeLogging -->
 void CemuleApp::QueueDebugLogLine(bool bAddToStatusbar, LPCTSTR line, ...)
@@ -2261,11 +2388,12 @@ void CemuleApp::UpdateDesktopColorDepth()
 		m_iDfltImageListColorFlags = GetAppImageListColorFlag();
 
 		// Don't use 32-bit image lists if not supported by COMCTL32.DLL
-		if (m_iDfltImageListColorFlags == ILC_COLOR32 && m_ullComCtrlVer < MAKEDLLVERULL(6,0,0,0)) {
+		if (m_iDfltImageListColorFlags == ILC_COLOR32 && m_ullComCtrlVer < MAKEDLLVERULL(6,0,0,0))
+		{
 			// We fall back to 16-bit image lists because we do not provide 24-bit
 			// versions of icons any longer (due to resource size restrictions for Win98). We
 			// could also fall back to 24-bit image lists here but the difference is minimal
-			// and considered to be not worth the additinoal memory consumption.
+			// and considered not to be worth the additinoal memory consumption.
 			//
 			// Though, do not fall back to 8-bit image lists because this would let Windows
 			// reduce the color resolution to the standard 256 color window system palette.
@@ -2274,18 +2402,6 @@ void CemuleApp::UpdateDesktopColorDepth()
 			// loosing any colors.
 			m_iDfltImageListColorFlags = ILC_COLOR16;
 		}
-
-		// ==> Drop Win95 support [MorphXT] - Stulle
-		/*
-		// Don't use >8-bit image lists with OSs with restricted memory for GDI resources
-		if (afxIsWin95()) {
-			// NOTE: ILC_COLOR8 leads to converting all icons to the standard windows system
-			// 256 color palette. Thus this option leads to loosing some color resolution.
-			// Though there is no other chance with Win98 because of the 64K GDI limit.
-			m_iDfltImageListColorFlags = ILC_COLOR8;
-		}
-		*/
-		// <== Drop Win95 support [MorphXT] - Stulle
 	}
 
 	// Doesn't help..
@@ -2415,8 +2531,15 @@ void CemuleApp::ResetStandByIdleTimer()
 	}
 }
 
+bool CemuleApp::IsXPThemeActive() const
+{
+	// TRUE: If an XP style (and only an XP style) is active
+	return theApp.m_ullComCtrlVer < MAKEDLLVERULL(6,16,0,0) && g_xpStyle.IsThemeActive() && g_xpStyle.IsAppThemed();
+}
+
 bool CemuleApp::IsVistaThemeActive() const
 {
+	// TRUE: If a Vista (or better) style is active
 	return theApp.m_ullComCtrlVer >= MAKEDLLVERULL(6,16,0,0) && g_xpStyle.IsThemeActive() && g_xpStyle.IsAppThemed();
 }
 

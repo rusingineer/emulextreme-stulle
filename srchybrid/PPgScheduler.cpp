@@ -34,14 +34,14 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPPgScheduler, CPropertyPage)
 
 BEGIN_MESSAGE_MAP(CPPgScheduler, CPropertyPage)
-	ON_NOTIFY(NM_CLICK, IDC_SCHEDLIST, OnNMDblclkList)
-	ON_NOTIFY(NM_DBLCLK, IDC_SCHEDACTION, OnNMDblclkActionlist)
-	ON_NOTIFY(NM_RCLICK, IDC_SCHEDACTION, OnNMRclickActionlist)
-	ON_BN_CLICKED(IDC_NEW, OnBnClickedAdd)
 	ON_BN_CLICKED(IDC_APPLY, OnBnClickedApply)
-	ON_BN_CLICKED(IDC_REMOVE, OnBnClickedRemove)
-	ON_BN_CLICKED(IDC_ENABLE, OnEnableChange)
 	ON_BN_CLICKED(IDC_CHECKNOENDTIME, OnDisableTime2)
+	ON_BN_CLICKED(IDC_ENABLE, OnEnableChange)
+	ON_BN_CLICKED(IDC_NEW, OnBnClickedAdd)
+	ON_BN_CLICKED(IDC_REMOVE, OnBnClickedRemove)
+	ON_NOTIFY(NM_CLICK, IDC_SCHEDLIST, OnNmClickList)
+	ON_NOTIFY(NM_DBLCLK, IDC_SCHEDACTION, OnNmDblClkActionlist)
+	ON_NOTIFY(NM_RCLICK, IDC_SCHEDACTION, OnNmRClickActionlist)
 	ON_WM_HELPINFO()
 END_MESSAGE_MAP()
 
@@ -71,16 +71,16 @@ BOOL CPPgScheduler::OnInitDialog()
 
 	m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	ASSERT( (m_list.GetStyle() & LVS_SINGLESEL) == 0);
-	m_list.InsertColumn(0, GetResString(IDS_TITLE), LVCFMT_LEFT, 150, 0);
-	m_list.InsertColumn(1, GetResString(IDS_S_DAYS), LVCFMT_LEFT, 80, 1);
-	m_list.InsertColumn(2, GetResString(IDS_STARTTIME), LVCFMT_LEFT, 80, 2);
+	m_list.InsertColumn(0, GetResString(IDS_TITLE),		LVCFMT_LEFT, 150);
+	m_list.InsertColumn(1, GetResString(IDS_S_DAYS),	LVCFMT_LEFT,  80);
+	m_list.InsertColumn(2, GetResString(IDS_STARTTIME), LVCFMT_LEFT,  80);
 	m_time.SetFormat(_T("H:mm"));
 	m_timeTo.SetFormat(_T("H:mm"));
 
 	m_actions.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	ASSERT( (m_actions.GetStyle() & LVS_SINGLESEL) == 0 );
-	m_actions.InsertColumn(0, GetResString(IDS_ACTION), LVCFMT_LEFT, 150, 0);
-	m_actions.InsertColumn(1, GetResString(IDS_VALUE), LVCFMT_LEFT, 80, 1);
+	m_actions.InsertColumn(0, GetResString(IDS_ACTION), LVCFMT_LEFT, 150);
+	m_actions.InsertColumn(1, GetResString(IDS_VALUE),  LVCFMT_LEFT,  80);
 
 	Localize();
 	CheckDlgButton(IDC_ENABLE,thePrefs.IsSchedulerEnabled());
@@ -116,7 +116,7 @@ void CPPgScheduler::Localize(void)
 	}
 }
 
-void CPPgScheduler::OnNMDblclkList(NMHDR* /*pNMHDR*/, LRESULT* /*pResult*/)
+void CPPgScheduler::OnNmClickList(NMHDR* /*pNMHDR*/, LRESULT* /*pResult*/)
 {
 	if (m_list.GetSelectionMark()>-1) LoadSchedule(m_list.GetSelectionMark());
 }
@@ -280,7 +280,7 @@ CString CPPgScheduler::GetDayLabel(int index) {
 	return NULL;
 }
 
-void CPPgScheduler::OnNMDblclkActionlist(NMHDR* /*pNMHDR*/, LRESULT* pResult)
+void CPPgScheduler::OnNmDblClkActionlist(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 {
 	if (m_actions.GetSelectionMark()!=-1) {
 		int ac=m_actions.GetItemData(m_actions.GetSelectionMark());
@@ -290,7 +290,7 @@ void CPPgScheduler::OnNMDblclkActionlist(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 	*pResult = 0;
 }
 
-void CPPgScheduler::OnNMRclickActionlist(NMHDR* /*pNMHDR*/, LRESULT* pResult)
+void CPPgScheduler::OnNmRClickActionlist(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 {
 	POINT point;
 	::GetCursorPos(&point);

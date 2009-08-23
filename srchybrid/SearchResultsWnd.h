@@ -110,12 +110,7 @@ protected:
 	UINT_PTR	global_search_timer;
 	UINT		m_uTimerLocalServer;
 	CProgressCtrl searchprogress;
-	//zz_fly, fix minor official draw bug around SharedFiles Filter on Language change
-	// X-Ray :: FiXeS :: Bugfix :: Start :: WiZaRd
-	/*
 	CHeaderCtrl m_ctlSearchListHeader;
-	*/
-	// X-Ray :: FiXeS :: Bugfix :: End :: WiZaRd
 	CEditDelayed m_ctlFilter;
 	CButton		m_ctlOpenParamsWnd;
 	bool		canceld;
@@ -153,7 +148,6 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnBnClickedDownloadSelected();
 	afx_msg void OnBnClickedClearAll();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnClose();
 	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
 	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);

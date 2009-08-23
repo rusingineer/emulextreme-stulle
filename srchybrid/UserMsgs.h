@@ -47,13 +47,9 @@ enum EUserWndMessages
 	UM_ARCHIVESCANDONE,
 	//Xman versions check
 	UM_MVERSIONCHECK_RESPONSE,
-	UM_DLPVERSIONCHECK_RESPONSE //Xman DLP
+	UM_DLPVERSIONCHECK_RESPONSE, //Xman DLP
 	//Xman end
 
 	// UPnP
-	//Xman official UPNP removed
-	/*
-    UM_UPNP_RESULT
-	*/
-	//Xman end
+	UM_UPNP_RESULT
 };

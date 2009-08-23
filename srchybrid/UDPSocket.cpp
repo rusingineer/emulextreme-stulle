@@ -151,21 +151,6 @@ bool CUDPSocket::Create()
 			LogError(LOG_STATUSBAR, _T("Error: Server UDP socket: Failed to create server UDP socket - %s"), GetErrorMessage(GetLastError()));
 			return false;
 		}
-		//Xman
-		//upnp_start
-		if(thePrefs.GetUPnPNat()){
-			CString client;
-			UINT port;
-			MyUPnP::UPNPNAT_MAPPING mapping;
-
-			GetSockName(client, port);
-			mapping.internalPort = mapping.externalPort = (WORD)port;
-			mapping.protocol = MyUPnP::UNAT_UDP;
-			mapping.description = "Server UDP Port";
-			theApp.AddUPnPNatPort(&mapping, thePrefs.GetUPnPNatTryRandom());
-		}
-		//upnp_end
-
 		return true;
 	}
 	return false;
@@ -680,13 +665,13 @@ void CUDPSocket::DnsLookupDone(WPARAM wp, LPARAM lp)
 			CServer* pConnectedServer = theApp.serverconnect->GetCurrentServer();
 			if (!pConnectedServer || pConnectedServer->GetIP() != nIP) {
 				if (thePrefs.GetLogFilteredIPs())
-					AddDebugLogLine(false, _T("Filtered server \"%s\" (IP=%s) - Invalid IP or LAN address."), pDNSReq->m_pServer->GetAddress(), ipstr(nIP));
+					AddDebugLogLine(false, _T("IPFilter(UDP/DNSResolve): Filtered server \"%s\" (IP=%s) - Invalid IP or LAN address."), pDNSReq->m_pServer->GetAddress(), ipstr(nIP));
 				bRemoveServer = true;
 			}
 		}
-		if (!bRemoveServer && theApp.ipfilter->IsFiltered(nIP)) {
+		if (!bRemoveServer && thePrefs.GetFilterServerByIP() && theApp.ipfilter->IsFiltered(nIP)) {
 			if (thePrefs.GetLogFilteredIPs())
-				AddDebugLogLine(false, _T("Filtered server \"%s\" (IP=%s) - IP filter (%s)"), pDNSReq->m_pServer->GetAddress(), ipstr(nIP), theApp.ipfilter->GetLastHit());
+				AddDebugLogLine(false, _T("IPFilter(UDP/DNSResolve): Filtered server \"%s\" (IP=%s) - IP filter (%s)"), pDNSReq->m_pServer->GetAddress(), ipstr(nIP), theApp.ipfilter->GetLastHit());
 			bRemoveServer = true;
 		}
 
@@ -817,8 +802,6 @@ void CUDPSocket::SendBuffer(uint32 nIP, uint16 nPort, BYTE* pPacket, UINT uSize)
 
 void CUDPSocket::SendPacket(Packet* packet, CServer* pServer, uint16 nSpecialPort, BYTE* pInRawPacket, uint32 nRawLen)
 {
-	USES_CONVERSION;
-
 	// Just for safety.. Ensure that there are no stalled DNS queries and/or packets
 	// hanging endlessly in the queue.
 	POSITION pos = m_aDNSReqs.GetHeadPosition();
@@ -867,7 +850,7 @@ void CUDPSocket::SendPacket(Packet* packet, CServer* pServer, uint16 nSpecialPor
 	ASSERT( nPort != 0 );
 
 	// Do we need to resolve the DN of this server?
-	LPCSTR pszHostAddressA = T2CA(pServer->GetAddress());
+	CT2CA pszHostAddressA(pServer->GetAddress());
 	uint32 nIP = inet_addr(pszHostAddressA);
 	if (nIP == INADDR_NONE)
 	{

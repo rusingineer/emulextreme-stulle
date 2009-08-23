@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by emule.rc
 //
-#define IDR_MANIFEST                    1
 #define IDC_STATUSBAR                   100
 #define IDD_ABOUTBOX                    101
 #define IDD_EMULE_DIALOG                102
@@ -760,7 +759,6 @@
 #define IDS_USECREDITSYSTEM             833
 #define IDS_FIRSTAUTODOWN               834
 #define IDS_FIRSTAUTOUP                 835
-#define IDS_FIRSTFULLCHUNK              836
 #define IDS_AUTOMATIC                   836
 #define IDS_FIRSTSAFECON                837
 #define IDS_FIRSTAUTOCON                838
@@ -1479,7 +1477,6 @@
 #define IDS_UPNP_NOSERVICE              1525
 #define IDS_DELAYEDBYUPNP               1526
 #define IDS_DELAYEDBYUPNP2              1527
-#define IDS_UPnP                        1528
 #define IDS_UPNP                        1528
 #define IDS_UPNPCLOSEONEXIT             1529
 #define IDS_UPNPSKIPWANIP               1530
@@ -1488,7 +1485,6 @@
 #define IDS_SHAREEMULEMULTI             1533
 #define IDS_SHAREEMULEPUBLIC            1534
 #define IDS_SHAREEMULEOLD               1535
-#define IDS_SHAREMULEEWARNING           1536
 #define IDS_SHAREEMULEWARNING           1536
 #define IDS_SPAM                        1537
 #define IDS_MARKSPAM                    1538
@@ -1516,6 +1512,16 @@
 #define IDS_BETANAG                     1560
 #define IDS_CONFIRMNODESDOWNLOAD        1561
 #define IDS_NOTCONNECTEDANY             1562
+#define IDS_ERR_SHARED_DIR              1563
+#define IDS_FILE_WARNING_DRM            1564
+#define IDS_CHECK_FILE_OPEN             1565
+#define IDS_BOOTABLE                    1566
+#define IDS_UNSUPPORTEDIMAGE            1567
+#define IDS_UNSHARE                     1568
+#define IDS_WEBUPNPINCLUDE              1569
+#define IDS_ADDEDON                     1570
+#define IDS_FOLLOWLINKS                 1571
+#define IDS_RESOLVELINKS                1571
 #define IDC_ANIMATE1                    2000
 #define IDC_STATUS                      2001
 #define IDC_FILESTATUS                  2002
@@ -1587,7 +1593,6 @@
 #define IDC_SHOWCATINFO                 2110
 #define IDC_ADVSPAMFILTER               2112
 #define IDC_CB_TBN_ONNEWDOWNLOAD        2113
-#define IDC_ADVSPAMFILTER2              2113
 #define IDC_MSHOWSMILEYS                2113
 #define IDC_NETWORK_KADEMLIA            2114
 #define IDC_USECAPTCHAS                 2114
@@ -2007,6 +2012,7 @@
 #define IDC_REPAINT                     2669
 #define IDC_WSENABLED                   2671
 #define IDC_ENABLE                      2672
+#define IDC_WSUPNP                      2672
 #define IDC_WS_GZIP                     2673
 #define IDC_MSGONLYFRIENDS              2674
 #define IDC_WS_ALLOWHILEVFUNC           2674
@@ -2135,7 +2141,6 @@
 #define IDC_SAVE                        2811
 #define IDC_TOTAL_IPS_LABEL             2812
 #define IDC_TOTAL_IPS                   2813
-#define IDC_COPY                        2814
 #define IDC_APPEND                      2815
 #define IDC_FORMAT                      2816
 #define IDC_STATICIPLABEL               2818
@@ -2186,7 +2191,6 @@
 #define IDC_CLIENTDETAIL_KAD            2876
 #define IDC_LD_LINKEDI                  2877
 #define IDC_CLIENTDETAIL_KADCON         2878
-#define IDC_SEARCH_UNICODE              2879
 #define IDC_AUTOSTART                   2880
 #define IDC_STARTWIN                    2882
 #define IDC_RSRC                        2883
@@ -2286,6 +2290,9 @@
 #define IDC_SHAREDFILES_FILTER          2994
 #define IDC_EDITCOMMENTFILTER           2995
 #define IDC_WIZZARDOBFUSCATION          2996
+#define IDC_SPIN1                       2997
+#define IDC_TOOLTIPDELAY_SPIN           2997
+#define IDC_CHECK_FILE_OPEN             2998
 #define IDS_DROPNONEEDEDSRCS            3000
 #define IDS_DROPQUEUEFULLSRCS           3001
 #define IDS_DROPQUEUETOOMANY            3002

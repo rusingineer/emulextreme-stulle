@@ -149,7 +149,7 @@ void CServerConnect::ConnectToServer(CServer* server, bool multiconnect, bool bN
 	singleconnecting = !multiconnect;
 	theApp.emuledlg->ShowConnectionState();
 
-	CServerSocket* newsocket = new CServerSocket(this);
+	CServerSocket* newsocket = new CServerSocket(this, !multiconnect);
 	//Xman
 	/*
 	m_lstOpenSockets.AddTail((void*&)newsocket);

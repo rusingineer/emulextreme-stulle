@@ -145,7 +145,22 @@ void CDownloadQueue::Init(){
 			//MORPH END   - Moved Down, to allow checking for backup met files.
 			// END SLUGFILLER: SafeHash
 			CPartFile* toadd = new CPartFile();
-			if (toadd->LoadPartFile(thePrefs.GetTempDir(i), ff.GetFileName())){
+			EPartFileLoadResult eResult = toadd->LoadPartFile(thePrefs.GetTempDir(i), ff.GetFileName());
+			if (eResult == PLR_FAILED_METFILE_CORRUPT)
+			{
+				// .met file is corrupted, try to load the latest backup of this file
+				delete toadd;
+				toadd = new CPartFile();
+				eResult = toadd->LoadPartFile(thePrefs.GetTempDir(i), ff.GetFileName() + PARTMET_BAK_EXT);
+				if (eResult == PLR_LOADSUCCESS)
+				{
+					toadd->SavePartFile(true); // don't override our just used .bak file yet
+					AddLogLine(false, GetResString(IDS_RECOVERED_PARTMET), toadd->GetFileName());
+				}
+			}
+
+			if (eResult == PLR_LOADSUCCESS)
+			{
 				metsfound.AddTail(CString(ff.GetFileName()).MakeLower()); //MORPH - Added, fix SafeHash
 				count++;
 				filelist.AddTail(toadd);			// to downloadqueue
@@ -181,11 +196,11 @@ void CDownloadQueue::Init(){
 			// END SLUGFILLER: SafeHash
 
 			CPartFile* toadd = new CPartFile();
-			if (toadd->LoadPartFile(thePrefs.GetTempDir(i),ff.GetFileName())){
+			if (toadd->LoadPartFile(thePrefs.GetTempDir(i), ff.GetFileName()) == PLR_LOADSUCCESS){
 				//MORPH START - Added, fix SafeHash
 				metsfound.AddTail(RemoveFileExtension(CString(ff.GetFileName()).MakeLower()));
 				//MORPH END   - Added, fix SafeHash
-				toadd->SavePartFile(); // resave backup
+				toadd->SavePartFile(true); // resave backup, don't overwrite existing bak files yet
 				count++;
 				filelist.AddTail(toadd);			// to downloadqueue
 				//Xman
@@ -2216,8 +2231,8 @@ void CDownloadQueue::KademliaSearchFile(uint32 searchID, const Kademlia::CUInt12
 
 void CDownloadQueue::ExportPartMetFilesOverview() const
 {
-	CString strFileListPath = thePrefs.GetMuleDirectory(EMULE_DATABASEDIR) + _T("downloads.txt");
-
+	CString strFileListPath = thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + _T("downloads.txt");
+	
 	CString strTmpFileListPath = strFileListPath;
 	PathRenameExtension(strTmpFileListPath.GetBuffer(MAX_PATH), _T(".tmp"));
 	strTmpFileListPath.ReleaseBuffer();

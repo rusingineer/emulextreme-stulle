@@ -141,10 +141,8 @@ void CFriend::WriteToFile(CFileDataIO* file)
 	file->WriteUInt32(uTagCount);
 
 	if (!m_strName.IsEmpty()){
-		if (WriteOptED2KUTF8Tag(file, m_strName, FF_NAME))
-			uTagCount++;
 		CTag nametag(FF_NAME, m_strName);
-		nametag.WriteTagToFile(file);
+		nametag.WriteTagToFile(file, utf8strOptBOM);
 		uTagCount++;
 	}
 	if (HasKadID()){
@@ -229,6 +227,7 @@ CUpDownClient* CFriend::GetLinkedClient(bool bValidCheck) const
 	}
 	return m_LinkedClient; 
 };
+
 CUpDownClient* CFriend::GetClientForChatSession()
 {
 	CUpDownClient* pResult;

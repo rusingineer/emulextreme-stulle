@@ -188,7 +188,7 @@ void CreateNetworkInfo(CRichEditCtrlX& rCtrl, CHARFORMAT& rcfDef, CHARFORMAT& rc
 			else
 				rCtrl << GetResString(IDS_PRIONORMAL);
 			rCtrl << _T("\r\n");
-
+			
 
 			if (bFullInfo)
 			{
@@ -323,7 +323,7 @@ void CreateNetworkInfo(CRichEditCtrlX& rCtrl, CHARFORMAT& rcfDef, CHARFORMAT& rc
 			buffer.Format(_T("%u"), Kademlia::CKademlia::GetPrefs()->GetExternalKadPort());
 			rCtrl << GetResString(IDS_EXTERNUDPPORT) << _T(":\t") << buffer << _T("\r\n");
 		}
-
+		
 		if (Kademlia::CUDPFirewallTester::IsFirewalledUDP(true)) {
 			rCtrl << GetResString(IDS_BUDDY) << _T(":\t");
 			switch ( theApp.clientlist->GetBuddyStatus() )
@@ -402,15 +402,4 @@ void CreateNetworkInfo(CRichEditCtrlX& rCtrl, CHARFORMAT& rcfDef, CHARFORMAT& rc
 		buffer.Format(_T("%s"),(LPCTSTR)(md4str((uchar*)thePrefs.GetUserHash())));
 		rCtrl << buffer << _T("\r\n");
 	}
-	//zz_fly :: show UPnP status
-	if(thePrefs.GetUPnPNat())
-	{
-		rCtrl << _T("\r\n");
-		rCtrl.SetSelectionCharFormat(rcfBold);
-		rCtrl << GetResString(IDS_UPNPSTATUS) << _T("\r\n");
-		rCtrl.SetSelectionCharFormat(rcfDef);
-		CString upnpinfo = theApp.m_UPnPNat.GetLastError();
-		rCtrl << (upnpinfo.IsEmpty() ? _T("Unknown") : upnpinfo) << _T("\r\n");
-	}
-	//zz_fly :: show UPnP status end
 }

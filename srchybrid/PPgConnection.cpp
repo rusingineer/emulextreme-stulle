@@ -77,11 +77,7 @@ BEGIN_MESSAGE_MAP(CPPgConnection, CPropertyPage)
 	ON_BN_CLICKED(IDC_NETWORK_KADEMLIA, OnSettingsChange)
 	ON_WM_HELPINFO()
 	ON_BN_CLICKED(IDC_OPENPORTS, OnBnClickedOpenports)
-	//Xman official UPNP removed
-	/*
 	ON_BN_CLICKED(IDC_PREF_UPNPONSTART, OnSettingsChange)
-	*/
-	//Xman end
 END_MESSAGE_MAP()
 
 CPPgConnection::CPPgConnection()
@@ -310,8 +306,6 @@ void CPPgConnection::LoadSettings(void)
 			GetDlgItem(IDC_OPENPORTS)->ShowWindow(SW_HIDE);
 		
 
-		//Xman official UPNP removed
-		/*
 		if (thePrefs.GetWindowsVersion() != _WINVER_95_ && thePrefs.GetWindowsVersion() != _WINVER_98_ && thePrefs.GetWindowsVersion() != _WINVER_NT4_)
 			GetDlgItem(IDC_PREF_UPNPONSTART)->EnableWindow(true);
 		else
@@ -321,7 +315,6 @@ void CPPgConnection::LoadSettings(void)
 			CheckDlgButton(IDC_PREF_UPNPONSTART, 1);
 		else
 			CheckDlgButton(IDC_PREF_UPNPONSTART, 0);
-		*/
 
 		//Xman Xtreme Upload
 		CalculateMaxUpSlotSpeed();
@@ -596,8 +589,6 @@ BOOL CPPgConnection::OnApply()
 	}
 	thePrefs.maxconnections = tempcon;
 
-	//Xman official UPNP removed
-	/*
 	if (IsDlgButtonChecked(IDC_PREF_UPNPONSTART) != 0){
 		if (!thePrefs.IsUPnPEnabled()){
 			thePrefs.m_bEnableUPnP = true;
@@ -606,7 +597,6 @@ BOOL CPPgConnection::OnApply()
 	}
 	else
 		thePrefs.m_bEnableUPnP = false;
-	*/
 
 	theApp.scheduler->SaveOriginals();
 
@@ -662,11 +652,7 @@ void CPPgConnection::Localize(void)
 		GetDlgItem(IDC_UDPDISABLE)->SetWindowText(GetResString(IDS_UDPDISABLED));
 		GetDlgItem(IDC_OPENPORTS)->SetWindowText(GetResString(IDS_FO_PREFBUTTON));
 		SetDlgItemText(IDC_STARTTEST, GetResString(IDS_STARTTEST) );
-		//Xman official UPNP removed
-		/*
 		GetDlgItem(IDC_PREF_UPNPONSTART)->SetWindowText(GetResString(IDS_UPNPSTART));
-		*/
-		//Xman end
 		
 		//Xman GlobalMaxHarlimit for fairness
 		GetDlgItem(IDC_STATIC_MAXGLOBALSOURCES)->SetWindowText(GetResString(IDS_MAXGLOBALSOURCES));

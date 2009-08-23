@@ -440,6 +440,7 @@ public:
 	static	bool	m_bPreviewCopiedArchives;
 	static	int		m_iInspectAllFileTypes;
 	static	bool	m_bPreviewOnIconDblClk;
+	static	bool	m_bCheckFileOpen;
 	static	bool	indicateratings;
 	static	bool	watchclipboard;
 	static	bool	filterserverbyip;
@@ -461,6 +462,7 @@ public:
 	static	UINT	m_iFileBufferSize;
 	static	UINT	m_iQueueSize;
 	static	int		m_iCommitFiles;
+	static	UINT	m_uFileBufferTimeLimit;
 
 	static	UINT	maxmsgsessions;
 	// ==> Make code VS 2005 and VS 2008 ready [MorphXT] - Stulle
@@ -477,6 +479,7 @@ public:
 	static	CString	filenameCleanups;
 	static	CString	m_strDateTimeFormat;
 	static	CString	m_strDateTimeFormat4Log;
+	static	CString	m_strDateTimeFormat4Lists;
 	static	LOGFONT m_lfHyperText;
 	static	LOGFONT m_lfLogText;
 	static	COLORREF m_crLogError;
@@ -484,6 +487,7 @@ public:
 	static	COLORREF m_crLogSuccess;
 	static	int		m_iExtractMetaData;
 	static	bool	m_bAdjustNTFSDaylightFileTime;
+	static	bool	m_bRearrangeKadSearchKeywords;
 	static  bool    m_bAllocFull;
 
 
@@ -491,6 +495,7 @@ public:
 	static	CString	m_strWebPassword;
 	static	CString	m_strWebLowPassword;
 	static	uint16	m_nWebPort;
+	static	bool	m_bWebUseUPnP;
 	static	bool	m_bWebEnabled;
 	static	bool	m_bWebUseGzip;
 	static	int		m_nWebPageRefresh;
@@ -557,6 +562,7 @@ public:
 
     static bool     m_bHighresTimer;
 
+	static	bool	m_bResolveSharedShellLinks;
 	static	CStringList shareddir_list;
 	static	CStringList addresses_list;
 
@@ -583,6 +589,7 @@ public:
 	// files
 	static bool		m_bRememberCancelledFiles;
 	static bool		m_bRememberDownloadedFiles;
+	static bool		m_bPartiallyPurgeOldKnownFiles;
 
 	//emil notifier
 	static bool		m_bNotifierSendMail;
@@ -602,13 +609,9 @@ public:
 	static bool		m_bSkipWANPPPSetup;
 	static bool		m_bEnableUPnP;
 	static bool		m_bCloseUPnPOnExit;
-	//Xman official UPNP removed
-	/*
 	static bool		m_bIsWinServImplDisabled;
 	static bool		m_bIsMinilibImplDisabled;
 	static int		m_nLastWorkingImpl;
-	*/
-	//Xman end
 
 	// Spam
 	static bool		m_bEnableSearchResultFilter;
@@ -668,7 +671,6 @@ public:
 	// SLUGFILLER: SafeHash remove - removed installation dir unsharing
 	/*
 	static	bool	IsTempFile(const CString& rstrDirectory, const CString& rstrName);
-	static	bool	IsConfigFile(const CString& rstrDirectory, const CString& rstrName);
 	static	bool	IsShareableDirectory(const CString& rstrDirectory);
 	static	bool	IsInstallationDirectory(const CString& rstrDir);
 	*/
@@ -687,15 +689,8 @@ public:
 
 	static	LPCSTR	GetBindAddrA()						{return m_pszBindAddrA; }
 	static	LPCWSTR	GetBindAddrW()						{return m_pszBindAddrW; }
-	//Xman
-	//upnp_start
-	/*
 	static	uint16	GetPort()							{return port;}
 	static	uint16	GetUDPPort()						{return udpport;}
-	*/
-	static	uint16	GetPort();
-	static	uint16	GetUDPPort();
-	//upnp_end
 	static	uint16	GetServerUDPPort()					{return nServerUDPPort;}
 	static	uchar*	GetUserHash()						{return userhash;}
 	// ZZ:UploadSpeedSense -->
@@ -731,23 +726,6 @@ public:
 
 	//--------------------------------------------------------------------------------------
 	//Xman Xtreme Mod:
-
-	//upnp_start
-	static	bool m_bUPnPNat; // UPnP On/Off
-	static	bool m_bUPnPTryRandom; //UPnP use random ports
-	static  bool m_bUPnPRebindOnIPChange; //zz_fly :: Rebind UPnP on IP-change
-	static	uint16 m_iUPnPTCPExternal; // TCP External Port
-	static	uint16 m_iUPnPUDPExternal; // UDP External Port*/
-	static	bool GetUPnPNat()    { return m_bUPnPNat; }
-	static	void SetUPnPNat(bool on)    { m_bUPnPNat = on; }
-	static	void SetUPnPTCPExternal(uint16 port) { m_iUPnPTCPExternal = port; }
-	static	void SetUPnPUDPExternal(uint16 port) { m_iUPnPUDPExternal = port; }
-	static	bool GetUPnPNatTryRandom()  { return m_bUPnPTryRandom; }
-	static	void SetUPnPNatTryRandom(bool on) { m_bUPnPTryRandom = on; }
-	static  bool GetUPnPNatRebind() { return m_bUPnPRebindOnIPChange; } //zz_fly :: Rebind UPnP on IP-change
-	static	void SetUPnPNatRebind(bool on) { m_bUPnPRebindOnIPChange = on; } //zz_fly :: Rebind UPnP on IP-change
-	//upnp_end
-
 
 	//Xman Xtreme Upload
 	static float	m_slotspeed;
@@ -1355,6 +1333,7 @@ public:
 	static	const CString& GetVideoPlayerArgs()			{return m_strVideoPlayerArgs;}
 
 	static	UINT	GetFileBufferSize()					{return m_iFileBufferSize;}
+	static	UINT	GetFileBufferTimeLimit()			{return m_uFileBufferTimeLimit;}
 	static	UINT	GetQueueSize()						{return m_iQueueSize;}
 	static	int		GetCommitFiles()					{return m_iCommitFiles;}
 	static	bool	GetShowCopyEd2kLinkCmd()			{return m_bShowCopyEd2kLinkCmd;}
@@ -1394,6 +1373,7 @@ public:
 	static	int		GetInspectAllFileTypes()			{return m_iInspectAllFileTypes;}
 	static	int		GetExtractMetaData()				{return m_iExtractMetaData;}
 	static	bool	GetAdjustNTFSDaylightFileTime()		{return m_bAdjustNTFSDaylightFileTime;}
+	static	bool	GetRearrangeKadSearchKeywords()		{return m_bRearrangeKadSearchKeywords;}
 
 	static	const CString& GetYourHostname()			{return m_strYourHostname;}
 	static	void	SetYourHostname(LPCTSTR pszHostname){m_strYourHostname = pszHostname;}
@@ -1401,6 +1381,7 @@ public:
 	static	UINT	GetMinFreeDiskSpace()				{return m_uMinFreeDiskSpace;}
 	static	bool	GetSparsePartFiles();
 	static	void	SetSparsePartFiles(bool bEnable)	{m_bSparsePartFiles = bEnable;}
+	static	bool	GetResolveSharedShellLinks()		{return m_bResolveSharedShellLinks;}
 
 	//Xman
 	/*
@@ -1430,6 +1411,7 @@ public:
 	static	void	LoadCats();
 	static	const CString& GetDateTimeFormat()			{return m_strDateTimeFormat;}
 	static	const CString& GetDateTimeFormat4Log()		{return m_strDateTimeFormat4Log;}
+	static	const CString& GetDateTimeFormat4Lists()	{return m_strDateTimeFormat4Lists;}
 
 	// Download Categories (Ornis)
 	static	int		AddCat(Category_Struct* cat)		{catMap.Add(cat); return catMap.GetCount()-1;}
@@ -1442,9 +1424,10 @@ public:
 	static	void	SetCatFilterNeg(int index, bool val);
 	static	Category_Struct* GetCategory(int index)		{if (index>=0 && index<catMap.GetCount()) return catMap.GetAt(index); else return NULL;}
 	static	const CString &GetCatPath(int index)		{return catMap.GetAt(index)->strIncomingPath;}
-	static	DWORD	GetCatColor(int index);
+	static	DWORD	GetCatColor(int index, int nDefault = COLOR_BTNTEXT);
 
 	static	bool	GetPreviewOnIconDblClk()			{return m_bPreviewOnIconDblClk;}
+	static	bool	GetCheckFileOpen()					{return m_bCheckFileOpen;}
 	static	bool	ShowRatingIndicator()				{return indicateratings;}
 	static	bool	WatchClipboard4ED2KLinks()			{return watchclipboard;}
 	static	bool	GetRemoveToBin()					{return m_bRemove2bin;}
@@ -1458,6 +1441,7 @@ public:
 
 	// WebServer
 	static	uint16	GetWSPort()							{return m_nWebPort;}
+	static	bool	GetWSUseUPnP()						{return m_bWebUseUPnP && GetWSIsEnabled();}
 	static	void	SetWSPort(uint16 uPort)				{m_nWebPort=uPort;}
 	static	const CString& GetWSPass()					{return m_strWebPassword;}
 	static	void	SetWSPass(CString strNewPass);
@@ -1623,6 +1607,7 @@ public:
 
 	static	bool	IsRememberingDownloadedFiles()		{return m_bRememberDownloadedFiles;}
 	static	bool	IsRememberingCancelledFiles()		{return m_bRememberCancelledFiles;}
+	static  bool	DoPartiallyPurgeOldKnownFiles()		{return m_bPartiallyPurgeOldKnownFiles;}
 	static	void	SetRememberDownloadedFiles(bool nv)	{m_bRememberDownloadedFiles = nv;}
 	static	void	SetRememberCancelledFiles(bool nv)	{m_bRememberCancelledFiles = nv;}
 	// mail notifier
@@ -1633,7 +1618,6 @@ public:
 
 	static	void	SetNotifierSendMail(bool nv)		{m_bNotifierSendMail = nv;}
 	static  bool	DoFlashOnNewMessage()				{return m_bIconflashOnNewMessage;}
-	static  void	ImportOldTableSetup();
 	static  void	IniCopy(CString si, CString di);
 
 	static	void	EstimateMaxUploadCap(uint32 nCurrentUpload);
@@ -1649,7 +1633,6 @@ public:
 	static bool		IsServerCryptLayerTCPRequested()	{return IsClientCryptLayerRequested();}
 	static uint32	GetKadUDPKey()						{return m_dwKadUDPKey;}
 	static uint8	GetCryptTCPPaddingLength()			{return m_byCryptTCPPaddingLength;}
-	static void		SetCryptTCPPaddingLength(int in)	{m_byCryptTCPPaddingLength = (uint8)((in>=10 && in<=254) ? in : 128);} //zz_fly :: hardlimit on CryptTCPPaddingLength
 
 	// UPnP
 	static bool		GetSkipWANIPSetup()					{return m_bSkipWANIPSetup;}
@@ -1658,14 +1641,10 @@ public:
 	static void		SetSkipWANIPSetup(bool nv)			{m_bSkipWANIPSetup = nv;}
 	static void		SetSkipWANPPPSetup(bool nv)			{m_bSkipWANPPPSetup = nv;}
 	static bool		CloseUPnPOnExit()					{return m_bCloseUPnPOnExit;}
-	//Xman official UPNP removed
-	/*
 	static bool		IsWinServUPnPImplDisabled()			{return m_bIsWinServImplDisabled;}
 	static bool		IsMinilibUPnPImplDisabled()			{return m_bIsMinilibImplDisabled;}
 	static int		GetLastWorkingUPnPImpl()			{return m_nLastWorkingImpl;}
 	static void		SetLastWorkingUPnPImpl(int val)		{m_nLastWorkingImpl = val;}
-	*/
-	//Xman end
 
 	// Spamfilter
 	static bool		IsSearchSpamFilterEnabled()			{return m_bEnableSearchResultFilter;}

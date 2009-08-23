@@ -65,7 +65,7 @@ int CAICHSyncThread::Run()
 	// we need to keep a lock on this file while the thread is running
 	CSingleLock lockKnown2Met(&CAICHHashSet::m_mutKnown2File);
 	lockKnown2Met.Lock();
-
+	
 	CSafeFile file;
 	bool bJustCreated = ConvertToKnown2ToKnown264(&file);
 	
@@ -180,10 +180,13 @@ int CAICHSyncThread::Run()
 	// removed all unused AICH hashsets from known2.met
 	//Xman remove unused AICH-hashes
 	/*
-	if (!thePrefs.IsRememberingDownloadedFiles() && liUsedHashs.GetCount() != liKnown2Hashs.GetCount()){
+	if (liUsedHashs.GetCount() != liKnown2Hashs.GetCount() && 
+		(!thePrefs.IsRememberingDownloadedFiles() || thePrefs.DoPartiallyPurgeOldKnownFiles()))
+	{
 	*/
-	if ((thePrefs.IsRememberingDownloadedFiles()==false || thePrefs.GetRememberAICH()==false)
-		&& liUsedHashs.GetCount() != liKnown2Hashs.GetCount()){
+	if (liUsedHashs.GetCount() != liKnown2Hashs.GetCount() && 
+		(!thePrefs.IsRememberingDownloadedFiles() || thePrefs.DoPartiallyPurgeOldKnownFiles() || !thePrefs.GetRememberAICH()))
+	{
 	//Xman end
 		file.SeekToBegin();
 		try {
@@ -197,13 +200,20 @@ int CAICHSyncThread::Run()
 			ULONGLONG posWritePos = file.GetPosition();
 			ULONGLONG posReadPos = file.GetPosition();
 			uint32 nPurgeCount = 0;
+			uint32 nPurgeBecauseOld = 0;
 			while (file.GetPosition() < nExistingSize){
 				CAICHHash aichHash(&file);
 				nHashCount = file.ReadUInt32();
 				if (file.GetPosition() + nHashCount*CAICHHash::GetHashSize() > nExistingSize){
 					AfxThrowFileException(CFileException::endOfFile, 0, file.GetFileName());
 				}
-				if (liUsedHashs.Find(aichHash) == NULL){
+				//Xman remove unused AICH-hashes
+				/*
+				if (!thePrefs.IsRememberingDownloadedFiles() && liUsedHashs.Find(aichHash) == NULL)
+				*/
+				if ((!thePrefs.IsRememberingDownloadedFiles() || !thePrefs.GetRememberAICH()) && liUsedHashs.Find(aichHash) == NULL)
+				//Xman end
+				{
 					// unused hashset skip the rest of this hashset
 					file.Seek(nHashCount*CAICHHash::GetHashSize(), CFile::current);
 					nPurgeCount++;
@@ -212,7 +222,14 @@ int CAICHSyncThread::Run()
 					if(posk2h)
 						liKnown2Hashs.RemoveAt(posk2h);
 					//Xman end
-
+				}
+				else if (thePrefs.IsRememberingDownloadedFiles() && theApp.knownfiles->ShouldPurgeAICHHashset(aichHash))
+				{
+					ASSERT( thePrefs.DoPartiallyPurgeOldKnownFiles() );
+					// also unused (purged) hashset skip the rest of this hashset
+					file.Seek(nHashCount*CAICHHash::GetHashSize(), CFile::current);
+					nPurgeCount++;
+					nPurgeBecauseOld++;
 				}
 				else if(nPurgeCount == 0){
 					// used Hashset, but it does not need to be moved as nothing changed yet
@@ -235,7 +252,8 @@ int CAICHSyncThread::Run()
 			}
 			posReadPos = file.GetPosition();
 			file.SetLength(posWritePos);
-			theApp.QueueDebugLogLine(false, _T("Cleaned up known2.met, removed %u hashsets (%s)"), nPurgeCount, CastItoXBytes(posReadPos-posWritePos)); 
+			theApp.QueueDebugLogLine(false, _T("Cleaned up known2.met, removed %u hashsets and purged %u hashsets of old known files (%s)")
+				, nPurgeCount - nPurgeBecauseOld, nPurgeBecauseOld, CastItoXBytes(posReadPos-posWritePos)); 
 
 			file.Flush();
 			file.Close();
@@ -284,7 +302,6 @@ int CAICHSyncThread::Run()
 	//Xman remark: it is important that this code is done while known2met is locked
 	//to not delete a just generated, new Hash
 	//Xman end
-
 
 	lockKnown2Met.Unlock();
 	// warn the user if he just upgraded

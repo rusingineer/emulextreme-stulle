@@ -24,12 +24,8 @@
 #include "Statistics.h"
 #include "ListenSocket.h"
 #include "ClientUDPSocket.h"
-//Xman official UPNP removed
-/*
 #include "UPnPImpl.h"
 #include "UPnPImplWrapper.h"
-*/
-//Xman end
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -267,24 +263,16 @@ public:
 	virtual ~CPPgWiz1Ports();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnStartConTest();
-	//Xman official UPNP removed
-	/*
 	afx_msg void OnStartUPnP();
-	*/
-	//Xman end
 	afx_msg void OnEnChangeUDPDisable();
 
 	afx_msg void OnEnChangeUDP();
 	afx_msg void OnEnChangeTCP();
-	//Xman official UPNP removed
-	/*
 	afx_msg void OnTimer(UINT nIDEvent);
-
+	
 	BOOL	OnKillActive();
 	void	OnOK();
 	void	OnCancel();
-	*/
-	//Xman end
 
 	void OnPortChange();
 
@@ -298,21 +286,13 @@ public:
 	enum { IDD = IDD_WIZ1_PORTS };
 
 protected:
-	CString lastudp;
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//Xman official UPNP removed
-	/*
+	CString			lastudp;
+	virtual void	DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	void			ResetUPnPProgress();
-	*/
-	//Xman end
 
 	DECLARE_MESSAGE_MAP()
 
-	//Xman official UPNP removed
-	/*
 	int m_nUPnPTicks;
-	*/
-	//Xman end
 };
 
 IMPLEMENT_DYNAMIC(CPPgWiz1Ports, CDlgPageWizard)
@@ -320,18 +300,10 @@ IMPLEMENT_DYNAMIC(CPPgWiz1Ports, CDlgPageWizard)
 BEGIN_MESSAGE_MAP(CPPgWiz1Ports, CDlgPageWizard)
 	ON_BN_CLICKED(IDC_STARTTEST, OnStartConTest)
 	ON_BN_CLICKED(IDC_UDPDISABLE, OnEnChangeUDPDisable)
-	//Xman official UPNP removed
-	/*
 	ON_BN_CLICKED(IDC_UPNPSTART, OnStartUPnP)
-	*/
-	//Xman end
 	ON_EN_CHANGE(IDC_TCP, OnEnChangeTCP)
 	ON_EN_CHANGE(IDC_UDP, OnEnChangeUDP)
-	//Xman official UPNP removed
-	/*
 	ON_WM_TIMER()
-	*/
-	//Xman end
 END_MESSAGE_MAP()
 
 CPPgWiz1Ports::CPPgWiz1Ports()
@@ -388,8 +360,6 @@ void CPPgWiz1Ports::OnPortChange() {
 	GetDlgItem(IDC_STARTTEST)->EnableWindow(flag);
 }
 
-//Xman official UPNP removed
-/*
 BOOL CPPgWiz1Ports::OnKillActive(){
 	ResetUPnPProgress();
 	return CDlgPageWizard::OnKillActive();
@@ -417,7 +387,7 @@ void CPPgWiz1Ports::OnStartUPnP() {
 	VERIFY( SetTimer(1, 1000, NULL) );
 }
 
-void CPPgWiz1Ports::OnTimer(UINT /*nIDEvent*//*){
+void CPPgWiz1Ports::OnTimer(UINT /*nIDEvent*/){
 	m_nUPnPTicks++;
 	if (theApp.m_pUPnPFinder && theApp.m_pUPnPFinder->GetImplementation()->ArePortsForwarded() == TRIS_UNKNOWN)
 	{
@@ -447,8 +417,6 @@ void CPPgWiz1Ports::ResetUPnPProgress(){
 	((CProgressCtrl*)GetDlgItem(IDC_UPNPPROGRESS))->SetPos(0);
 	GetDlgItem(IDC_UPNPSTART)->EnableWindow(TRUE);
 }
-*/
-//Xman end
 
 // **
 
@@ -483,11 +451,7 @@ BOOL CPPgWiz1Ports::OnInitDialog()
 	CDlgPageWizard::OnInitDialog();
 	CheckDlgButton(IDC_UDPDISABLE, m_sUDP.IsEmpty() || m_sUDP == _T("0"));
 	GetDlgItem(IDC_UDP)->EnableWindow(IsDlgButtonChecked(IDC_UDPDISABLE) == 0);
-	//Xman official UPNP removed
-	/*
 	((CProgressCtrl*)GetDlgItem(IDC_UPNPPROGRESS))->SetRange(0, 40);
-	*/
-	//Xman end
 	InitWindowStyles(this);
 	
 	lastudp = m_sUDP;
@@ -498,12 +462,8 @@ BOOL CPPgWiz1Ports::OnInitDialog()
 	SetDlgItemText(IDC_TESTINFO , GetResString(IDS_TESTINFO) );
 	SetDlgItemText(IDC_STARTTEST, GetResString(IDS_STARTTEST) );
 	SetDlgItemText(IDC_UDPDISABLE, GetResString(IDS_UDPDISABLED));
-	//Xman official UPNP removed
-	/*
 	SetDlgItemText(IDC_UPNPSTART, GetResString(IDS_UPNPSTART));
 	SetDlgItemText(IDC_UPNPSTATUS, _T(""));
-	*/
-	//Xman end
 
 	return TRUE;
 }
@@ -522,7 +482,7 @@ void CPPgWiz1Ports::OnEnChangeUDPDisable()
 	
 	if (m_pbUDPDisabled != NULL)
 		*m_pbUDPDisabled = disabled;
-
+	
 	OnPortChange();
 }
 

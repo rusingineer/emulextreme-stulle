@@ -67,7 +67,7 @@ static char THIS_FILE[] = __FILE__;
 
 /* Xman moved down
 static uint32 counter, sec, statsave;
-static UINT _uSaveStatistics = 0;
+static UINT s_uSaveStatistics = 0;
 // -khaos--+++> Added iupdateconnstats...
 static uint32 igraph, istats, iupdateconnstats;
 // <-----khaos-
@@ -281,8 +281,8 @@ CUpDownClient* CUploadQueue::FindBestClientInQueue()
 		return bestaddpowerclient;
 	}
 	//Xman end
-	else
-		return waitinglist.GetAt(toadd);
+    else
+	    return waitinglist.GetAt(toadd);
 }
 
 void CUploadQueue::InsertInUploadingList(CUpDownClient* newclient) 
@@ -296,7 +296,7 @@ void CUploadQueue::InsertInUploadingList(CUpDownClient* newclient)
     // Add it last
     theApp.uploadBandwidthThrottler->AddToStandardList(uploadinglist.GetCount(), newclient->GetFileUploadSocket());
 	uploadinglist.AddTail(newclient);
-	newclient->SetSlotNumber(uploadinglist.GetCount());
+    newclient->SetSlotNumber(uploadinglist.GetCount());
 	*/
 	if (newclient->GetFriendSlot())
 	{
@@ -361,7 +361,7 @@ bool CUploadQueue::AddUpNextClient(LPCTSTR pszReason, CUpDownClient* directadd){
 			DebugSend("OP__AcceptUploadReq", newclient);
 		Packet* packet = new Packet(OP_ACCEPTUPLOADREQ,0);
 		theStats.AddUpDataOverheadFileRequest(packet->size);
-		newclient->socket->SendPacket(packet,true);
+		newclient->SendPacket(packet, true);
 		newclient->SetUploadState(US_UPLOADING);
 		//Xman find best sources
 		//Xman: in every case, we add this client to our downloadqueue
@@ -411,11 +411,11 @@ void CUploadQueue::UpdateActiveClientsInfo(DWORD curTick) {
     if(thePrefs.GetLogUlDlEvents() && theApp.uploadBandwidthThrottler->GetStandardListSize() > (uint32)uploadinglist.GetSize()) {
         // debug info, will remove this when I'm done.
         //AddDebugLogLine(false, _T("UploadQueue: Error! Throttler has more slots than UploadQueue! Throttler: %i UploadQueue: %i Tick: %i"), theApp.uploadBandwidthThrottler->GetStandardListSize(), uploadinglist.GetSize(), ::GetTickCount());
-
-		if(tempHighest > (uint32)uploadinglist.GetSize()+1) {
-        	tempHighest = uploadinglist.GetSize()+1;
-		}
     }
+	
+	if(tempHighest > (uint32)uploadinglist.GetSize()+1) {
+        tempHighest = uploadinglist.GetSize()+1;
+	}
 
     m_iHighestNumberOfFullyActivatedSlotsSinceLastCall = tempHighest;
 
@@ -957,7 +957,7 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 		Packet* replypacket = new Packet(OP_FILEREQANSNOFIL, 16);
 		md4cpy(replypacket->pBuffer, client->GetUploadFileID());
 		theStats.AddUpDataOverheadFileRequest(replypacket->size);
-		client->socket->SendPacket(replypacket, true);
+		client->SendPacket(replypacket, true);
 		return;
 	}
 	//Xman end
@@ -1125,7 +1125,7 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 	if (reqfile)
 	*/
 	//Xman end
-	reqfile->statistic.AddRequest();
+		reqfile->statistic.AddRequest();
 
 	//Xman
 	if (client->IsDownloading())
@@ -1154,7 +1154,7 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 
 		Packet* packet = new Packet(OP_ACCEPTUPLOADREQ,0);
 		theStats.AddUpDataOverheadFileRequest(packet->size);
-		client->socket->SendPacket(packet,true);
+		client->SendPacket(packet, true);
 		//AddDebugLogLine(false,_T("-->sending ACCEPTUPLOADREQ a second time: %s"), client->DbgGetClientInfo());
 		return;
 	}
@@ -1178,11 +1178,11 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 	else
 		client->SetCollectionUploadSlot(false);
 
-	// cap the list
-	// the queue limit in prefs is only a soft limit. Hard limit is 25% higher, to let in powershare clients and other
-	// high ranking clients after soft limit has been reached
-	uint32 softQueueLimit = thePrefs.GetQueueSize();
-	uint32 hardQueueLimit = thePrefs.GetQueueSize() + max(thePrefs.GetQueueSize()/4, 200);
+   // cap the list
+    // the queue limit in prefs is only a soft limit. Hard limit is 25% higher, to let in powershare clients and other
+    // high ranking clients after soft limit has been reached
+    uint32 softQueueLimit = thePrefs.GetQueueSize();
+    uint32 hardQueueLimit = thePrefs.GetQueueSize() + max(thePrefs.GetQueueSize()/4, 200);
 
     // if soft queue limit has been reached, only let in high ranking clients
     if ((uint32)waitinglist.GetCount() >= hardQueueLimit ||
@@ -1214,7 +1214,7 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 			DebugSend("OP__AcceptUploadReq", client);
 		Packet* packet = new Packet(OP_ACCEPTUPLOADREQ,0);
 		theStats.AddUpDataOverheadFileRequest(packet->size);
-		client->socket->SendPacket(packet,true);
+		client->SendPacket(packet, true);
 		return;
 	}
 	*/
@@ -1829,10 +1829,10 @@ UINT CUploadQueue::GetWaitingPosition(CUpDownClient* client){
 					theApp.ResetStandByIdleTimer(); // Reset Windows idle standby timer if necessary
 			}
 
-			_uSaveStatistics++;
-			if (_uSaveStatistics >= thePrefs.GetStatsSaveInterval())
+			s_uSaveStatistics++;
+			if (s_uSaveStatistics >= thePrefs.GetStatsSaveInterval())
 			{
-				_uSaveStatistics = 0;
+				s_uSaveStatistics = 0;
 				thePrefs.SaveStats();
 			}
 		}
@@ -2021,10 +2021,10 @@ void CUploadQueue::UploadTimer()
 					theApp.ResetStandByIdleTimer(); // Reset Windows idle standby timer if necessary
 			}
 
-			static UINT _uSaveStatistics; _uSaveStatistics++;
-			if (_uSaveStatistics >= thePrefs.GetStatsSaveInterval())
+			static UINT s_uSaveStatistics; s_uSaveStatistics++;
+			if (s_uSaveStatistics >= thePrefs.GetStatsSaveInterval())
 			{
-				_uSaveStatistics = 0;
+				s_uSaveStatistics = 0;
 				thePrefs.SaveStats();
 			}
 

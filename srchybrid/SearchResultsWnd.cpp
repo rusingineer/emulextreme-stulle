@@ -59,7 +59,7 @@ static char THIS_FILE[] = __FILE__;
 extern int yyparse();
 extern int yyerror(const char* errstr);
 extern int yyerror(LPCTSTR errstr);
-extern LPCTSTR _aszInvKadKeywordChars;
+extern LPCTSTR g_aszInvKadKeywordChars;
 
 enum ESearchTimerID
 {
@@ -96,7 +96,6 @@ BEGIN_MESSAGE_MAP(CSearchResultsWnd, CResizableFormView)
 	ON_WM_DESTROY()
 	ON_WM_SYSCOLORCHANGE()
 	ON_WM_CTLCOLOR()
-	ON_WM_SIZE()
 	ON_WM_CLOSE()
 	ON_WM_CREATE()
 	ON_WM_HELPINFO()
@@ -128,12 +127,7 @@ CSearchResultsWnd::CSearchResultsWnd(CWnd* /*pParent*/)
 CSearchResultsWnd::~CSearchResultsWnd()
 {
 	delete m_cattabs;
-	//zz_fly, fix minor official draw bug around SharedFiles Filter on Language change
-	// X-Ray :: FiXeS :: Bugfix :: Start :: WiZaRd
-	/*
 	m_ctlSearchListHeader.Detach();
-	*/
-	// X-Ray :: FiXeS :: Bugfix :: End :: WiZaRd
 	delete m_btnSearchListMenu;
 	if (globsearch)
 		delete searchpacket;
@@ -146,14 +140,9 @@ void CSearchResultsWnd::OnInitialUpdate()
 	CResizableFormView::OnInitialUpdate();
 	InitWindowStyles(this);
 	theApp.searchlist->SetOutputWnd(&searchlistctrl);
-	//zz_fly, fix minor official draw bug around SharedFiles Filter on Language change
-	// X-Ray :: FiXeS :: Bugfix :: Start :: WiZaRd
-	/*
 	m_ctlSearchListHeader.Attach(searchlistctrl.GetHeaderCtrl()->Detach());
-	*/
-	// X-Ray :: FiXeS :: Bugfix :: End :: WiZaRd
 	searchlistctrl.Init(theApp.searchlist);
-	searchlistctrl.SetName(_T("SearchListCtrl"));
+	searchlistctrl.SetPrefsKey(_T("SearchListCtrl"));
 
 	CRect rc;
 	rc.top = 2;
@@ -163,17 +152,12 @@ void CSearchResultsWnd::OnInitialUpdate()
 	m_btnSearchListMenu->Init(true, true);
 	m_btnSearchListMenu->MoveWindow(&rc);
 	m_btnSearchListMenu->AddBtnStyle(IDC_SEARCHLST_ICO, TBSTYLE_AUTOSIZE);
-	m_btnSearchListMenu->ModifyStyle(TBSTYLE_TOOLTIPS, 0);
+	// Vista: Remove the TBSTYLE_TRANSPARENT to avoid flickering (can be done only after the toolbar was initially created with TBSTYLE_TRANSPARENT !?)
+	m_btnSearchListMenu->ModifyStyle(TBSTYLE_TOOLTIPS | ((theApp.m_ullComCtrlVer >= MAKEDLLVERULL(6, 16, 0, 0)) ? TBSTYLE_TRANSPARENT : 0), 0);
 	m_btnSearchListMenu->SetExtendedStyle(m_btnSearchListMenu->GetExtendedStyle() & ~TBSTYLE_EX_MIXEDBUTTONS);
 	m_btnSearchListMenu->RecalcLayout(true);
 
-	//zz_fly, fix minor official draw bug around SharedFiles Filter on Language change
-	// X-Ray :: FiXeS :: Bugfix :: Start :: WiZaRd
-	/*
 	m_ctlFilter.OnInit(&m_ctlSearchListHeader);
-	*/
-	m_ctlFilter.OnInit(searchlistctrl.GetHeaderCtrl());
-	// X-Ray :: FiXeS :: Bugfix :: End :: WiZaRd
 
 	SetAllIcons();
 	Localize();
@@ -494,7 +478,7 @@ void CSearchResultsWnd::SearchCanceled(UINT uSearchID)
 			m_pwndParams->m_ctlCancel.EnableWindow(FALSE);
 			if (pWndFocus && pWndFocus->m_hWnd == m_pwndParams->m_ctlCancel.m_hWnd)
 				m_pwndParams->m_ctlName.SetFocus();
-			m_pwndParams->m_ctlStart.EnableWindow(TRUE);
+			m_pwndParams->m_ctlStart.EnableWindow(m_pwndParams->m_ctlName.GetWindowTextLength() > 0);
 		}
 	}
 }
@@ -628,15 +612,14 @@ void CSearchResultsWnd::SetAllIcons()
 	m_btnSearchListMenu->SetIcon(_T("SearchResults"));
 
 	CImageList iml;
-	iml.Create(16,16,theApp.m_iDfltImageListColorFlags|ILC_MASK,0,1);
-	iml.SetBkColor(CLR_NONE);
-	iml.Add(CTempIconLoader(_T("SearchMethod_ServerActive"), 16, 16));
-	iml.Add(CTempIconLoader(_T("SearchMethod_GlobalActive"), 16, 16));
-	iml.Add(CTempIconLoader(_T("SearchMethod_KademliaActive"), 16, 16));
-	iml.Add(CTempIconLoader(_T("StatsClients"), 16, 16));
-	iml.Add(CTempIconLoader(_T("SearchMethod_SERVER"), 16, 16));
-	iml.Add(CTempIconLoader(_T("SearchMethod_GLOBAL"), 16, 16));
-	iml.Add(CTempIconLoader(_T("SearchMethod_KADEMLIA"), 16, 16));
+	iml.Create(16, 16, theApp.m_iDfltImageListColorFlags | ILC_MASK, 0, 1);
+	iml.Add(CTempIconLoader(_T("SearchMethod_ServerActive")));
+	iml.Add(CTempIconLoader(_T("SearchMethod_GlobalActive")));
+	iml.Add(CTempIconLoader(_T("SearchMethod_KademliaActive")));
+	iml.Add(CTempIconLoader(_T("StatsClients")));
+	iml.Add(CTempIconLoader(_T("SearchMethod_SERVER")));
+	iml.Add(CTempIconLoader(_T("SearchMethod_GLOBAL")));
+	iml.Add(CTempIconLoader(_T("SearchMethod_KADEMLIA")));
 	searchselect.SetImageList(&iml);
 	m_imlSearchResults.DeleteImageList();
 	m_imlSearchResults.Attach(iml.Detach());
@@ -646,6 +629,7 @@ void CSearchResultsWnd::SetAllIcons()
 void CSearchResultsWnd::Localize()
 {
 	searchlistctrl.Localize();
+	m_ctlFilter.ShowColumnText(true);
 	UpdateCatTabs();
 
     GetDlgItem(IDC_CLEARALL)->SetWindowText(GetResString(IDS_REMOVEALLSEARCH));
@@ -715,49 +699,49 @@ CString DbgGetSearchOperatorName(UINT uOperator)
 	return _aszEd2kOps[uOperator];
 }
 
-static CStringA _strCurKadKeywordA;
-static CSearchExpr _SearchExpr;
-CStringArray _astrParserErrors;
+static CStringA s_strCurKadKeywordA;
+static CSearchExpr s_SearchExpr;
+CStringArray g_astrParserErrors;
 
-static TCHAR _chLastChar = 0;
-static CString _strSearchTree;
+static TCHAR s_chLastChar = 0;
+static CString s_strSearchTree;
 
 bool DumpSearchTree(int& iExpr, const CSearchExpr& rSearchExpr, int iLevel, bool bFlat)
 {
 	if (iExpr >= rSearchExpr.m_aExpr.GetCount())
 		return false;
 	if (!bFlat)
-		_strSearchTree += _T('\n') + CString(_T(' '), iLevel);
+		s_strSearchTree += _T('\n') + CString(_T(' '), iLevel);
 	const CSearchAttr& rSearchAttr = rSearchExpr.m_aExpr[iExpr++];
 	CStringA strTok = rSearchAttr.m_str;
 	if (strTok == SEARCHOPTOK_AND || strTok == SEARCHOPTOK_OR || strTok == SEARCHOPTOK_NOT)
 	{
 		if (bFlat) {
-			if (_chLastChar != _T('(') && _chLastChar != _T('\0'))
-				_strSearchTree.AppendFormat(_T(" "));
+			if (s_chLastChar != _T('(') && s_chLastChar != _T('\0'))
+				s_strSearchTree.AppendFormat(_T(" "));
 		}
-		_strSearchTree.AppendFormat(_T("(%hs "), strTok.Mid(1));
-		_chLastChar = _T('(');
+		s_strSearchTree.AppendFormat(_T("(%hs "), strTok.Mid(1));
+		s_chLastChar = _T('(');
 		DumpSearchTree(iExpr, rSearchExpr, iLevel + 4, bFlat);
 		DumpSearchTree(iExpr, rSearchExpr, iLevel + 4, bFlat);
-		_strSearchTree.AppendFormat(_T(")"));
-		_chLastChar = _T(')');
+		s_strSearchTree.AppendFormat(_T(")"));
+		s_chLastChar = _T(')');
 	}
 	else
 	{
 		if (bFlat) {
-			if (_chLastChar != _T('(') && _chLastChar != _T('\0'))
-				_strSearchTree.AppendFormat(_T(" "));
+			if (s_chLastChar != _T('(') && s_chLastChar != _T('\0'))
+				s_strSearchTree.AppendFormat(_T(" "));
 		}
-		_strSearchTree += rSearchAttr.DbgGetAttr();
-		_chLastChar = _T('\1');
+		s_strSearchTree += rSearchAttr.DbgGetAttr();
+		s_chLastChar = _T('\1');
 	}
 	return true;
 }
 
 bool DumpSearchTree(const CSearchExpr& rSearchExpr, bool bFlat)
 {
-	_chLastChar = _T('\0');
+	s_chLastChar = _T('\0');
 	int iExpr = 0;
 	int iLevel = 0;
 	return DumpSearchTree(iExpr, rSearchExpr, iLevel, bFlat);
@@ -817,10 +801,33 @@ void ParsedSearchExpression(const CSearchExpr* pexpr)
 	if (iOpAnd + iOpOr + iOpNot > 10)
 		yyerror(GetResString(IDS_SEARCH_TOOCOMPLEX));
 
-	_SearchExpr.m_aExpr.RemoveAll();
+	s_SearchExpr.m_aExpr.RemoveAll();
 	// optimize search expression, if no OR nor NOT specified
 	if (iOpAnd > 0 && iOpOr == 0 && iOpNot == 0 && iNonDefTags == 0)
 	{
+		
+		// figure out if we can use a better keyword than the one the user selected
+		// for example most user will search like this "The oxymoronaccelerator 2", which would ask the node which indexes "the"
+		// This causes higher traffic for such nodes and makes them a viable target to attackers, while the kad result should be
+		// the same or even better if we ask the node which indexes the rare keyword "oxymoronaccelerator", so we try to rearrenge
+		// keywords and generally assume that the longer keywords are rarer
+		if (thePrefs.GetRearrangeKadSearchKeywords() && !s_strCurKadKeywordA.IsEmpty())
+		{
+			for (int i = 0; i < pexpr->m_aExpr.GetCount(); i++)
+			{
+				if (pexpr->m_aExpr[i].m_str != SEARCHOPTOK_AND)
+				{
+					if (pexpr->m_aExpr[i].m_str != s_strCurKadKeywordA 
+						&& pexpr->m_aExpr[i].m_str.FindOneOf(g_aszInvKadKeywordCharsA) == (-1)
+						&& pexpr->m_aExpr[i].m_str.GetLength() >= 3
+						&& s_strCurKadKeywordA.GetLength() < pexpr->m_aExpr[i].m_str.GetLength())
+					{
+						s_strCurKadKeywordA = pexpr->m_aExpr[i].m_str;
+					}
+				}
+			}
+		}
+
 		CStringA strAndTerms;
 		for (int i = 0; i < pexpr->m_aExpr.GetCount(); i++)
 		{
@@ -830,7 +837,7 @@ void ParsedSearchExpression(const CSearchExpr* pexpr)
 				// Minor optimization: Because we added the Kad keyword to the boolean search expression,
 				// we remove it here (and only here) again because we know that the entire search expression
 				// does only contain (implicit) ANDed strings.
-				if (pexpr->m_aExpr[i].m_str != _strCurKadKeywordA)
+				if (pexpr->m_aExpr[i].m_str != s_strCurKadKeywordA)
 				{
 					if (!strAndTerms.IsEmpty())
 						strAndTerms += ' ';
@@ -838,14 +845,14 @@ void ParsedSearchExpression(const CSearchExpr* pexpr)
 				}
 			}
 		}
-		ASSERT( _SearchExpr.m_aExpr.GetCount() == 0);
-		_SearchExpr.m_aExpr.Add(CSearchAttr(strAndTerms));
+		ASSERT( s_SearchExpr.m_aExpr.GetCount() == 0);
+		s_SearchExpr.m_aExpr.Add(CSearchAttr(strAndTerms));
 	}
 	else
 	{
 		if (pexpr->m_aExpr.GetCount() != 1
-			|| !(pexpr->m_aExpr[0].m_iTag == FT_FILENAME && pexpr->m_aExpr[0].m_str == _strCurKadKeywordA))
-			_SearchExpr.m_aExpr.Append(pexpr->m_aExpr);
+			|| !(pexpr->m_aExpr[0].m_iTag == FT_FILENAME && pexpr->m_aExpr[0].m_str == s_strCurKadKeywordA))
+			s_SearchExpr.m_aExpr.Append(pexpr->m_aExpr);
 	}
 }
 
@@ -970,20 +977,20 @@ protected:
 	bool* m_pbPacketUsing64Bit;
 };
 
-static CSearchExpr _SearchExpr2;
+static CSearchExpr s_SearchExpr2;
 
 static void AddAndAttr(UINT uTag, const CString& rstr)
 {
-	_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(uTag, StrToUtf8(rstr)));
-	if (_SearchExpr2.m_aExpr.GetCount() > 1)
-		_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(SEARCHOPTOK_AND));
+	s_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(uTag, StrToUtf8(rstr)));
+	if (s_SearchExpr2.m_aExpr.GetCount() > 1)
+		s_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(SEARCHOPTOK_AND));
 }
 
 static void AddAndAttr(UINT uTag, UINT uOpr, uint64 ullVal)
 {
-	_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(uTag, uOpr, ullVal));
-	if (_SearchExpr2.m_aExpr.GetCount() > 1)
-		_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(SEARCHOPTOK_AND));
+	s_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(uTag, uOpr, ullVal));
+	if (s_SearchExpr2.m_aExpr.GetCount() > 1)
+		s_SearchExpr2.m_aExpr.InsertAt(0, CSearchAttr(SEARCHOPTOK_AND));
 }
 
 bool GetSearchPacket(CSafeMemFile* pData, SSearchParams* pParams, bool bTargetSupports64Bit, bool* pbPacketUsing64Bit)
@@ -1004,12 +1011,12 @@ bool GetSearchPacket(CSafeMemFile* pData, SSearchParams* pParams, bool bTargetSu
 		strFileType = pParams->strFileType;
 	}
 
-	_strCurKadKeywordA.Empty();
+	s_strCurKadKeywordA.Empty();
 	ASSERT( !pParams->strExpression.IsEmpty() );
 	if (pParams->eType == SearchTypeKademlia)
 	{
 		ASSERT( !pParams->strKeyword.IsEmpty() );
-		_strCurKadKeywordA = StrToUtf8(pParams->strKeyword);
+		s_strCurKadKeywordA = StrToUtf8(pParams->strKeyword);
 	}
 	if (pParams->strBooleanExpr.IsEmpty())
 		pParams->strBooleanExpr = pParams->strExpression;
@@ -1019,46 +1026,41 @@ bool GetSearchPacket(CSafeMemFile* pData, SSearchParams* pParams, bool bTargetSu
 	//TRACE(_T("Raw search expr:\n"));
 	//TRACE(_T("%s"), pParams->strBooleanExpr);
 	//TRACE(_T("  %s\n"), DbgGetHexDump((uchar*)(LPCTSTR)pParams->strBooleanExpr, pParams->strBooleanExpr.GetLength()*sizeof(TCHAR)));
-	_astrParserErrors.RemoveAll();
-	_SearchExpr.m_aExpr.RemoveAll();
+	g_astrParserErrors.RemoveAll();
+	s_SearchExpr.m_aExpr.RemoveAll();
 	if (!pParams->strBooleanExpr.IsEmpty())
 	{
-		// check this here again, we could have been called from Webinterface or MM
-		if (!pParams->bUnicode)
-		{
-			CStringA strACP(pParams->strBooleanExpr);
-			if (!IsValidEd2kStringA(strACP)){
-				CString strError(GetResString(IDS_SEARCH_EXPRERROR) + _T("\n\n") + GetResString(IDS_SEARCH_INVALIDCHAR));
-				throw new CMsgBoxException(strError, MB_ICONWARNING | MB_HELP, eMule_FAQ_Search - HID_BASE_PROMPT);
-			}
-		}
-
 	    LexInit(pParams->strBooleanExpr, true);
 	    int iParseResult = yyparse();
 	    LexFree();
-	    if (_astrParserErrors.GetSize() > 0)
+	    if (g_astrParserErrors.GetSize() > 0)
 		{
-		    _SearchExpr.m_aExpr.RemoveAll();
-			CString strError(GetResString(IDS_SEARCH_EXPRERROR) + _T("\n\n") + _astrParserErrors[_astrParserErrors.GetSize() - 1]);
+		    s_SearchExpr.m_aExpr.RemoveAll();
+			CString strError(GetResString(IDS_SEARCH_EXPRERROR) + _T("\n\n") + g_astrParserErrors[g_astrParserErrors.GetSize() - 1]);
 		    throw new CMsgBoxException(strError, MB_ICONWARNING | MB_HELP, eMule_FAQ_Search - HID_BASE_PROMPT);
 	    }
 	    else if (iParseResult != 0)
 		{
-		    _SearchExpr.m_aExpr.RemoveAll();
+		    s_SearchExpr.m_aExpr.RemoveAll();
 			CString strError(GetResString(IDS_SEARCH_EXPRERROR) + _T("\n\n") + GetResString(IDS_SEARCH_GENERALERROR));
 		    throw new CMsgBoxException(strError, MB_ICONWARNING | MB_HELP, eMule_FAQ_Search - HID_BASE_PROMPT);
 	    }
+		if (pParams->eType == SearchTypeKademlia && s_strCurKadKeywordA != StrToUtf8(pParams->strKeyword))
+		{
+			DebugLog(_T("KadSearch: Keyword was rearranged, using %s instead of %s"), OptUtf8ToStr(s_strCurKadKeywordA), pParams->strKeyword);	
+			pParams->strKeyword = OptUtf8ToStr(s_strCurKadKeywordA);
+		}
 	}
 	//TRACE(_T("Parsed search expr:\n"));
-	//for (int i = 0; i < _SearchExpr.m_aExpr.GetCount(); i++){
-	//	TRACE(_T("%hs"), _SearchExpr.m_aExpr[i]);
-	//	TRACE(_T("  %s\n"), DbgGetHexDump((uchar*)(LPCSTR)_SearchExpr.m_aExpr[i], _SearchExpr.m_aExpr[i].GetLength()*sizeof(CHAR)));
+	//for (int i = 0; i < s_SearchExpr.m_aExpr.GetCount(); i++){
+	//	TRACE(_T("%hs"), s_SearchExpr.m_aExpr[i]);
+	//	TRACE(_T("  %s\n"), DbgGetHexDump((uchar*)(LPCSTR)s_SearchExpr.m_aExpr[i], s_SearchExpr.m_aExpr[i].GetLength()*sizeof(CHAR)));
 	//}
 
 	// create ed2k search expression
-	CSearchExprTarget target(pData, pParams->bUnicode ? utf8strRaw : utf8strNone, bTargetSupports64Bit, pbPacketUsing64Bit);
+	CSearchExprTarget target(pData, utf8strRaw, bTargetSupports64Bit, pbPacketUsing64Bit);
 
-	_SearchExpr2.m_aExpr.RemoveAll();
+	s_SearchExpr2.m_aExpr.RemoveAll();
 
 	if (!pParams->strExtension.IsEmpty())
 		AddAndAttr(FT_FILEFORMAT, pParams->strExtension);
@@ -1096,23 +1098,23 @@ bool GetSearchPacket(CSafeMemFile* pData, SSearchParams* pParams, bool bTargetSu
 	if (!pParams->strArtist.IsEmpty())
 		AddAndAttr(FT_MEDIA_ARTIST, pParams->strArtist);
 
-	if (_SearchExpr2.m_aExpr.GetCount() > 0)
+	if (s_SearchExpr2.m_aExpr.GetCount() > 0)
 	{
-		if (_SearchExpr.m_aExpr.GetCount() > 0)
-			_SearchExpr.m_aExpr.InsertAt(0, CSearchAttr(SEARCHOPTOK_AND));
-		_SearchExpr.Add(&_SearchExpr2);
+		if (s_SearchExpr.m_aExpr.GetCount() > 0)
+			s_SearchExpr.m_aExpr.InsertAt(0, CSearchAttr(SEARCHOPTOK_AND));
+		s_SearchExpr.Add(&s_SearchExpr2);
 	}
 
 	if (thePrefs.GetVerbose())
 	{
-		_strSearchTree.Empty();
-		DumpSearchTree(_SearchExpr, true);
-		DebugLog(_T("Search Expr: %s"), _strSearchTree);
+		s_strSearchTree.Empty();
+		DumpSearchTree(s_SearchExpr, true);
+		DebugLog(_T("Search Expr: %s"), s_strSearchTree);
 	}
 
-	for (int j = 0; j < _SearchExpr.m_aExpr.GetCount(); j++)
+	for (int j = 0; j < s_SearchExpr.m_aExpr.GetCount(); j++)
 	{
-		const CSearchAttr& rSearchAttr = _SearchExpr.m_aExpr[j];
+		const CSearchAttr& rSearchAttr = s_SearchExpr.m_aExpr[j];
 		const CStringA& rstrA = rSearchAttr.m_str;
 		if (rstrA == SEARCHOPTOK_AND)
 		{
@@ -1165,8 +1167,8 @@ bool GetSearchPacket(CSafeMemFile* pData, SSearchParams* pParams, bool bTargetSu
 
 	if (thePrefs.GetDebugServerSearchesLevel() > 0)
 		Debug(_T("Search Data: %s\n"), target.GetDebugString());
-	_SearchExpr.m_aExpr.RemoveAll();
-	_SearchExpr2.m_aExpr.RemoveAll();
+	s_SearchExpr.m_aExpr.RemoveAll();
+	s_SearchExpr2.m_aExpr.RemoveAll();
 	return true;
 }
 
@@ -1364,15 +1366,16 @@ bool CSearchResultsWnd::DoNewKadSearch(SSearchParams* pParams)
 	int iPos = 0;
 	pParams->strKeyword = pParams->strExpression.Tokenize(_T(" "), iPos);
 	pParams->strKeyword.Trim();
-	if (pParams->strKeyword.IsEmpty() || pParams->strKeyword.FindOneOf(_aszInvKadKeywordChars) != -1){
-		CString strError;
-		strError.Format(GetResString(IDS_KAD_SEARCH_KEYWORD_INVALID), _aszInvKadKeywordChars);
-		throw new CMsgBoxException(strError, MB_ICONWARNING | MB_HELP, eMule_FAQ_Search - HID_BASE_PROMPT);
-	}
 
 	CSafeMemFile data(100);
 	if (!GetSearchPacket(&data, pParams, true, NULL)/* || (!pParams->strBooleanExpr.IsEmpty() && data.GetLength() == 0)*/)
 		return false;
+
+	if (pParams->strKeyword.IsEmpty() || pParams->strKeyword.FindOneOf(g_aszInvKadKeywordChars) != -1){
+		CString strError;
+		strError.Format(GetResString(IDS_KAD_SEARCH_KEYWORD_INVALID), g_aszInvKadKeywordChars);
+		throw new CMsgBoxException(strError, MB_ICONWARNING | MB_HELP, eMule_FAQ_Search - HID_BASE_PROMPT);
+	}
 
 	LPBYTE pSearchTermsData = NULL;
 	UINT uSearchTermsSize = (UINT)data.GetLength();
@@ -1385,7 +1388,7 @@ bool CSearchResultsWnd::DoNewKadSearch(SSearchParams* pParams)
 	Kademlia::CSearch* pSearch = NULL;
 	try
 	{
-		pSearch = Kademlia::CSearchManager::PrepareFindKeywords(pParams->bUnicode, pParams->strKeyword, uSearchTermsSize, pSearchTermsData);
+		pSearch = Kademlia::CSearchManager::PrepareFindKeywords(pParams->strKeyword, uSearchTermsSize, pSearchTermsData);
 		delete[] pSearchTermsData;
 		if (!pSearch){
 			ASSERT(0);
@@ -1513,9 +1516,25 @@ void CSearchResultsWnd::DeleteSearch(uint32 nSearchID)
 		}
 	}
 	else{
+		theApp.searchlist->Clear();
 		searchlistctrl.DeleteAllItems();
 		ShowSearchSelector(false);
 		searchlistctrl.NoTabs();
+
+		CWnd* pWndFocus = GetFocus();
+		m_pwndParams->m_ctlMore.EnableWindow(FALSE);
+		m_pwndParams->m_ctlCancel.EnableWindow(FALSE);
+		m_pwndParams->m_ctlStart.EnableWindow(m_pwndParams->m_ctlName.GetWindowTextLength() > 0);
+		if (pWndFocus) {
+			if (pWndFocus->m_hWnd == m_pwndParams->m_ctlMore.m_hWnd || pWndFocus->m_hWnd == m_pwndParams->m_ctlCancel.m_hWnd) {
+				if (m_pwndParams->m_ctlStart.IsWindowEnabled())
+					m_pwndParams->m_ctlStart.SetFocus();
+				else
+					m_pwndParams->m_ctlName.SetFocus();
+			}
+			else if (pWndFocus->m_hWnd == m_pwndParams->m_ctlStart.m_hWnd && !m_pwndParams->m_ctlStart.IsWindowEnabled())
+				m_pwndParams->m_ctlName.SetFocus();
+		}
 	}
 }
 
@@ -1546,9 +1565,17 @@ void CSearchResultsWnd::DeleteAllSearches()
 	CWnd* pWndFocus = GetFocus();
 	m_pwndParams->m_ctlMore.EnableWindow(FALSE);
 	m_pwndParams->m_ctlCancel.EnableWindow(FALSE);
-	m_pwndParams->m_ctlStart.EnableWindow(TRUE);
-	if (pWndFocus && (pWndFocus->m_hWnd == m_pwndParams->m_ctlMore.m_hWnd || pWndFocus->m_hWnd == m_pwndParams->m_ctlCancel.m_hWnd))
-		m_pwndParams->m_ctlStart.SetFocus();
+	m_pwndParams->m_ctlStart.EnableWindow(m_pwndParams->m_ctlName.GetWindowTextLength() > 0);
+	if (pWndFocus) {
+		if (pWndFocus->m_hWnd == m_pwndParams->m_ctlMore.m_hWnd || pWndFocus->m_hWnd == m_pwndParams->m_ctlCancel.m_hWnd) {
+			if (m_pwndParams->m_ctlStart.IsWindowEnabled())
+				m_pwndParams->m_ctlStart.SetFocus();
+			else
+				m_pwndParams->m_ctlName.SetFocus();
+		}
+		else if (pWndFocus->m_hWnd == m_pwndParams->m_ctlStart.m_hWnd && !m_pwndParams->m_ctlStart.IsWindowEnabled())
+			m_pwndParams->m_ctlName.SetFocus();
+	}
 }
 
 void CSearchResultsWnd::ShowResults(const SSearchParams* pParams)
@@ -1654,7 +1681,6 @@ void CSearchResultsWnd::ShowSearchSelector(bool visible)
 	AddAnchor(searchlistctrl, TOP_LEFT, BOTTOM_RIGHT);
 	GetDlgItem(IDC_CLEARALL)->ShowWindow(visible ? SW_SHOW : SW_HIDE);
 	m_ctlFilter.ShowWindow(visible ? SW_SHOW : SW_HIDE);
-
 }
 
 void CSearchResultsWnd::OnDestroy()
@@ -1669,11 +1695,6 @@ void CSearchResultsWnd::OnDestroy()
 	}
 
 	CResizableFormView::OnDestroy();
-}
-
-void CSearchResultsWnd::OnSize(UINT nType, int cx, int cy)
-{
-	CResizableFormView::OnSize(nType, cx, cy);
 }
 
 void CSearchResultsWnd::OnClose()

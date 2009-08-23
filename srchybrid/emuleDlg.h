@@ -112,11 +112,8 @@ public:
 	bool IsPreferencesDlgOpen() const;
 	bool IsTrayIconToFlash()	{ return m_iMsgIcon!=0; }
 	void SetToolTipsDelay(UINT uDelay);
-	//Xman official UPNP removed
-	/*
 	void StartUPnP(bool bReset = true, uint16 nForceTCPPort = 0, uint16 nForceUDPPort = 0);
-	*/
-	//Xman end
+	void RefreshUPnP(bool bRequestAnswer = false);
 	HBRUSH GetCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 
 	virtual void TrayMinimizeToTrayChange();
@@ -172,11 +169,7 @@ protected:
 	CMenu			m_menuDownloadCtrl;
 	char			m_acVCDNSBuffer[MAXGETHOSTSTRUCT];
 	bool			m_iMsgBlinkState;
-	//Xman official UPNP removed
-	/*
 	bool			m_bConnectRequestDelayedForUPnP;
-	*/
-	//Xman end
 	bool			m_bKadSuspendDisconnect;
 	bool			m_bEd2kSuspendDisconnect;
 
@@ -208,13 +201,9 @@ protected:
 	UINT_PTR m_hTimer;
 	static void CALLBACK StartupTimer(HWND hwnd, UINT uiMsg, UINT idEvent, DWORD dwTime);
 
-	//Xman official UPNP removed
-	/*
 	// UPnP TimeOutTimer
 	UINT_PTR m_hUPnPTimeOutTimer;
 	static void CALLBACK UPnPTimeOutTimer(HWND hwnd, UINT uiMsg, UINT idEvent, DWORD dwTime);
-	*/
-	//Xman end
 
 	void StartConnection();
 	void CloseConnection();
@@ -267,6 +256,7 @@ protected:
 	afx_msg void OnSysColorChange();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+	afx_msg BOOL OnDeviceChange(UINT nEventType, DWORD_PTR dwData);
 	afx_msg BOOL OnQueryEndSession();
 	afx_msg void OnEndSession(BOOL bEnding);
 	afx_msg LRESULT OnUserChanged(WPARAM wParam, LPARAM lParam);
@@ -339,11 +329,7 @@ protected:
 	afx_msg LRESULT OnConsoleThreadEvent(WPARAM wParam, LPARAM lParam);
 
 	// UPnP
-	//Xman official UPNP removed
-	/*
 	afx_msg LRESULT OnUPnPResult(WPARAM wParam, LPARAM lParam);
-	*/
-	//Xman end
 };
 
 

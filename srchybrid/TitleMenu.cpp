@@ -150,7 +150,6 @@ void CTitleMenu::EnableIcons()
 		m_bIconMenu = true;
 		m_ImageList.DeleteImageList();
 		m_ImageList.Create(ICONSIZE, ICONSIZE, theApp.m_iDfltImageListColorFlags | ILC_MASK, 0, 1);
-		m_ImageList.SetBkColor(CLR_NONE);
 		if (LoadAPI())
 		{
 			MENUINFO mi;
@@ -299,13 +298,26 @@ static HBITMAP IconToBitmap32(HICON hIcon, int cx, int cy)
     HDC hdcDest = CreateCompatibleDC(NULL);
     if (hdcDest)
     {
-        hBmp = Create32BitHBITMAP(hdcDest, cx, cy);
+		hBmp = Create32BitHBITMAP(hdcDest, cx, cy);
         if (hBmp)
         {
             HBITMAP hbmpOld = (HBITMAP)SelectObject(hdcDest, hBmp);
             if (hbmpOld)
             {
-				DrawIconEx(hdcDest, 0, 0, hIcon, cx, cy, 0, NULL, DI_NORMAL);
+				// "DrawIconEx" works only well for icons which do also have an XP version specified.
+				// For 256 color icons the icons drawn by "DrawIconEx" are way too "bright" ?
+				//DrawIconEx(hdcDest, 0, 0, hIcon, cx, cy, 0, NULL, DI_NORMAL);
+
+				// Not as efficient as "DrawIconEx", but using an image list works for XP icons
+				// as well as for 256 color icons.
+				HIMAGELIST himl = ImageList_Create(cx, cy, theApp.m_iDfltImageListColorFlags | ILC_MASK, 1, 0);
+				if (himl)
+				{
+					ImageList_AddIcon(himl, hIcon);
+					ImageList_Draw(himl, 0, hdcDest, 0, 0, ILD_NORMAL);
+					ImageList_Destroy(himl);
+				}
+
                 SelectObject(hdcDest, hbmpOld);
             }
         }

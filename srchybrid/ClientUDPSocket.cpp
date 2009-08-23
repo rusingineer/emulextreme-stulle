@@ -290,7 +290,7 @@ bool CClientUDPSocket::ProcessPacket(const BYTE* packet, UINT size, uint8 opcode
 					if (thePrefs.GetDebugClientTCPLevel() > 0)
 						DebugSend("OP__ReaskCallbackTCP", buddy);
 					theStats.AddUpDataOverheadFileRequest(response->size);
-					buddy->socket->SendPacket(response);
+					buddy->SendPacket(response, true);
 				}
 			}
 			break;
@@ -578,7 +578,7 @@ SocketSentBytes CClientUDPSocket::SendControlData(uint32 maxNumberOfBytesToSend,
 
 			if (cur_packet->bEncrypt && (theApp.GetPublicIP() > 0 || cur_packet->bKad)){
 				nLen = EncryptSendClient(&sendbuffer, nLen, cur_packet->pachTargetClientHashORKadID, cur_packet->bKad,  cur_packet->nReceiverVerifyKey, (cur_packet->bKad ? Kademlia::CPrefs::GetUDPVerifyKey(cur_packet->dwIP) : (uint16)0));
-				DEBUG_ONLY(  AddDebugLogLine(DLP_VERYLOW, false, _T("Sent obfuscated UDP packet to clientIP: %s, Kad: %s, ReceiverKey: %u"), ipstr(cur_packet->dwIP), cur_packet->bKad ? _T("Yes") : _T("No"), cur_packet->nReceiverVerifyKey) );
+				//DEBUG_ONLY(  AddDebugLogLine(DLP_VERYLOW, false, _T("Sent obfuscated UDP packet to clientIP: %s, Kad: %s, ReceiverKey: %u"), ipstr(cur_packet->dwIP), cur_packet->bKad ? _T("Yes") : _T("No"), cur_packet->nReceiverVerifyKey) );
 			}
 
 			if (!SendTo((char*)sendbuffer, nLen, cur_packet->dwIP, cur_packet->nPort)){
@@ -639,6 +639,11 @@ bool CClientUDPSocket::SendPacket(Packet* packet, uint32 dwIP, uint16 nPort, boo
 	newpending->bKad = bKad;
 	newpending->nReceiverVerifyKey = nReceiverVerifyKey;
 
+#ifdef _DEBUG
+	if (newpending->packet->size > UDP_KAD_MAXFRAGMENT)
+		DebugLogWarning(_T("Sending UDP packet > UDP_KAD_MAXFRAGMENT, opcode: %X, size: %u"), packet->opcode, packet->size);
+#endif
+
 	if (newpending->bEncrypt && pachTargetClientHashORKadID != NULL)
 		md4cpy(newpending->pachTargetClientHashORKadID, pachTargetClientHashORKadID);
 	else
@@ -661,26 +666,15 @@ bool CClientUDPSocket::Create()
 	{
 		ret = CAsyncSocket::Create(thePrefs.GetUDPPort(), SOCK_DGRAM, FD_READ | FD_WRITE, thePrefs.GetBindAddrW()) != FALSE;
 		if (ret)
+		{
 			m_port = thePrefs.GetUDPPort();
-	}
-
-	//Xman
-	//upnp_start
-	if (ret && thePrefs.GetUDPPort()){
-		if (thePrefs.GetUPnPNat()){
-			MyUPnP::UPNPNAT_MAPPING mapping;
-
-			mapping.internalPort = mapping.externalPort = thePrefs.GetUDPPort();
-			mapping.protocol = MyUPnP::UNAT_UDP;
-			mapping.description = "UDP Port";
-			if (theApp.AddUPnPNatPort(&mapping, thePrefs.GetUPnPNatTryRandom()))
-				thePrefs.SetUPnPUDPExternal(mapping.externalPort);
-		}
-		else{
-			thePrefs.SetUPnPUDPExternal(thePrefs.GetUDPPort());
+			// the default socket size seems to be not enough for this UDP socket
+			// because we tend to drop packets if several flow in at the same time
+			int val = 64 * 1024;
+			if (!SetSockOpt(SO_RCVBUF, &val, sizeof(val)))
+				DebugLogError(_T("Failed to increase socket size on UDP socket"));
 		}
 	}
-	//upnp_end
 
 	if (ret)
 		m_port = thePrefs.GetUDPPort();
@@ -690,50 +684,8 @@ bool CClientUDPSocket::Create()
 
 bool CClientUDPSocket::Rebind()
 {
-	//Xman upnp
-	/*
 	if (thePrefs.GetUDPPort() == m_port)
-	*/
-	if (thePrefs.udpport == m_port)
-	//Xman end
 		return false;
 	Close();
-
-	//Xman
-	//upnp_start
-	if(thePrefs.GetUPnPNat())
-	{
-		if(theApp.m_UPnPNat.RemoveSpecifiedPort(thePrefs.m_iUPnPUDPExternal, MyUPnP::UNAT_UDP))
-			AddLogLine(false, _T("UPNP: removed UDP-port %u"), thePrefs.m_iUPnPUDPExternal);
-		else
-			AddLogLine(false, _T("UPNP: failed to remove UDP-port %u"), thePrefs.m_iUPnPUDPExternal);
-	}
-	thePrefs.m_iUPnPUDPExternal=0;
-	//upnp_end
-
 	return Create();
 }
-
-//zz_fly :: Rebind UPnP on IP-change
-bool CClientUDPSocket::RebindUPnP(){ 
-	if(theApp.m_UPnPNat.RemoveSpecifiedPort(thePrefs.m_iUPnPUDPExternal, MyUPnP::UNAT_UDP))
-	{
-		AddLogLine(false, _T("UPNP: removed UDP-port %u"), thePrefs.m_iUPnPUDPExternal);
-		thePrefs.m_iUPnPUDPExternal=0;
-		MyUPnP::UPNPNAT_MAPPING mapping;
-		mapping.internalPort = mapping.externalPort = thePrefs.GetUDPPort();
-		mapping.protocol = MyUPnP::UNAT_UDP;
-		mapping.description = "UDP Port";
-		if (theApp.AddUPnPNatPort(&mapping, thePrefs.GetUPnPNatTryRandom()))
-		{
-			thePrefs.SetUPnPUDPExternal(mapping.externalPort);
-			return true;
-		}
-		else
-			thePrefs.SetUPnPUDPExternal(thePrefs.GetUDPPort());
-	}
-	else
-		AddLogLine(false, _T("UPNP: failed to remove UDP-port %u"), thePrefs.m_iUPnPUDPExternal);
-	return false;
-} 
-//zz_fly :: Rebind UPnP on IP-change end

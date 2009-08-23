@@ -23,12 +23,6 @@
 #include "ReadWriteLock.h"	// SLUGFILLER: SafeHash
 #include "Version.h"		// netfinity: Mod version
 
-//Xman
-//upnp_start
-#include "UPnP.h"
-//upnp_end
-
-
 #define	DEFAULT_NICK		thePrefs.GetHomepageBaseURL()
 #define	DEFAULT_TCP_PORT_OLD	4662
 #define	DEFAULT_UDP_PORT_OLD	(DEFAULT_TCP_PORT_OLD+10)
@@ -62,11 +56,7 @@ class CAbstractFile;
 class CUpDownClient;
 class CPeerCacheFinder;
 class CFirewallOpener;
-//Xman official UPNP removed
-/*
 class CUPnPImplWrapper;
-*/
-//Xman end
 
 //Xman
 class CBandWidthControl; // Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
@@ -91,7 +81,7 @@ public:
     UploadBandwidthThrottler* uploadBandwidthThrottler;
 	//Xman
 	/*
-	LastCommonRouteFinder* lastCommonRouteFinder;
+    LastCommonRouteFinder* lastCommonRouteFinder;
 	*/
 	//Xman end
 	// ZZ:UploadSpeedSense <--
@@ -114,11 +104,7 @@ public:
 	CMMServer*			mmserver;
 	CPeerCacheFinder*	m_pPeerCache;
 	CFirewallOpener*	m_pFirewallOpener;
-	//Xman official UPNP removed
-	/*
 	CUPnPImplWrapper*	m_pUPnPFinder;
-	*/
-	//Xman end
 
 	//Xman
 	// - Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
@@ -236,6 +222,7 @@ public:
 	void		DisableRTLWindowsLayout();
 	void		UpdateDesktopColorDepth();
 	void		UpdateLargeIconSize();
+	bool		IsXPThemeActive() const;
 	bool		IsVistaThemeActive() const;
 
 	bool		GetLangHelpFilePath(CString& strResult);
@@ -291,7 +278,7 @@ protected:
 	bool m_bAutoStart;
 
 private:
-	UINT     m_wTimerRes;
+    UINT     m_wTimerRes;
 //Xman -Reask sources after IP change- v4 
 public:
 	bool m_bneedpublicIP; 
@@ -302,14 +289,6 @@ public:
 	uint32	last_traffic_reception;
 	uint8	internetmaybedown;
 //Xman end
-
-	//Xman
-	//upnp_start
-public:
-	MyUPnP m_UPnPNat;
-	BOOL  AddUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping, bool tryRandom = false);
-	BOOL  RemoveUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping);
-	//upnp_end
 
 	//Xman queued disc-access for read/flushing-threads
 	void AddNewDiscAccessThread(CWinThread* threadtoadd);

@@ -198,7 +198,7 @@ void CAbstractFile::SetFileName(LPCTSTR pszFileName, bool bReplaceInvalidFileSys
 	}
 	if (bAutoSetFileType)
 		SetFileType(GetFileTypeByName(m_strFileName));
-
+	
 	if (bRemoveControlChars){
 		for (int i = 0; i < m_strFileName.GetLength(); )
 			if (m_strFileName.GetAt(i) <= '\x1F')
@@ -354,8 +354,8 @@ const CString& CAbstractFile::GetStrTagValue(uint8 tagname) const
 		if (pTag->GetNameID()==tagname && pTag->IsStr())
 			return pTag->GetStr();
 	}
-	static const CString _strEmpty;
-	return _strEmpty;
+	static const CString s_strEmpty;
+	return s_strEmpty;
 }
 
 const CString& CAbstractFile::GetStrTagValue(LPCSTR tagname) const
@@ -365,8 +365,8 @@ const CString& CAbstractFile::GetStrTagValue(LPCSTR tagname) const
 		if (pTag->GetNameID()==0 && pTag->IsStr() && CmpED2KTagName(pTag->GetName(), tagname)==0)
 			return pTag->GetStr();
 	}
-	static const CString _strEmpty;
-	return _strEmpty;
+	static const CString s_strEmpty;
+	return s_strEmpty;
 }
 
 void CAbstractFile::SetStrTagValue(uint8 tagname, LPCTSTR pszValue)
@@ -463,6 +463,7 @@ void CAbstractFile::RefilterKadNotes(bool bUpdate){
 		Kademlia::CEntry* entry = m_kadNotes.GetAt(pos2);
 		if (!entry->GetStrTagValue(TAG_DESCRIPTION).IsEmpty()){
 			CString strCommentLower(entry->GetStrTagValue(TAG_DESCRIPTION));
+			// Verified Locale Dependency: Locale dependent string conversion (OK)
 			strCommentLower.MakeLower();
 
 			int iPos = 0;

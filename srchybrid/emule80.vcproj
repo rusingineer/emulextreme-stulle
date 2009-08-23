@@ -13,6 +13,9 @@
 		/>
 	</Platforms>
 	<ToolFiles>
+		<DefaultToolFile
+			FileName="masm.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -30,6 +33,11 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				CommandLine=""
+				AdditionalDependencies=""
+			/>
+			<Tool
+				Name="MASM"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -45,9 +53,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;upnplib\ixml\src\inc;upnplib\upnp\src\inc;upnplib\upnp\inc;upnplib\build\inc;upnplib\threadutil\inc;upnplib\ixml\inc;pthreads\pthreads\inc;DirectX\Include;DirectX\Extras\DirectShow\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;ID3LIB_LINKOPTION=1;SUPPORT_LARGE_FILES;PRINT_STATISTIC;UPNP_STATIC_LIB;_WIN32;PTW32_STATIC_LIB;PNG_DEBUG=1;PNG_USE_PNGVCRD;PNG_LIBPNG_SPECIALBUILD"
+				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include;WMSDK\include;WMSDK\lib"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;ID3LIB_LINKOPTION=1;SUPPORT_LARGE_FILES;PRINT_STATISTIC;_WIN32;PNG_DEBUG=1;PNG_USE_PNGVCRD;PNG_LIBPNG_SPECIALBUILD;MINIUPNP_STATICLIB"
 				MinimalRebuild="true"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				BufferSecurityCheck="true"
@@ -56,7 +65,7 @@
 				ForceConformanceInForLoopScope="false"
 				UsePrecompiledHeader="2"
 				WarningLevel="4"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -72,7 +81,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib Iphlpapi.lib"
+				AdditionalOptions="/nxcompat"
+				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib wmvcore.lib .\miniupnpc\debug_vc8\miniupnpc.lib"
 				OutputFile="$(OutDir)\eMule.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -89,6 +99,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AssemblyIdentity="Microsoft.Windows.emule, processorArchitecture=X86, version=1.0.0.0, type=win32"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -107,6 +118,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -128,6 +140,10 @@
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+				Name="MASM"
+				UseSafeExceptionHandlers="true"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -146,8 +162,8 @@
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;upnplib\ixml\src\inc;upnplib\upnp\src\inc;upnplib\upnp\inc;upnplib\build\inc;upnplib\threadutil\inc;upnplib\ixml\inc;pthreads\pthreads\inc;DirectX\Include;DirectX\Extras\DirectShow\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;ID3LIB_LINKOPTION=1;_RELEASE;SUPPORT_LARGE_FILES;UPNP_STATIC_LIB;_WIN32;PTW32_STATIC_LIB"
+				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include;WMSDK\include;WMSDK\lib"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;ID3LIB_LINKOPTION=1;_RELEASE;SUPPORT_LARGE_FILES;_WIN32;MINIUPNP_STATICLIB"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -173,8 +189,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib Iphlpapi.lib"
+				AdditionalOptions="/nxcompat /safeseh /dynamicbase"
+				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib wmvcore.lib .\miniupnpc\release_vc8\miniupnpc.lib"
 				OutputFile="$(OutDir)\eMule.exe"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreDefaultLibraryNames="kernel32.lib;advapi32.lib;user32.lib;gdi32.lib;shell32.lib;comdlg32.lib;version.lib;mpr.lib;rasapi32.lib;winmm.lib;winspool.lib;vfw32.lib;secur32.lib;oleacc.lib;oledlg.lib;sensapi.lib"
 				DelayLoadDLLs="oleacc.dll;gdiplus.dll"
@@ -183,12 +201,14 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
+				FixedBaseAddress="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AssemblyIdentity="Microsoft.Windows.emule, processorArchitecture=X86, version=1.0.0.0, type=win32"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -207,6 +227,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Inserting Vista application icon..."
+				CommandLine="..\ReplaceVistaIcon\release\ReplaceVistaIcon &quot;$(TargetPath)&quot; &quot;$(ProjectDir)res\Mule_Vista.ico&quot; AAAEMULEAPP"
 			/>
 		</Configuration>
 		<Configuration
@@ -222,9 +244,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="MASM"
+				UseSafeExceptionHandlers="true"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -245,8 +272,8 @@
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;upnplib\ixml\src\inc;upnplib\upnp\src\inc;upnplib\upnp\inc;upnplib\build\inc;upnplib\threadutil\inc;upnplib\ixml\inc;pthreads\pthreads\inc;DirectX\Include;DirectX\Extras\DirectShow\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;ID3LIB_LINKOPTION=1;_BETA;SUPPORT_LARGE_FILES;PRINT_STATISTIC;UPNP_STATIC_LIB;_WIN32;PTW32_STATIC_LIB"
+				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include;WMSDK\include;WMSDK\lib"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;ID3LIB_LINKOPTION=1;_BETA;SUPPORT_LARGE_FILES;PRINT_STATISTIC;_WIN32;MINIUPNP_STATICLIB"
 				StringPooling="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="0"
@@ -272,8 +299,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib Iphlpapi.lib"
+				AdditionalOptions="/nxcompat /safeseh /dynamicbase"
+				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib wmvcore.lib .\miniupnpc\release_vc8\miniupnpc.lib"
 				OutputFile="$(OutDir)\eMule.exe"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreDefaultLibraryNames="kernel32.lib;advapi32.lib;user32.lib;gdi32.lib;shell32.lib;comdlg32.lib;version.lib;mpr.lib;rasapi32.lib;winmm.lib;winspool.lib;vfw32.lib;secur32.lib;oleacc.lib;oledlg.lib;sensapi.lib"
 				DelayLoadDLLs="oleacc.dll;gdiplus.dll"
@@ -283,12 +312,14 @@
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
 				TargetMachine="1"
+				FixedBaseAddress="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AssemblyIdentity="Microsoft.Windows.emule, processorArchitecture=X86, version=1.0.0.0, type=win32"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -307,6 +338,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Inserting Vista application icon..."
+				CommandLine="..\ReplaceVistaIcon\release\ReplaceVistaIcon &quot;$(TargetPath)&quot; &quot;$(ProjectDir)res\Mule_Vista.ico&quot; AAAEMULEAPP&#x0D;&#x0A;del $(IntDir)\emule.obj"
 			/>
 		</Configuration>
 		<Configuration
@@ -324,6 +357,11 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				CommandLine=""
+				AdditionalDependencies=""
+			/>
+			<Tool
+				Name="MASM"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -339,8 +377,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".;..;..\id3lib\include;upnplib\ixml\src\inc;upnplib\upnp\src\inc;upnplib\upnp\inc;upnplib\build\inc;upnplib\threadutil\inc;upnplib\ixml\inc;pthreads\pthreads\inc;DirectX\Include;DirectX\Extras\DirectShow\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;ID3LIB_LINKOPTION=1;SUPPORT_LARGE_FILES;UPNP_STATIC_LIB;_WIN32;PTW32_STATIC_LIB;PNG_DEBUG=1;PNG_USE_PNGVCRD;PNG_LIBPNG_SPECIALBUILD"
+				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include;WMSDK\include;WMSDK\lib"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;ID3LIB_LINKOPTION=1;SUPPORT_LARGE_FILES;_WIN32;PNG_DEBUG=1;PNG_USE_PNGVCRD;PNG_LIBPNG_SPECIALBUILD;MINIUPNP_STATICLIB"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
@@ -367,7 +405,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib Iphlpapi.lib"
+				AdditionalOptions="/nxcompat"
+				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib wmvcore.lib .\miniupnpc\debug_vc8\miniupnpc.lib"
 				OutputFile="$(OutDir)\eMule.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -384,6 +423,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AssemblyIdentity="Microsoft.Windows.emule, processorArchitecture=X86, version=1.0.0.0, type=win32"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -402,6 +442,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -599,36 +640,32 @@
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="testversion|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="debug80|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -891,41 +928,41 @@
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="testversion|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="debug80|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="ml.exe /c /Cx /coff /Fo $(IntDir)\ &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						Outputs="$(IntDir)\$(InputName).obj"
+						Name="MASM"
+						WarningLevel="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="SHAHashSet.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShareableFile.cpp"
 				>
 			</File>
 			<File
@@ -1009,7 +1046,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\UPnP.cpp"
+				RelativePath=".\UPnPImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnPImplMiniLib.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnPImplWinServ.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnPImplWrapper.cpp"
 				>
 			</File>
 			<File
@@ -1242,10 +1291,6 @@
 				>
 			</File>
 			<File
-				RelativePath="fileformat.h"
-				>
-			</File>
-			<File
 				RelativePath="FirewallOpener.h"
 				>
 			</File>
@@ -1346,6 +1391,10 @@
 				>
 			</File>
 			<File
+				RelativePath="PeerCacheClient.h"
+				>
+			</File>
+			<File
 				RelativePath="PeerCacheFinder.h"
 				>
 			</File>
@@ -1434,6 +1483,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ShareableFile.h"
+				>
+			</File>
+			<File
 				RelativePath="SharedFileList.h"
 				>
 			</File>
@@ -1490,7 +1543,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\UPnP.h"
+				RelativePath=".\UPnPImpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnPImplMiniLib.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnPImplWinServ.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnPImplWrapper.h"
 				>
 			</File>
 			<File
@@ -1667,6 +1732,10 @@
 			</File>
 			<File
 				RelativePath="BtnST.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BuddyButton.cpp"
 				>
 			</File>
 			<File
