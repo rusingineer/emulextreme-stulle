@@ -236,7 +236,12 @@ void CUpDownClient::SetUploadState(EUploadState eNewState)
  */
 float CUpDownClient::GetCombinedFilePrioAndCredit() {
 	if (credits == 0){
+		//zz_fly :: in the Optimized on ClientCredits, banned client has no credits
+		/*
 		ASSERT ( IsKindOf(RUNTIME_CLASS(CUrlClient)) );
+		*/
+		ASSERT ( IsKindOf(RUNTIME_CLASS(CUrlClient)) || (GetUploadState()==US_BANNED) );
+		//zz_fly :: in the Optimized on ClientCredits, banned client has no credits
 		return 0.0F;
 	}
 
@@ -337,7 +342,12 @@ uint32 CUpDownClient::GetScore(bool sysvalue, bool isdownloading, bool onlybasev
 		return 0;
 
 	if (credits == 0){
+		//zz_fly :: in the Optimized on ClientCredits, banned client has no credits
+		/*
 		ASSERT ( IsKindOf(RUNTIME_CLASS(CUrlClient)) );
+		*/
+		ASSERT ( IsKindOf(RUNTIME_CLASS(CUrlClient)) || (GetUploadState()==US_BANNED) );
+		//zz_fly :: in the Optimized on ClientCredits, banned client has no credits
 		return 0;
 	}
 	//Xman Code Improvement
@@ -684,7 +694,8 @@ void CUpDownClient::CreateNextBlockPackage(){
 					return;
 				} else if (filedata == (byte*)-1) {
 					//An error occured
-					theApp.sharedfiles->Reload();
+					if(!theApp.sharedfiles->IsUnsharedFile(currentblock->FileID)) //zz_fly :: Fixes :: DolphinX :: don't reload sharedfiles when we need not
+						theApp.sharedfiles->Reload();
 					throw GetResString(IDS_ERR_OPEN);
 				}
 
@@ -770,7 +781,8 @@ void CUpDownClient::CreateNextBlockPackage(){
 	{
 		//Xman Reload shared files on filenotfound exception
 		if( e->m_cause == CFileException::fileNotFound )
-			theApp.sharedfiles->Reload();
+			if(!theApp.sharedfiles->IsUnsharedFile(m_BlockRequests_queue.GetHead()->FileID)) //zz_fly :: Fixes :: DolphinX :: don't reload sharedfiles when we need not
+				theApp.sharedfiles->Reload();
 		//Xman end
 		TCHAR szError[MAX_CFEXP_ERRORMSG];
 		e->GetErrorMessage(szError, ARRSIZE(szError));
@@ -1510,7 +1522,14 @@ void CUpDownClient::AddRequestCount(const uchar* fileid)
 	for (POSITION pos = m_RequestedFiles_list.GetHeadPosition(); pos != 0; ){
 		Requested_File_Struct* cur_struct = m_RequestedFiles_list.GetNext(pos);
 		if (!md4cmp(cur_struct->fileid,fileid)){
+			//zz_fly :: fix possible overflow :: start
+			//note: in some special case, ::GetTickCount() may lesser than cur_struct->lastasked
+			/*
 			if (::GetTickCount() - cur_struct->lastasked < MIN_REQUESTTIME && !GetFriendSlot()){ 
+			*/
+			uint32 DeltaTime = 30000 + ::GetTickCount() - cur_struct->lastasked;
+			if (DeltaTime < (MIN_REQUESTTIME + 30000) && !GetFriendSlot()){ 
+			//zz_fly :: end
 				if (GetDownloadState() != DS_DOWNLOADING)
 					cur_struct->badrequests++;
 				if (cur_struct->badrequests == BADCLIENTBAN){

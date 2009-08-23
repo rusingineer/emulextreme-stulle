@@ -67,11 +67,8 @@ void CStatisticFile::AddRequest(){
 	alltimerequested++;
 	theApp.knownfiles->requested++;
 	//Xman Code Improvement -> don't update to often
-	//if(m_uFileupdatetime + 1000 < ::GetTickCount()) //once per second
-	{
-		m_uFileupdatetime=::GetTickCount();
-		theApp.sharedfiles->UpdateFile(fileParent);
-	}
+	m_uFileupdatetime=::GetTickCount(); 
+	theApp.sharedfiles->UpdateFile(fileParent);
 	//Xman end
 }
 	
@@ -80,11 +77,8 @@ void CStatisticFile::AddAccepted(){
 	alltimeaccepted++;
 	theApp.knownfiles->accepted++;
 	//Xman Code Improvement -> don't update to often
-	//if(m_uFileupdatetime + 1000 < ::GetTickCount()) //once per second
-	{
-		m_uFileupdatetime=::GetTickCount();
-		theApp.sharedfiles->UpdateFile(fileParent);
-	}
+	m_uFileupdatetime=::GetTickCount(); 
+	theApp.sharedfiles->UpdateFile(fileParent);
 	//Xman end
 }
 	

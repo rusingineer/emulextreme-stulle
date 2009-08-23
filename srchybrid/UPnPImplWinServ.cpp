@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <map>
+#include "Resource.h" //zz_fly :: show UPnP status
 
 
 #ifdef _DEBUG
@@ -433,6 +434,7 @@ bool CUPnPImplWinServ::OnSearchComplete()
 		else
 			DebugLog(_T("Found no UPnP gateway devices - will retry with different parameters"));
 		
+		SetStatusString(GetResString(IDS_UPNPSTATUS_ERROR)); //zz_fly :: show UPnP status	
 		return false; // no devices found
 	}
 	
@@ -445,6 +447,7 @@ bool CUPnPImplWinServ::OnSearchComplete()
 		{
 			// Add more descriptive explanation!!!
 			DebugLogError(_T("UPnP port mapping failed because the port(s) are already redirected to another IP."));
+			SetStatusString(GetResString(IDS_UPNPSTATUS_PORTINUSE)); //zz_fly :: show UPnP status
 			break;
 		}
 	}

@@ -532,6 +532,7 @@ void CSharedFilesCtrl::AddFile(const CShareableFile* file)
 	int iItem = InsertItem(LVIF_TEXT | LVIF_PARAM, GetItemCount(), LPSTR_TEXTCALLBACK, 0, 0, 0, (LPARAM)file);
 	if (iItem >= 0)
 		Update(iItem);
+	ShowFilesCount(); //Xman Code Improvement for ShowFilesCount
 }
 
 void CSharedFilesCtrl::RemoveFile(const CShareableFile* file, bool bDeletedFromDisk)
@@ -748,7 +749,9 @@ void CSharedFilesCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						if (pKnownFile != NULL && pKnownFile->GetPartCount()) {
 							cur_rec.bottom--;
 							cur_rec.top++;
+							COLORREF crOldBackColor = dc->GetBkColor(); //Xman Code Improvement: FillSolidRect
 							pKnownFile->DrawShareStatusBar(dc, &cur_rec, false, thePrefs.UseFlatBar());
+							dc.SetBkColor(crOldBackColor); //Xman Code Improvement: FillSolidRect
 							cur_rec.bottom++;
 							cur_rec.top--;
 						}
@@ -1596,19 +1599,24 @@ int CSharedFilesCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort
 
 		case 2: //filetype
 		{
-			int iResult = item1->GetFileTypeDisplayStr().Compare(item2->GetFileTypeDisplayStr());
+			iResult = item1->GetFileTypeDisplayStr().Compare(item2->GetFileTypeDisplayStr()); //zz_fly :: bug fix
 			// if the type is equal, subsort by extension
 			if (iResult == 0)
 			{
 				LPCTSTR pszExt1 = PathFindExtension(item1->GetFileName());
 				LPCTSTR pszExt2 = PathFindExtension(item2->GetFileName());
 				if ((pszExt1 == NULL) ^ (pszExt2 == NULL))
-					return pszExt1 == NULL ? 1 : (-1);
+					iResult = pszExt1 == NULL ? 1 : (-1); //zz_fly :: bug fix
 				else
-					return  pszExt1 != NULL ? _tcsicmp(pszExt1, pszExt2) : 0;
+					iResult = pszExt1 != NULL ? _tcsicmp(pszExt1, pszExt2) : 0; //zz_fly :: bug fix
 			}
+			//zz_fly :: bug fix
+			/*
 			else
 				return iResult;
+			*/
+			break;
+			//zz_fly :: end
 		}
 
 		case 9: //folder
@@ -1692,7 +1700,7 @@ int CSharedFilesCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort
 
 				//Xman see OnUploadqueue
 				case 18:
-					iResult= kitem1->GetOnUploadqueue() -kitem1->GetOnUploadqueue();
+					iResult= kitem1->GetOnUploadqueue() -kitem2->GetOnUploadqueue();
 					break;
 				//Xman end
 
@@ -1701,7 +1709,7 @@ int CSharedFilesCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort
 				case 19:
 					{
 						float it1value= kitem1->statistic.GetAllTimeTransferred()/(float)kitem1->GetFileSize()*1000; //sort one number after ,
-						float it2value= kitem1->statistic.GetAllTimeTransferred()/(float)kitem1->GetFileSize()*1000;
+						float it2value= kitem2->statistic.GetAllTimeTransferred()/(float)kitem2->GetFileSize()*1000;
 						iResult=(int)(it1value-it2value);
 						break;
 					}

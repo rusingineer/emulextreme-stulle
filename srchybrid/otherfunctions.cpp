@@ -382,6 +382,8 @@ CString ShellGetFolderPath(int iCSIDL)
 
 namespace {
 	bool IsHexDigit(int c) {
+		//zz_fly :: Optimizations :: DolphinX :: Start
+		/*
 		switch (c) {
 		case '0': return true;
 		case '1': return true;
@@ -407,6 +409,9 @@ namespace {
 		case 'f': return true;
 		default: return false;
 		}
+		*/
+		return( (c>='0' && c<='9') || (c>='A' && c<='F') || (c>='a' && c<='f') );
+		//zz_fly :: Optimizations :: DolphinX :: End
 	}
 }
 

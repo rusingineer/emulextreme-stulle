@@ -99,6 +99,10 @@ BOOL CServerSocket::OnHostNameResolved(const SOCKADDR_IN *pSockAddr)
 			serverconnect->DestroySocket(this);
 			return FALSE;	// Do *NOT* connect to this server
 		}
+		//zz_fly :: support dynamic ip servers :: DolphinX :: Start
+		if (pServer)
+			pServer->ResetIP2Country(); //EastShare - added by AndCycle, IP to Country
+		//zz_fly :: End
 	}
 	return TRUE; // Connect to this server
 }
@@ -160,6 +164,10 @@ void CServerSocket::OnReceive(int nErrorCode){
 	}
 	CEMSocket::OnReceive(nErrorCode);
 	m_dwLastTransmission = GetTickCount();
+	//zz_fly :: destory socket when serverconnection fail :: DolphinX :: Start
+	if(connectionstate == CS_ERROR)
+		serverconnect->DestroySocket(this);
+	//zz_fly :: destory socket when serverconnection fail :: DolphinX :: End
 }
 
 bool CServerSocket::ProcessPacket(const BYTE* packet, uint32 size, uint8 opcode)
@@ -387,6 +395,8 @@ bool CServerSocket::ProcessPacket(const BYTE* packet, uint32 size, uint8 opcode)
 						AddLogLine(true, _T("LowID -- Trying Again (attempts %i)"), attempts);
 						break; // Retries
 					}
+					else if (!m_bManualSingleConnect)
+						break; // if this is a connect to any/multiple server connection try, disconnect and try another one
 				}
 				//Xman end
 				

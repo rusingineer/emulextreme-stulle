@@ -1077,7 +1077,7 @@ void CDownloadListCtrl::DrawSourceItem(CDC *dc, int nColumn, LPCRECT lpRect, UIN
 			cur_rec.left += 20;
 
 			//EastShare Start - added by AndCycle, IP to Country 
-			if(theApp.ip2country->ShowCountryFlag() && IsColumnHidden(16)){
+			if(theApp.ip2country->ShowCountryFlag()){
 				POINT point3= {cur_rec.left,cur_rec.top+1};
 				theApp.ip2country->GetFlagImageList()->DrawIndirect(dc, pClient->GetCountryFlagIndex(), point3, CSize(18,16), CPoint(0,0), ILD_NORMAL);
 				cur_rec.left+=20;
@@ -1761,7 +1761,13 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 			}
 			// - show requested files (sivka/Xman)
 			ClientMenu.AppendMenu(MF_SEPARATOR);
+			//zz_fly :: code improvment by DolphinX
+			/*
 			ClientMenu.AppendMenu(MF_STRING | (GetItemCount() > 0 ? MF_ENABLED : MF_GRAYED),MP_LIST_REQUESTED_FILES, GetResString(IDS_LISTREQUESTED), _T("FILEREQUESTED")); // Added by sivka
+			*/
+			ClientMenu.AppendMenu(MF_STRING | (client ? MF_ENABLED : MF_GRAYED), MP_LIST_REQUESTED_FILES, GetResString(IDS_LISTREQUESTED), _T("FILEREQUESTED"));
+			//zz_fly :: end
+			//ClientMenu.AppendMenu(MF_STRING,MP_LIST_REQUESTED_FILES, GetResString(IDS_LISTREQUESTED), _T("FILEREQUESTED")); // Added by sivka
 			//Xman end
 
 			GetPopupMenuPos(*this, point);
@@ -2756,7 +2762,7 @@ int CDownloadListCtrl::Compare(const CUpDownClient *client1, const CUpDownClient
 			if (client1->GetClientSoft() == client2->GetClientSoft())
 			{
 				if(client2->GetVersion() == client1->GetVersion() && client1->GetClientSoft() == SO_EMULE)
-					return CompareOptLocaleStringNoCase(client2->GetClientSoftVer(), client1->GetClientSoftVer());
+					return client2->DbgGetFullClientSoftVer().CompareNoCase( client1->DbgGetFullClientSoftVer());
 				else
 					return client1->GetVersion() - client2->GetVersion();
 			}

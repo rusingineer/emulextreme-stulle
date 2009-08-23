@@ -56,6 +56,7 @@ public:
 	TRISTATE		ArePortsForwarded() const								{ return m_bUPnPPortsForwarded; }
 	uint16			GetUsedTCPPort()										{ return m_nTCPPort; }
 	uint16			GetUsedUDPPort()										{ return m_nUDPPort; }	
+	CString			GetStatusString(); //zz_fly :: show UPnP status
 
 // Implementation
 protected:
@@ -65,10 +66,12 @@ protected:
 	uint16				m_nTCPPort;
 	uint16				m_nTCPWebPort;
 	bool				m_bCheckAndRefresh;
+	void				SetStatusString(CString error)	{ m_sStatusString = error; } //zz_fly :: show UPnP status
 
 private:
 	HWND	m_hResultMessageWindow;
 	UINT	m_nResultMessageID;
+	CString	m_sStatusString; //zz_fly :: show UPnP status
 
 };
 

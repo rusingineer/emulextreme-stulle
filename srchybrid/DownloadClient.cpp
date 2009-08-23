@@ -1437,7 +1437,8 @@ void CUpDownClient::SendBlockRequests()
 	{
 		if (m_PendingBlocks_list.IsEmpty())
 		{
-			if (reqfile->GetUnrequestedSize() == 0 && reqfile->FindAndDropStalledDownload(this))
+			if (GetDownTimeDifference(false) > 10000 && //Enig123 :: 090201 :: search for stalled downloads when this client can be fully evaluated
+				reqfile->GetUnrequestedSize() == 0 && reqfile->FindAndDropStalledDownload(this) )
 				CreateBlockRequests(blockCount);
 	//zz_fly :: Drop stalled downloads :: netfinity :: end
 			if (m_PendingBlocks_list.IsEmpty()){
@@ -3433,7 +3434,6 @@ void CUpDownClient::ProcessAICHRequest(const uchar* packet, UINT size)
 	}
 	else
 		AddDebugLogLine(DLP_HIGH, false, _T("AICH Packet Request: Failed to find requested shared file -  %s"), DbgGetClientInfo());
-
 	if (thePrefs.GetDebugClientTCPLevel() > 0)
 		DebugSend("OP__AichAnswer", this, abyHash);
 	Packet* packAnswer = new Packet(OP_AICHANSWER, 16, OP_EMULEPROT);

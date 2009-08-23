@@ -123,7 +123,7 @@ void CDownloadQueue::Init(){
 	for (int i=0;i<thePrefs.tempdir.GetCount();i++) {
 		//Xman
 		CStringList metsfound;	// SLUGFILLER: SafeHash - ensure each met is loaded once per tempdir
-
+		bool allMetsSuccess = true; //zz_fly :: better .part.met file backup and recovery :: Enig123
 		CString searchPath=thePrefs.GetTempDir(i);
 
 		searchPath += _T("\\*.part.met");
@@ -151,7 +151,13 @@ void CDownloadQueue::Init(){
 				// .met file is corrupted, try to load the latest backup of this file
 				delete toadd;
 				toadd = new CPartFile();
+				//zz_fly :: better .part.met file backup and recovery :: Enig123 :: Start
+				//note: .backup is newer than .bak, if it is valid. we load .backup first. see CPartFile::SavePartFile() for details.
+				/*
 				eResult = toadd->LoadPartFile(thePrefs.GetTempDir(i), ff.GetFileName() + PARTMET_BAK_EXT);
+				*/
+				eResult = toadd->LoadPartFile(thePrefs.GetTempDir(i), ff.GetFileName() + PARTMET_TMP_EXT);
+				//zz_fly :: better .part.met file backup and recovery :: Enig123 :: End
 				if (eResult == PLR_LOADSUCCESS)
 				{
 					toadd->SavePartFile(true); // don't override our just used .bak file yet
@@ -173,12 +179,27 @@ void CDownloadQueue::Init(){
 				theApp.emuledlg->transferwnd->downloadlistctrl.AddFile(toadd);// show in downloadwindow
 			}
 			else
+			{
 				delete toadd;
+				allMetsSuccess = false; //zz_fly :: better .part.met file backup and recovery :: Enig123
+			}
 		}
 		ff.Close();
 
+		//zz_fly :: better .part.met file backup and recovery :: Enig123 :: Start
+		//  skip recovery step if there's no failed part file load
+		if(allMetsSuccess)
+			continue;
+		//zz_fly :: better .part.met file backup and recovery :: Enig123 :: End
+
 		//try recovering any part.met files
+		//zz_fly :: better .part.met file backup and recovery :: Enig123 :: Start
+		// .backup failed, load .bak
+		/*
 		searchPath += _T(".backup");
+		*/
+		searchPath += PARTMET_BAK_EXT;
+		//zz_fly :: better .part.met file backup and recovery :: Enig123 :: Emd
 		end = !ff.FindFile(searchPath, 0);
 		while (!end){
 			end = !ff.FindNextFile();
@@ -510,7 +531,17 @@ void CDownloadQueue::Process(){
 	ProcessLocalRequests(); // send src requests to local server
 
 	// Elapsed time (TIMER_PERIOD not accurate)	
+	//zz_fly :: fix possible overflow :: start
+	//note: i am not fix the subtraction. the subtraction is right when overflow happens. but overflowed deltaTime will let if(deltaTime>0) useless.
+	/*
 	uint32 deltaTime = ::GetTickCount() - m_lastProcessTime;
+	*/
+	uint32 deltaTime = 30000 + ::GetTickCount() - m_lastProcessTime;
+	if (deltaTime > 30000)
+		deltaTime -= 30000;
+	else
+		deltaTime = 0;
+	//zz_fly :: end
 	m_lastProcessTime += deltaTime;
 
 	// - Maella -New bandwidth control-
@@ -1848,7 +1879,10 @@ void CDownloadQueue::SetAutoCat(CPartFile* newfile){
 		} else {
 			// regular expression evaluation
 			if (RegularExpressionMatch(catExt,newfile->GetFileName()))
+			{
 				newfile->SetCategory(ix);
+				return; //zz_fly :: Avi3k: fix cat assign
+			}
 		}
 	}
 }

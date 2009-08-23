@@ -44,7 +44,6 @@
 #include "Collection.h"
 #include "kademlia/kademlia/UDPFirewallTester.h"
 #include "md5sum.h"
-#include "SHAHashSet.h" //Xman remove unused AICH-hashes
 #include "SR13-ImportParts.h" //MORPH - Added by SiRoB, Import Parts [SR13] - added by zz_fly
 
 //Xman advanced upload-priority
@@ -389,21 +388,31 @@ int CAddFileThread::Run()
 		Log(GetResString(IDS_HASHINGFILE) + _T(" \"%s\""), strFilePath);
 	
 	CKnownFile* newrecord = new CKnownFile();
+	//zz_fly :: minor issue in case of shutdown while still hashing :: WiZaRd :: start
+	/*
 	if (newrecord->CreateFromFile(m_strDirectory, m_strFilename, m_partfile) && theApp.emuledlg && theApp.emuledlg->IsRunning()) // SLUGFILLER: SafeHash - in case of shutdown while still hashing
+	*/
+	if (newrecord->CreateFromFile(m_strDirectory, m_strFilename, m_partfile))
+	//zz_fly :: end
 	{
 		newrecord->SetSharedDirectory(m_strSharedDir);
 		if (m_partfile && m_partfile->GetFileOp() == PFOP_HASHING)
 			m_partfile->SetFileOp(PFOP_NONE);
-		if (!PostMessage(theApp.emuledlg->m_hWnd, TM_FINISHEDHASHING, (m_pOwner ? 0: (WPARAM)m_partfile), (LPARAM)newrecord))
+		if (theApp.emuledlg == NULL || !theApp.emuledlg->IsRunning() || // SLUGFILLER: SafeHash - in case of shutdown while still hashing 
+			!PostMessage(theApp.emuledlg->m_hWnd, TM_FINISHEDHASHING, (m_pOwner ? 0: (WPARAM)m_partfile), (LPARAM)newrecord))
 			delete newrecord;
 	}
 	else
 	{
+		//zz_fly :: minor issue in case of shutdown while still hashing :: WiZaRd :: start
+		/*
 		if (theApp.emuledlg && theApp.emuledlg->IsRunning())
 		{
+		*/
+		//zz_fly :: end
 			if (m_partfile && m_partfile->GetFileOp() == PFOP_HASHING)
 				m_partfile->SetFileOp(PFOP_NONE);
-		}
+		//}
 
 		// SLUGFILLER: SafeHash - inform main program of hash failure
 		if (m_pOwner && theApp.emuledlg && theApp.emuledlg->IsRunning())
@@ -688,7 +697,10 @@ bool CSharedFileList::CheckAndAddSingleFile(const CString& rstrFilePath)
 	ff.FindNextFile();
 	CheckAndAddSingleFile(ff);
 	ff.Close();
-	HashNextFile();
+	// SLUGFILLER: SafeHash - only hash when there is something to hash
+	if (!waitingforhash_list.IsEmpty())
+	// SLUGFILLER: SafeHash - only hash when there is something to hash
+		HashNextFile();
 	bHaveSingleSharedFiles = true;
 	// GUI updating needs to be done by caller
 	return true;
@@ -919,6 +931,7 @@ void CSharedFileList::SetOutputCtrl(CSharedFilesCtrl* in_ctrl)
 	/*
 	HashNextFile();		// SLUGFILLER: SafeHash - if hashing not yet started, start it now
 	*/
+	LoadSingleSharedFilesList();
 	Reload();
 	//Xman end
 }
@@ -1694,6 +1707,10 @@ bool CSharedFileList::ExcludeFile(CString strFilePath)
 		}
 	}
 
+	//MORPH START - Added by Stulle, Only exclude file if it was not single shared
+	bool bSingleShared = bShared;
+	//MORPH END   - Added by Stulle, Only exlcude file if it was not single shared
+
 	// check if we implicity share this file
 	bShared |= ShouldBeShared(strFilePath.Left(strFilePath.ReverseFind('\\') + 1), strFilePath, false);
 
@@ -1710,7 +1727,10 @@ bool CSharedFileList::ExcludeFile(CString strFilePath)
 	}
 
 	// add to exclude list
-	m_liSingleExcludedFiles.AddTail(strFilePath);
+	//MORPH START - Added by Stulle, Only exclude file if it was not single shared
+	if(!bSingleShared)
+	//MORPH END   - Added by Stulle, Only exlcude file if it was not single shared
+		m_liSingleExcludedFiles.AddTail(strFilePath);
 	
 	// check if the file is in the shared list (doesn't has to for example if it is hashing or not loaded yet) and remove
 	CKnownFile* cur_file;
@@ -1863,40 +1883,15 @@ void CSharedFileList::CheckAndAddSingleFile(const CFileFind& ff){
 		{
 			if (!strShellLinkDir.IsEmpty())
 				DebugLog(_T("Shared link: %s from %s"), strFoundFilePath, strShellLinkDir);
-			//Xman remove unused AICH-hashes
-			/*
 			toadd->SetPath(strFoundDirectory);
 			toadd->SetFilePath(strFoundFilePath);
 			toadd->SetSharedDirectory(strShellLinkDir);
+			//Xman advanced upload-priority
+			/*
 			AddFile(toadd);
 			*/
-			//we must rehash the files without masterhash
-			if(toadd->GetAICHHashset()->GetStatus()==AICH_EMPTY
-				&& theApp.m_AICH_Is_synchronizing == false  //AICH-Sync-Thread has finished the observation of shared files
-				)
-			{
-				if (!IsHashing(strFoundDirectory, ff.GetFileName()) && !theApp.downloadqueue->IsTempFile(strFoundDirectory, ff.GetFileName()) && !thePrefs.IsConfigFile(strFoundDirectory, ff.GetFileName())){
-					UnknownFile_Struct* tohash = new UnknownFile_Struct;
-					tohash->strDirectory = strFoundDirectory;
-					tohash->strName = ff.GetFileName();
-					waitingforhash_list.AddTail(tohash);
-				}
-				else
-					TRACE(_T("%hs: Did not share file \"%s\" - already hashing or temp. file\n"), __FUNCTION__, ff.GetFilePath());
-			}
-			else
-			{
-				toadd->SetPath(strFoundDirectory);
-				toadd->SetFilePath(strFoundFilePath);
-				toadd->SetSharedDirectory(strShellLinkDir);
-				//Xman advanced upload-priority
-				/*
-				AddFile(toadd);
-				*/
-				if(AddFile(toadd))
-					toadd->CheckAUPFilestats(false);
-				//Xman end
-			}
+			if(AddFile(toadd))
+				toadd->CheckAUPFilestats(false);
 			//Xman end
 		}
 	}

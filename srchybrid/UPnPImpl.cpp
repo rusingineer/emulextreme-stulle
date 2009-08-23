@@ -17,6 +17,8 @@
 
 #include "StdAfx.h"
 #include "UPnPImpl.h"
+#include "OtherFunctions.h" //zz_fly :: show UPnP status
+#include "Resource.h" //zz_fly :: show UPnP status
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,3 +62,16 @@ void CUPnPImpl::LateEnableWebServerPort(uint16 nPort)
 		CheckAndRefresh();
 	}
 }
+
+//zz_fly :: show UPnP status :: start
+CString CUPnPImpl::GetStatusString(){
+	switch ( ArePortsForwarded() ){
+		case TRIS_TRUE:
+			return GetResString(IDS_UPNPSTATUS_OK);
+		case TRIS_FALSE:
+			return m_sStatusString.IsEmpty() ? GetResString(IDS_ERROR) : (GetResString(IDS_ERROR) + _T(':') + m_sStatusString);
+		default:
+			return m_sStatusString;
+	}
+}
+//zz_fly :: show UPnP status :: end

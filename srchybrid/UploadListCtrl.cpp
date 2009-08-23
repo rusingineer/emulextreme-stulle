@@ -746,15 +746,15 @@ int CUploadListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 		//Xman version see clientversion in every window
 		case 8:
 			// Maella -Support for tag ET_MOD_VERSION 0x55-
-			if( item1->GetClientSoft() == item2->GetClientSoft() )
-				if(item2->GetVersion() == item1->GetVersion() && item1->GetClientSoft() == SO_EMULE){
-					iResult= item2->DbgGetFullClientSoftVer().CompareNoCase( item1->DbgGetFullClientSoftVer());
+			if(item1->GetClientSoft() == item2->GetClientSoft())
+				if(item1->GetVersion() == item2->GetVersion() && item1->GetClientSoft() == SO_EMULE){
+					iResult = item2->DbgGetFullClientSoftVer().CompareNoCase( item1->DbgGetFullClientSoftVer());
 				}
 				else {
-					iResult= item2->GetVersion() - item1->GetVersion();
+					iResult = item1->GetVersion() - item2->GetVersion();
 				}
 			else
-				iResult= item1->GetClientSoft() - item2->GetClientSoft();
+				iResult = -(item1->GetClientSoft() - item2->GetClientSoft()); // invert result to place eMule's at top
 			break;
 		//Xman end
 

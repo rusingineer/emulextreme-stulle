@@ -3145,7 +3145,13 @@ void CStatisticsDlg::ShowStatistics(bool forceUpdate)
 							cbuffer.Format(_T("v%u.%u: %i (%1.1f%%)"), verMaj, verMin, topcnt, topper*100);
 					}
 					else 
+					//zz_fly :: Fix :: mem-leak :: DolphinX :: Start
+					{
+						if(i < cli_lastCount[0])// Slugfiller: modid
+							stattree.DeleteChildItems(cli_versions[i]);
+					//zz_fly :: Fix :: mem-leak :: DolphinX :: End
 						continue;
+					}//zz_fly :: Fix :: mem-leak
 					
 					if (i >= MAX_SUB_CLIENT_VERSIONS/2)
 						totalOther += topcnt;

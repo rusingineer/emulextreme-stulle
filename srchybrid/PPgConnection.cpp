@@ -301,15 +301,21 @@ void CPPgConnection::LoadSettings(void)
 
 		// don't try on XP SP2 or higher, not needed there anymore
 		if (thePrefs.GetWindowsVersion() == _WINVER_XP_ && IsRunningXPSP2() == 0 && theApp.m_pFirewallOpener->DoesFWConnectionExist())
+		{//zz_fly
 			GetDlgItem(IDC_OPENPORTS)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_PREF_UPNPONSTART)->ShowWindow(SW_HIDE); //zz_fly :: show upnp option when there is enough place
+		}//zz_fly
 		else
+		{//zz_fly
 			GetDlgItem(IDC_OPENPORTS)->ShowWindow(SW_HIDE);
+			GetDlgItem(IDC_PREF_UPNPONSTART)->ShowWindow(SW_SHOW); //zz_fly :: show upnp option when there is enough place
 		
 
 		if (thePrefs.GetWindowsVersion() != _WINVER_95_ && thePrefs.GetWindowsVersion() != _WINVER_98_ && thePrefs.GetWindowsVersion() != _WINVER_NT4_)
 			GetDlgItem(IDC_PREF_UPNPONSTART)->EnableWindow(true);
 		else
 			GetDlgItem(IDC_PREF_UPNPONSTART)->EnableWindow(false);
+		}//zz_fly
 
 		if (thePrefs.IsUPnPEnabled())
 			CheckDlgButton(IDC_PREF_UPNPONSTART, 1);

@@ -357,8 +357,10 @@ bool CUploadQueue::AddUpNextClient(LPCTSTR pszReason, CUpDownClient* directadd){
 	}
 	else
 	{
+#if defined(_DEBUG) || defined(USE_DEBUG_DEVICE) //zz_fly :: DummyCut :: 090213
 		if (thePrefs.GetDebugClientTCPLevel() > 0)
 			DebugSend("OP__AcceptUploadReq", newclient);
+#endif //zz_fly :: DummyCut
 		Packet* packet = new Packet(OP_ACCEPTUPLOADREQ,0);
 		theStats.AddUpDataOverheadFileRequest(packet->size);
 		newclient->SendPacket(packet, true);
@@ -494,6 +496,11 @@ void CUploadQueue::Process() {
 	while(pos != NULL){
         // Get the client. Note! Also updates pos as a side effect.
 		CUpDownClient* cur_client = uploadinglist.GetNext(pos);
+//zz_fly :: possible fix crash :: start
+#if defined(_DEBUG) || defined(_BETA)
+		CUpDownClient* next_client = (pos) ? uploadinglist.GetAt(pos) : NULL;
+#endif
+//zz_fly :: possible fix crash :: end
 		if (thePrefs.m_iDbgHeap >= 2)
 			ASSERT_VALID(cur_client);
 		//It seems chatting or friend slots can get stuck at times in upload.. This needs looked into..
@@ -511,6 +518,29 @@ void CUploadQueue::Process() {
 		} else {
             cur_client->SendBlockData();
         }
+//zz_fly :: possible fix crash :: start
+//note: uploadinglist may be changed by other threads, we have to make sure the pos is valid.
+//		this fix will sightly increase the cpu useage of big uploaders, and nearly not happen.
+//		final version do not add it. perform more test.
+#if defined(_DEBUG) || defined(_BETA)
+		POSITION posTemp = NULL;
+		if (next_client) {
+			posTemp = uploadinglist.Find(next_client);
+		}
+		if (posTemp == NULL && next_client) { //next_client has been deleted
+			posTemp = uploadinglist.Find(cur_client);
+			if (posTemp != NULL)
+				uploadinglist.GetNext(posTemp);
+			else //next_client and cur_client have been deleted, it is better to break
+			{
+				AddLogLine(false, _T("CUploadQueue::Process() happened a exception, break this loop."));
+				break;
+			}
+		}
+		if (posTemp != NULL)
+			pos = posTemp;
+#endif
+//zz_fly :: possible fix crash :: end
 	}
 
 	//Xman
@@ -964,8 +994,12 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 
 	client->AddAskedCount();
 	client->SetLastUpRequest();
+	//zz_fly :: move to CListenSocket::ProcessPacket(), it is better in there :: start
+	///* //test code
 	if (!bIgnoreTimelimit)
 		client->AddRequestCount(client->GetUploadFileID());
+	//*/
+	//zz_fly :: end
 	if (client->IsBanned())
 		return;
 
@@ -1131,8 +1165,10 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 	if (client->IsDownloading())
 	{
 		// he's already downloading and wants probably only another file
+#if defined(_DEBUG) || defined(USE_DEBUG_DEVICE) //zz_fly :: DummyCut :: 090213
 		if (thePrefs.GetDebugClientTCPLevel() > 0)
 			DebugSend("OP__AcceptUploadReq", client);
+#endif //zz_fly :: DummyCut
 		
 		//Xman Close Backdoor v2
 		//a downloading client can simply request an other file during downloading
@@ -1634,7 +1670,7 @@ UINT CUploadQueue::GetWaitingPosition(CUpDownClient* client){
 	/*
 	if (!IsOnUploadQueue(client))
 	*/
-	ASSERT((client->GetUploadState() == US_ONUPLOADQUEUE) == IsOnUploadQueue(client));
+	//ASSERT((client->GetUploadState() == US_ONUPLOADQUEUE) == IsOnUploadQueue(client)); //zz_fly
 	if (client->GetUploadState() != US_ONUPLOADQUEUE)
 		return 0;
 
@@ -1864,10 +1900,21 @@ void CUploadQueue::UploadTimer()
 		//Xman 5.1
 		//Xman skip High-CPU-Load
 		static uint32 lastprocesstime;
+		//zz_fly :: fix possible overflow :: start
+#if defined(_DEBUG) || defined(_BETA) //this is the core of whole program, need more test
+		uint32 deltaTime = 30000 + ::GetTickCount() - lastprocesstime;
+		if (deltaTime > 30000)
+			deltaTime -= 30000;
+		else
+			return;
+		lastprocesstime += deltaTime;
+#else
 		if((::GetTickCount() - lastprocesstime) <=0)
 			return;
 		else
 			lastprocesstime=::GetTickCount();
+#endif
+		//zz_fly :: end
 
 		static uint16 counter;
 

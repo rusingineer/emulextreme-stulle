@@ -47,7 +47,7 @@ int CScheduler::LoadFromFile(){
 	CString strName;
 	CString temp;
 
-	strName.Format(_T("%spreferences.ini"),thePrefs.GetMuleDirectory(EMULE_CONFIGDIR));
+	strName.Format(_T("%spreferences.ini"), thePrefs.GetMuleDirectory(EMULE_CONFIGDIR));
 	CIni ini(strName, _T("Scheduler"));
 	
 	UINT max=ini.GetInt(_T("Count"),0);

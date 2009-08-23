@@ -466,34 +466,15 @@ BOOL CemuleDlg::OnInitDialog()
 	SetStatusBarPartsSize();
 
 	// create main window dialog pages
-	//zz_fly :: prevent crash on create main window
-	//note: new method (.49b) will crash on winxp, but old method may crash on win2k
-	//		so, win2k use new method , others use old method.
-	if(thePrefs.GetWindowsVersion() == _WINVER_2K_ )
-	{
-	//zz_fly :: prevent crash on create main windows end
-		DialogCreateIndirect(serverwnd, IDD_SERVER);
-		DialogCreateIndirect(sharedfileswnd, IDD_FILES);
-		searchwnd->Create(this); // can not use 'DialogCreateIndirect' for the SearchWnd, grrr..
-		DialogCreateIndirect(chatwnd, IDD_CHAT);
-		DialogCreateIndirect(transferwnd, IDD_TRANSFER);
-		DialogCreateIndirect(statisticswnd, IDD_STATISTICS);
-		DialogCreateIndirect(kademliawnd, IDD_KADEMLIAWND);
-		DialogCreateIndirect(ircwnd, IDD_IRC);
-	//zz_fly :: prevent crash on create main windows end
-	}
-	else
-	{
-		serverwnd->Create(IDD_SERVER);
-		sharedfileswnd->Create(IDD_FILES);
-		searchwnd->Create(this);
-		chatwnd->Create(IDD_CHAT);
-		transferwnd->Create(IDD_TRANSFER);
-		statisticswnd->Create(IDD_STATISTICS);
-		kademliawnd->Create(IDD_KADEMLIAWND);
-		ircwnd->Create(IDD_IRC);
-	}
-	//zz_fly :: prevent crash on create main windows end
+	//zz_fly :: the fix(Xtreme 7.0&7.1) is not needed. but the gui in WinXP still has something wrong. see also: CTransferWnd::ResetTransToolbar
+	DialogCreateIndirect(serverwnd, IDD_SERVER);
+	DialogCreateIndirect(sharedfileswnd, IDD_FILES);
+	searchwnd->Create(this); // can not use 'DialogCreateIndirect' for the SearchWnd, grrr..
+	DialogCreateIndirect(chatwnd, IDD_CHAT);
+	DialogCreateIndirect(transferwnd, IDD_TRANSFER);
+	DialogCreateIndirect(statisticswnd, IDD_STATISTICS);
+	DialogCreateIndirect(kademliawnd, IDD_KADEMLIAWND);
+	DialogCreateIndirect(ircwnd, IDD_IRC);
 
 	// with the top rebar control, some XP themes look better with some additional lite borders.. some not..
 	//serverwnd->ModifyStyleEx(0, WS_EX_STATICEDGE);
@@ -859,8 +840,6 @@ void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEv
 			// BEGIN SLUGFILLER: SafeHash - delay load shared files
 			case 6:
 				theApp.emuledlg->status++;
-				//Xman remove unused AICH-hashes
-				theApp.m_AICH_Is_synchronizing=true;
 				theApp.sharedfiles->SetOutputCtrl(&theApp.emuledlg->sharedfileswnd->sharedfilesctrl);
 				theApp.emuledlg->sharedfileswnd->historylistctrl.Init(); //Xman [MoNKi: -Downloaded History-]
 
@@ -891,7 +870,6 @@ void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEv
 					//DestroySplash();
 					theApp.DestroySplash();
 					//Xman end
-					extern BOOL FirstTimeWizard();
 					if (FirstTimeWizard()){
 						// start connection wizard
 						CConnectionWizardDlg conWizard;
@@ -907,6 +885,7 @@ void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEv
 		// Remark: The macro CATCH_DFLT_EXCEPTIONS will not catch all types of exception.
 		//         The exceptions thrown in callback function are not intercepted by the dbghelp.dll (e.g. eMule Dump, crashRpt, etc...)
 		catch(...) {
+			ASSERT( false ); //zz_fly :: let me know it
 			if(theApp.emuledlg != NULL)
 				AddLogLine(true, _T("Unknown %s exception in "), __FUNCTION__);
 		}
@@ -2052,6 +2031,10 @@ LRESULT CemuleDlg::OnFileAllocExc(WPARAM wParam,LPARAM lParam)
 
 LRESULT CemuleDlg::OnFileCompleted(WPARAM wParam, LPARAM lParam)
 {
+	//MORPH START - Added by SiRoB, Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN)
+		return FALSE;
+	//MORPH END   - Added by SiRoB, Fix crash at shutdown
 	CPartFile* partfile = (CPartFile*)lParam;
 	ASSERT( partfile != NULL );
 	if (partfile)
@@ -3453,14 +3436,16 @@ void CemuleDlg::ApplyLogFont(LPLOGFONT plf)
 LRESULT CemuleDlg::OnFrameGrabFinished(WPARAM wParam,LPARAM lParam){
 	CKnownFile* pOwner = (CKnownFile*)wParam;
 	FrameGrabResult_Struct* result = (FrameGrabResult_Struct*)lParam;
-	
-	if (theApp.knownfiles->IsKnownFile(pOwner) || theApp.downloadqueue->IsPartFile(pOwner) ){
-		pOwner->GrabbingFinished(result->imgResults,result->nImagesGrabbed, result->pSender);
-	}
-	else{
-		ASSERT ( false );
-	}
-
+	//MORPH START - Added by SiRoB, Fix crash at shutdown
+	if (theApp.m_app_state != APP_STATE_SHUTTINGDOWN) {
+	//MORPH END   - Added by SiRoB, Fix crash at shutdown
+		if (theApp.knownfiles->IsKnownFile(pOwner) || theApp.downloadqueue->IsPartFile(pOwner) ){
+			pOwner->GrabbingFinished(result->imgResults,result->nImagesGrabbed, result->pSender);
+		}
+		else{
+			ASSERT ( false );
+		}
+	}//MORPH - Added by SiRoB, Fix crash at shutdown
 	delete result;
 	return 0;
 }
@@ -4445,6 +4430,7 @@ LRESULT CemuleDlg::OnUPnPResult(WPARAM wParam, LPARAM lParam){
 	else if (!bWasRefresh)
 		LogWarning(GetResString(IDS_UPNPFAILED));
 
+	serverwnd->UpdateMyInfo(); //zz_fly :: show UPnP status
 	return 0;
 }
 

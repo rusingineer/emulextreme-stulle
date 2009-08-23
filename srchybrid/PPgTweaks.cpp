@@ -101,6 +101,7 @@ CPPgTweaks::CPPgTweaks()
 	//Xman end
 	m_iExtractMetaData = 0;
 	m_bAutoArchDisable = true;
+	m_bIsUPnPEnabled = false; //zz_fly :: add UPnP option in Tweaks
 	m_bCloseUPnPOnExit = true;
 	m_bSkipWANIPSetup = false;
 	m_bSkipWANPPPSetup = false;
@@ -164,6 +165,7 @@ CPPgTweaks::CPPgTweaks()
 	m_htiExtractMetaData = NULL;
 	m_htiAutoArch = NULL;
 	m_htiUPnP = NULL;
+	m_htiIsUPnPEnabled = NULL; //zz_fly :: add UPnP option in Tweaks
 	m_htiCloseUPnPPorts = NULL;
 	m_htiSkipWANIPSetup = NULL;
 	m_htiSkipWANPPPSetup = NULL;
@@ -323,6 +325,7 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 		// UPnP group
 		//
         m_htiUPnP = m_ctrlTreeOptions.InsertGroup(GetResString(IDS_UPNP), iImgUPnP, TVI_ROOT);
+		m_htiIsUPnPEnabled = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPSTART), m_htiUPnP, m_bIsUPnPEnabled); //zz_fly :: add UPnP option in Tweaks
 		m_htiCloseUPnPPorts = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPCLOSEONEXIT), m_htiUPnP, m_bCloseUPnPOnExit);
 		m_htiSkipWANIPSetup = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPSKIPWANIP), m_htiUPnP, m_bSkipWANIPSetup);
 		m_htiSkipWANPPPSetup = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPSKIPWANPPP), m_htiUPnP, m_bSkipWANPPPSetup);
@@ -337,7 +340,7 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 		
 
 		//Xman Added PaddingLength to Extended preferences
-		m_htiCryptTCPPaddingLength=m_ctrlTreeOptions.InsertItem(_T("Obfuscation-Padding-Length"),TREEOPTSCTRLIMG_EDIT,TREEOPTSCTRLIMG_EDIT,TVI_ROOT);
+		m_htiCryptTCPPaddingLength=m_ctrlTreeOptions.InsertItem(GetResString(IDS_OBFUSCATION_PADDING_LENGTH),TREEOPTSCTRLIMG_EDIT,TREEOPTSCTRLIMG_EDIT,TVI_ROOT);
 		m_ctrlTreeOptions.AddEditBox(m_htiCryptTCPPaddingLength, RUNTIME_CLASS(CNumTreeOptionsEdit));
 		//Xman end
 
@@ -457,6 +460,7 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	/////////////////////////////////////////////////////////////////////////////
 	// UPnP group
 	//
+	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiIsUPnPEnabled, m_bIsUPnPEnabled); //zz_fly :: add UPnP option in Tweaks
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiCloseUPnPPorts, m_bCloseUPnPOnExit);
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiSkipWANIPSetup, m_bSkipWANIPSetup);
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiSkipWANPPPSetup, m_bSkipWANPPPSetup);
@@ -525,6 +529,7 @@ BOOL CPPgTweaks::OnInitDialog()
 	*/
 	//Xman end
 
+	m_bIsUPnPEnabled = thePrefs.IsUPnPEnabled(); //zz_fly :: add UPnP option in Tweaks
 	m_bCloseUPnPOnExit = thePrefs.CloseUPnPOnExit();
 	m_bSkipWANIPSetup = thePrefs.GetSkipWANIPSetup();
 	m_bSkipWANPPPSetup = thePrefs.GetSkipWANPPPSetup();
@@ -672,6 +677,16 @@ BOOL CPPgTweaks::OnApply()
 	//Xman end
 	thePrefs.m_bAutomaticArcPreviewStart = !m_bAutoArchDisable;
 
+	//zz_fly :: add UPnP option in Tweaks :: start
+	if (m_bIsUPnPEnabled){
+		if (!thePrefs.IsUPnPEnabled()){
+			thePrefs.m_bEnableUPnP = true;
+			theApp.emuledlg->StartUPnP();
+		}
+	}
+	else
+		thePrefs.m_bEnableUPnP = false;
+	//zz_fly :: end
 	thePrefs.m_bCloseUPnPOnExit = m_bCloseUPnPOnExit;
 	thePrefs.SetSkipWANIPSetup(m_bSkipWANIPSetup);
 	thePrefs.SetSkipWANPPPSetup(m_bSkipWANPPPSetup);
@@ -784,6 +799,7 @@ void CPPgTweaks::Localize(void)
         if (m_htiFullAlloc) m_ctrlTreeOptions.SetItemText(m_htiFullAlloc, GetResString(IDS_FULLALLOC));
 		if (m_htiAutoArch) m_ctrlTreeOptions.SetItemText(m_htiAutoArch, GetResString(IDS_DISABLE_AUTOARCHPREV));
         if (m_htiUPnP) m_ctrlTreeOptions.SetItemText(m_htiUPnP, GetResString(IDS_UPNP));
+		if (m_htiIsUPnPEnabled) m_ctrlTreeOptions.SetItemText(m_htiIsUPnPEnabled, GetResString(IDS_UPNPSTART)); //zz_fly :: add UPnP option in Tweaks
 		if (m_htiCloseUPnPPorts) m_ctrlTreeOptions.SetItemText(m_htiCloseUPnPPorts, GetResString(IDS_UPNPCLOSEONEXIT));
 		if (m_htiSkipWANIPSetup) m_ctrlTreeOptions.SetItemText(m_htiSkipWANIPSetup, GetResString(IDS_UPNPSKIPWANIP));
 		if (m_htiSkipWANPPPSetup) m_ctrlTreeOptions.SetItemText(m_htiSkipWANPPPSetup, GetResString(IDS_UPNPSKIPWANPPP));
@@ -862,6 +878,7 @@ void CPPgTweaks::OnDestroy()
 	m_htiExtractMetaDataID3Lib = NULL;
 	m_htiAutoArch = NULL;
 	m_htiUPnP = NULL;
+	m_htiIsUPnPEnabled = NULL; //zz_fly :: add UPnP option in Tweaks
 	m_htiCloseUPnPPorts = NULL;
 	m_htiSkipWANIPSetup = NULL;
 	m_htiSkipWANPPPSetup = NULL;

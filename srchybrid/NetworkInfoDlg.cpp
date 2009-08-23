@@ -13,6 +13,8 @@
 #include "kademlia/kademlia/indexed.h"
 #include "WebServer.h"
 #include "clientlist.h"
+#include "UPnPImpl.h" //zz_fly :: show UPnP status
+#include "UPnPImplWrapper.h" //zz_fly :: show UPnP status
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -387,6 +389,20 @@ void CreateNetworkInfo(CRichEditCtrlX& rCtrl, CHARFORMAT& rcfDef, CHARFORMAT& rc
 			strHostname = ipstr(theApp.serverconnect->GetLocalIP());
 		rCtrl << _T("URL:\t") << _T("http://") << strHostname << _T(":") << thePrefs.GetWSPort() << _T("/\r\n");
 	}
+
+	//zz_fly :: show UPnP status :: start
+	//if(thePrefs.GetUPnPNat())
+	if(thePrefs.IsUPnPEnabled() && theApp.m_pUPnPFinder)
+	{
+		rCtrl << _T("\r\n");
+		rCtrl.SetSelectionCharFormat(rcfBold);
+		rCtrl << GetResString(IDS_UPNPSTATUS) << _T("\r\n");
+		rCtrl.SetSelectionCharFormat(rcfDef);
+		//CString upnpinfo = theApp.m_UPnPNat.GetLastError(); //ACAT UPnP
+		CString upnpinfo = theApp.m_pUPnPFinder->GetImplementation() ? theApp.m_pUPnPFinder->GetImplementation()->GetStatusString() : _T(""); //Official UPNP
+		rCtrl << (upnpinfo.IsEmpty() ? _T("Unknown") : upnpinfo) << _T("\r\n");
+	}
+	//zz_fly :: show UPnP status :: end
 
 	//Xman show Hash always at end
 	if (!bFullInfo)

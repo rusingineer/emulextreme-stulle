@@ -2293,6 +2293,7 @@
 #define IDC_SPIN1                       2997
 #define IDC_TOOLTIPDELAY_SPIN           2997
 #define IDC_CHECK_FILE_OPEN             2998
+// ==========  Xtreme Mod  ==========
 #define IDS_DROPNONEEDEDSRCS            3000
 #define IDS_DROPQUEUEFULLSRCS           3001
 #define IDS_DROPQUEUETOOMANY            3002
@@ -2429,13 +2430,13 @@
 #define IDS_ANTILEECHERUSERHASH_CHECK   3201
 //zz_fly :: Start
 //upnp status
-#define IDS_UPNPSTATUS					3350
-#define IDS_UPNPSTATUS_OK				3351
-#define IDS_UPNPSTATUS_NOTINLAN			3352
-#define IDS_UPNPSTATUS_ERROR			3353
-#define IDS_UPNPSTATUS_PORTINUSE		3354
-#define IDS_UPNPSTATUS_PORTINUSE2		3355
-#define IDS_UPNP_REBINDTEXT				3356
+#define IDS_UPNPSTATUS                  3350
+#define IDS_UPNPSTATUS_OK               3351
+#define IDS_UPNPSTATUS_NOTINLAN         3352
+#define IDS_UPNPSTATUS_ERROR            3353
+#define IDS_UPNPSTATUS_PORTINUSE        3354
+#define IDS_UPNPSTATUS_PORTINUSE2       3355
+#define IDS_UPNP_REBINDTEXT             3356
 //import parts
 #define IDS_IMPORTPARTS                 3357
 #define IDS_IMPORTPARTS_STOP            3358

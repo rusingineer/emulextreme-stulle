@@ -479,6 +479,7 @@ void CPartFile::AssertValid() const
 	//Xman end
 	(void)m_lastRefreshedDLDisplay;
 	m_downloadingSourceList.AssertValid();
+	m_downloadingDeleteList.AssertValid(); //zz_fly :: delayed deletion of downloading source :: Enig123
 	m_BufferedData_list.AssertValid();
 	(void)m_nTotalBufferData;
 	(void)m_nLastBufferFlushTime;
@@ -717,6 +718,7 @@ EPartFileLoadResult CPartFile::ImportShareazaTempfile(LPCTSTR in_directory,LPCTS
 
 		if (pOutCheckFileFormat != NULL){
 			*pOutCheckFileFormat = PMT_SHAREAZA;
+			sdFile.Close(); //zz_fly :: bug fix :: DolphinX
 			return PLR_CHECKSUCCESS;
 		}
 
@@ -1556,6 +1558,9 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 		return false;
 	}
 
+	//Xman
+	// BEGIN SLUGFILLER: SafeHash - don't update the file date unless all parts are hashed
+	/*
 	// get filedate
 	CTime lwtime;
 	try{
@@ -1574,6 +1579,28 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 	}
 	else
 		AdjustNTFSDaylightFileTime(m_tUtcLastModified, ff.GetFilePath());
+	*/
+	if (!m_PartsHashing){
+		// get filedate
+		CTime lwtime;
+		try{
+			ff.GetLastWriteTime(lwtime);
+		}
+		catch(CException* ex){
+			ex->Delete();
+		}
+		m_tLastModified = (UINT)lwtime.GetTime();
+		if (m_tLastModified == 0)
+			m_tLastModified = (UINT)-1;
+		m_tUtcLastModified = m_tLastModified;
+		if (m_tUtcLastModified == -1){
+			if (thePrefs.GetVerbose())
+				AddDebugLogLine(false, _T("Failed to get file date of \"%s\" (%s)"), m_partmetfilename, GetFileName());
+		}
+		else
+			AdjustNTFSDaylightFileTime(m_tUtcLastModified, ff.GetFilePath());
+	}
+	// END SLUGFILLER: SafeHash
 	ff.Close();
 
 	CString strTmpFile(m_fullname);
@@ -1809,6 +1836,35 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 				AfxThrowFileException(CFileException::hardIO, GetLastError(), file.GetFileName());
 		}
 		file.Close();
+		//zz_fly :: better .part.met file backup and recovery :: Enig123 :: Start
+		//note: whenever it crashed, we at least have one valid copy. although the valid copy is not new enough, but it is valid.
+		if( bDontOverrideBak || thePrefs.eMuleChrashedLastSession() )
+		{
+			//when bDontOverrideBak == true, .part.met was already corruptted, just remove it.
+			try {
+				CFile::Remove(m_fullname);
+			}
+			catch(CFileException* e){
+				e->Delete();
+			}
+		}
+		else
+		{
+			try {
+				CFile::Remove(m_fullname + PARTMET_BAK_EXT);
+			}
+			catch(CFileException* e){
+				e->Delete();
+			}
+			try {
+				CFile::Rename(m_fullname, m_fullname + PARTMET_BAK_EXT);
+			}
+			catch(CFileException* e){
+				e->Delete();
+			}
+		}
+		CFile::Rename(strTmpFile, m_fullname);
+		//zz_fly :: better .part.met file backup and recovery :: Enig123 :: End
 	}
 	catch(CFileException* error){
 		CString strError;
@@ -1826,7 +1882,8 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 		(void)_tremove(strTmpFile);
 		return false;
 	}
-
+	//zz_fly :: better .part.met file backup and recovery :: Enig123 :: Start
+	/* //not needed
 	// after successfully writing the temporary part.met file...
 	if (_tremove(m_fullname) != 0 && errno != ENOENT){
 		if (thePrefs.GetVerbose())
@@ -1853,7 +1910,8 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 		if (!bDontOverrideBak)
 			DebugLogError(_T("Failed to create backup of %s (%s) - %s"), m_fullname, GetFileName(), GetErrorMessage(GetLastError()));
 	}
-
+	*/
+	//zz_fly :: better .part.met file backup and recovery :: Enig123 :: End
 	return true;
 }
 
@@ -2801,6 +2859,12 @@ EPartFileStatus CPartFile::GetStatus(bool ignorepause) const
 }
 
 void CPartFile::AddDownloadingSource(CUpDownClient* client){
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+	POSITION pos2 = m_downloadingDeleteList.Find(client); //for security, delete it from m_downloadingDeleteList first
+	if(pos2)
+		m_downloadingDeleteList.RemoveAt(pos2);
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
+
 	POSITION pos = m_downloadingSourceList.Find(client); // to be sure
 	if(pos == NULL){
 		m_downloadingSourceList.AddTail(client);
@@ -2812,12 +2876,26 @@ void CPartFile::AddDownloadingSource(CUpDownClient* client){
 		m_sourceListChange = true;
 		//Xman end
 	}
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+	else if(pos2)	//the source had been deleted, but still in m_downloadingSourceList (delayed deletion).
+		theApp.emuledlg->transferwnd->downloadclientsctrl.AddClient(client); //only need to add it to downloadclientsctrl
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 }
 
 void CPartFile::RemoveDownloadingSource(CUpDownClient* client){
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+	if(m_downloadingDeleteList.Find(client) != NULL) //already trying to delete
+		return;
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
+
 	POSITION pos = m_downloadingSourceList.Find(client); // to be sure
 	if(pos != NULL){
+		//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+		/*
 		m_downloadingSourceList.RemoveAt(pos);
+		*/
+		m_downloadingDeleteList.AddTail(client);
+		//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 		theApp.emuledlg->transferwnd->downloadclientsctrl.RemoveClient(client);
 		//Xman
 		// Maella -New bandwidth control-
@@ -2841,7 +2919,7 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 	DWORD dwCurTick = ::GetTickCount();
 	if (dwCurTick < m_nLastBufferFlushTime)
 	{
-		ASSERT( false );
+		//ASSERT( false ); //zz_fly :: Xman make a jitter in this value
 		m_nLastBufferFlushTime = dwCurTick;
 	}
 
@@ -2903,13 +2981,21 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 	//         processing or the entries swapped.
 	// Check if the list has been modified during the processing
 	m_sourceListChange = false;
+	DoDelayedDeletion(); //zz_fly :: delayed deletion of downloading source :: Enig123
 
 	POSITION pos = m_downloadingSourceList.GetHeadPosition();
 	for(int i = 0; i < m_downloadingSourceList.GetCount() && pos != NULL; i++){
 		POSITION cur_pos = pos;
 		CUpDownClient* cur_src = m_downloadingSourceList.GetNext(pos);
+		//CUpDownClient* next_src = (pos) ? m_downloadingSourceList.GetAt(pos) : NULL; //zz_fly :: fix crash especially in case drop stalled download activated :: Enig123
+#if defined(_DEBUG) || defined(USE_DEBUG_DEVICE)
 		if (thePrefs.m_iDbgHeap >= 2)
 			ASSERT_VALID( cur_src );
+#endif
+		//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+		if (m_downloadingDeleteList.Find(cur_src)) 
+			continue;
+		//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 
 		if(cur_src->GetDownloadState() != DS_DOWNLOADING){ 
 			ASSERT(FALSE); // Should never happend
@@ -2931,7 +3017,12 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 				// Always call this method to avoid a flag (enabled/disable)
 					cur_src->socket->DisableDownloadLimit();
 					// In case of an exception, the instance of the client might have been deleted
+					//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+					/*
 					if (m_sourceListChange == false && cur_src->IsDownloadingFromPeerCache() && cur_src->m_pPCDownSocket && cur_src->m_pPCDownSocket->IsConnected())
+					*/
+					if ((m_sourceListChange == false || m_downloadingDeleteList.Find(cur_src) == NULL) && cur_src->IsDownloadingFromPeerCache() && cur_src->m_pPCDownSocket && cur_src->m_pPCDownSocket->IsConnected())
+					//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 						cur_src->m_pPCDownSocket->DisableDownloadLimit();
 			}
 			else {
@@ -2962,7 +3053,12 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 					receivedBlock = theApp.pBandWidthControl->GeteMuleIn();
 					cur_src->socket->SetDownloadLimit(tempmaxamount); // Trig OnReceive() (go-n-stop mode)							
 					// In case of an exception, the instance of the client might have been deleted
+					//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+					/*
 					if (m_sourceListChange == false && cur_src->IsDownloadingFromPeerCache() && cur_src->m_pPCDownSocket && cur_src->m_pPCDownSocket->IsConnected())
+					*/
+					if ((m_sourceListChange == false || m_downloadingDeleteList.Find(cur_src) == NULL) && cur_src->IsDownloadingFromPeerCache() && cur_src->m_pPCDownSocket && cur_src->m_pPCDownSocket->IsConnected())
+					//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 						cur_src->m_pPCDownSocket->SetDownloadLimit(tempmaxamount);
 					receivedBlock = theApp.pBandWidthControl->GeteMuleIn() - receivedBlock;
 					//Xman end: avoid the silly window syndrome
@@ -2979,7 +3075,12 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 
 						// Try to 'balance' the download between clients.
 						// Move the 'downloader' at the end of the list.
+						//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+						/*
 						if(m_sourceListChange == false && cur_src->GetDownloadState() == DS_DOWNLOADING){
+						*/
+						if((m_sourceListChange == false || m_downloadingDeleteList.Find(cur_src) == NULL) && cur_src->GetDownloadState() == DS_DOWNLOADING){
+						//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 							m_downloadingSourceList.RemoveAt(cur_pos);
 							m_downloadingSourceList.AddTail(cur_src);
 						}
@@ -2987,7 +3088,12 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 				}
 				//Xman avoid the silly window syndrome
 				// In case of an exception, the instance of the client might have been deleted
+				//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+				/*
 				if(m_sourceListChange == false &&
+				*/
+				if((m_sourceListChange == false || m_downloadingDeleteList.Find(cur_src) == NULL) &&
+				//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 					cur_src->socket != NULL && 
 					cur_src->GetDownloadState() == DS_DOWNLOADING){
 						// Block OnReceive() (go-n-stop mode)	
@@ -2998,7 +3104,33 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 				//Xman end: avoid the silly window syndrome
 			}
 		}
+		//zz_fly :: fix crash especially in case drop stalled download activated :: Enig123 :: start
+		//note: when SourceListChanged, pos may invalid, give a valid pos if possible.
+		/* //these code is ok, but we have another solution
+		if (m_sourceListChange) {
+			POSITION posTemp = NULL;
+			if (next_src) {
+				posTemp = m_downloadingSourceList.Find(next_src);
+			}
+			if (posTemp == NULL) { //next_src has been deleted
+				posTemp = m_downloadingSourceList.Find(cur_src);
+				if (posTemp != NULL)
+					m_downloadingSourceList.GetNext(posTemp);
+				else //next_src and cur_src have been deleted, it is better to break
+					break;
+			}
+			if (posTemp != NULL)
+				pos = posTemp;
+		}
+		*/
+		//zz_fly :: end
 	}
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: start
+	/* //one cleanup is enough, save cpu cycle
+	if (m_sourceListChange)
+		DoDelayedDeletion();
+	*/
+	//zz_fly :: end
 
 
 	if(fullProcess)
@@ -6595,7 +6727,7 @@ UINT CPartFile::GetCategory() /*const*/
 //Xman checkmark to catogory at contextmenu of downloadlist
 UINT CPartFile::GetConstCategory() const
 {
-	return m_category > (UINT)(thePrefs.GetCatCount() - 1) - 1 ? 0:m_category;
+	return m_category > (UINT)(thePrefs.GetCatCount() - 1) ? 0 : m_category;
 }
 //Xman end
 
@@ -6779,7 +6911,12 @@ uint32 CPartFile::GetDownloadSpeedInPart(uint16 forpart, CUpDownClient* current_
 	uint32 parttransferrate=0;
 	for(POSITION pos = m_downloadingSourceList.GetHeadPosition(); pos != NULL;)
 	{
-		CUpDownClient* cur_src = srclist.GetNext(pos);
+		//CUpDownClient* cur_src = srclist.GetNext(pos); //why we iterate in srclist?
+		CUpDownClient* cur_src = m_downloadingSourceList.GetNext(pos);
+		//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+		if (cur_src == NULL || m_downloadingDeleteList.Find(cur_src)) 
+			continue;
+		//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 		if(cur_src->m_lastPartAsked==forpart && cur_src!=current_source)
 		{
 			parttransferrate += cur_src->GetDownloadDatarate10();
@@ -7239,394 +7376,6 @@ bool CPartFile::GetNextRequestedBlock_zz(CUpDownClient* sender,
 	return (newBlockCount > 0);
 }
 // Maella end
-
-//Xman Dynamic block request
-bool CPartFile::GetNextRequestedBlock_Maella(CUpDownClient* sender, 
-									  Requested_Block_Struct** newblocks, 
-									  uint16* count) /*const*/
-{
-	// The purpose of this function is to return a list of blocks (~180KB) to
-	// download. To avoid a prematurely stop of the downloading, all blocks that 
-	// are requested from the same source must be located within the same 
-	// chunk (=> part ~9MB).
-	//  
-	// The selection of the chunk to download is one of the CRITICAL parts of the 
-	// edonkey network. The selection algorithm must insure the best spreading
-	// of files.
-	//  
-	// The selection is based on 4 criteria:
-	//  1.  Frequency of the chunk (availability), very rare chunks must be downloaded 
-	//      as quickly as possible to become a new available source.
-	//  2.  Parts used for preview (first + last chunk), preview or check a 
-	//      file (e.g. movie, mp3)
-	//  3.  Request state (downloading in process), try to ask each source for another 
-	//      chunk. Spread the requests between all sources.
-	//  4.  Completion (shortest-to-complete), partially retrieved chunks should be 
-	//      completed before starting to download other one.
-	//  
-	// The frequency criterion defines three zones: very rare (<10%), rare (<50%)
-	// and common (>30%). Inside each zone, the criteria have a specific ‘weight’, used 
-	// to calculate the priority of chunks. The chunk(s) with the highest 
-	// priority (highest=0, lowest=0xffff) is/are selected first.
-	//  
-	//          very rare   (preview)       rare                      common
-	//    0% <---- +0 pt ----> 10% <----- +10000 pt -----> 50% <---- +20000 pt ----> 100%
-	// 1.  <------- frequency: +25*frequency pt ----------->
-	// 2.  <- preview: +1 pt --><-------------- preview: set to 10000 pt ------------->
-	// 3.                       <------ request: download in progress +20000 pt ------>
-	// 4a. <- completion: 0% +100, 25% +75 .. 100% +0 pt --><-- !req => completion --->
-	// 4b.                                                  <--- req => !completion -->
-	//  
-	// Unrolled, the priority scale is:
-	//  
-	// 0..xxxx       unrequested and requested very rare chunks
-	// 10000..1xxxx  unrequested rare chunks + unrequested preview chunks
-	// 20000..2xxxx  unrequested common chunks (priority to the most complete)
-	// 30000..3xxxx  requested rare chunks + requested preview chunks
-	// 40000..4xxxx  requested common chunks (priority to the least complete)
-	//
-	// This algorithm usually selects first the rarest chunk(s). However, partially
-	// complete chunk(s) that is/are close to completion may overtake the priority 
-	// (priority inversion).
-	// For the common chuncks, the algorithm tries to spread the dowload between
-	// the sources
-	//
-
-	// Check input parameters
-	if(count == 0)
-		return false;
-	if(sender->GetPartStatus() == NULL)
-		return false;
-
-	// Define and create the list of the chunks to download
-	const uint16 partCount = GetPartCount();
-	CList<Chunk> chunksList(partCount);
-
-
-	//Xman Dynamic block request (netfinity/Xman)
-	//uint16 countin=*count; //Xman for debug 
-	uint64	bytesPerRequest = EMBLOCKSIZE;
-	//Xman 5.4.2: removed the faster chunk completion because: 
-	//e.g. downloading 2 different chunks from 2 different sources... there is no need 
-	//to reduce the blocksize for the slow source. It would only make sense if we know
-	//that both sources are downloading the same chunk ==>would need much more calculation
-	//also reducing the blocksize means more stress for the uploader. Only do it at the end of the download!
-	uint64	bytesLeftToDownload = GetFileSize()-GetCompletedSize();
-	uint32	fileDatarate = max(GetDownloadDatarate10(), UPLOAD_CLIENT_DATARATE); // Always assume file is being downloaded at at least 3072 B/s 
-	uint32	sourceDatarate = max(sender->GetDownloadDatarate10(), 22); // Always assume client is uploading at at least 25 B/s //Xman changed from 10
-	uint32	timeToFileCompletion = max((uint32) (bytesLeftToDownload / (uint64) fileDatarate) + 1, 10); // Always assume it will take atleast 10 seconds to complete
-	bool	is_slow_source=false; 
-
-	bytesPerRequest = (sourceDatarate * timeToFileCompletion) >>1;
-
-	//uint64 bytesPerRequest_total=bytesPerRequest; //Xman for debug
-
-	uint16 remainingblocks = sender->GetRemainingBlocksToDownload();
-
-	UINT blockstorequest;
-	if (bytesPerRequest > EMBLOCKSIZE) {
-		blockstorequest = (UINT)(bytesPerRequest/EMBLOCKSIZE);
-		bytesPerRequest = EMBLOCKSIZE;
-	}
-	else
-		blockstorequest = 1;
-	if(remainingblocks >= blockstorequest)
-		return false;
-
-	*count = (uint16)min(blockstorequest - remainingblocks , *count);
-
-	if (bytesPerRequest < 10240)
-	{
-		// Let an other client request this packet if we are close to completion and source is slow
-		// Use the true file datarate here, otherwise we might get stuck in NNP state
-		if (GetDownloadDatarate10()>0)
-		{
-			uint32 realtimeToFileCompletion=(uint32)(bytesLeftToDownload/GetDownloadDatarate10());
-
-			if (!requestedblocks_list.IsEmpty() && realtimeToFileCompletion < 30 && bytesPerRequest < 3400 /* && 5 * sourceDatarate < GetDownloadDatarate10()*/)
-			{
-				is_slow_source=true;
-			}
-		}
-		bytesPerRequest = 10240;
-	}
-
-	if(sender->GetDownTimeDifference(false)< 10001 && bytesLeftToDownload > 1024*1024 && bytesPerRequest <= 10240)  //we need 10 seconds until a proper Speed measurement
-	{
-		bytesPerRequest = 5*10240; //don´t let the first request become too short !!
-	}
-
-
-	//Xman for debug
-	//AddDebugLogLine(false, _T("DBR: Trying to request %u blocks(%u) of size(%u): %u for client:%s, file: %s"), *count, countin, (uint32)bytesPerRequest,(uint32)bytesPerRequest_total,  sender->DbgGetClientInfo(), GetFileName());
-	//AddDebugLogLine(false, _T("DBR+: bytesLeftToDownload:%u, timeToFileCompletion:%u, fileDatarate: %u, sourceDatarate=%u(%u), pending:%u"), (uint32)bytesLeftToDownload, timeToFileCompletion, fileDatarate, sourceDatarate,sender->GetDownloadDatarate(), sender->GetPendingBlockCount());
-
-	//prevent an endless loop
-	bool chunklist_initialized=false;
-
-	//Xman end
-
-	// Main loop
-	uint16 newBlockCount = 0;
-	while(newBlockCount != *count){
-		// Create a request block stucture if a chunk has been previously selected
-		if(sender->m_lastPartAsked != (uint16)-1){
-			//Xman Dynamic block request
-			//a slow source could be dropped when there are fast sources and the fiel is near to completion
-			//but it could happen that we drop a slow source, although it is the only one which has the last part needed
-			//now I drop only if there are no other (and faster) clients uploading the wanted chunk
-			if (is_slow_source && 5 * sourceDatarate < GetDownloadSpeedInPart(sender->m_lastPartAsked,sender) )
-			{
-				DebugLog(_T("No request block given as source is slow and chunk near completion! -->trying an other chunk"));
-				//return false;
-
-				// => Try to select another chunk
-				sender->m_lastPartAsked = (uint16)-1;
-			}
-			else
-			{
-			//Xman end
-
-			Requested_Block_Struct* pBlock = new Requested_Block_Struct;
-			if(GetNextEmptyBlockInPart(sender->m_lastPartAsked, pBlock, bytesPerRequest) == true){ //Xman Dynamic block request (netfinity/Xman)
-				// Keep a track of all pending requested blocks
-				requestedblocks_list.AddTail(pBlock);
-				// Update list of blocks to return
-				newblocks[newBlockCount++] = pBlock;
-				// Skip end of loop (=> CPU load)
-				continue;
-			} 
-			else {
-				// All blocks for this chunk have been already requested
-				delete pBlock;
-				// => Try to select another chunk
-				sender->m_lastPartAsked = (uint16)-1;
-			}
-			}//Xman Dynamic block request
-		}
-
-		// Check if a new chunk must be selected (e.g. download starting, previous chunk complete)
-		if(sender->m_lastPartAsked == (uint16)-1){
-
-			// Quantify all chunks (create list of chunks to download) 
-			// This is done only one time and only if it is necessary (=> CPU load)
-			if(chunksList.IsEmpty() == TRUE && chunklist_initialized==false){ //Xman Dynamic block request
-				// Indentify the locally missing part(s) that this source has
-				for(uint16 i = 0; i < partCount; i++){
-					if(sender->IsPartAvailable(i) == true && GetNextEmptyBlockInPart(i, NULL) == true){
-						// Create a new entry for this chunk and add it to the list
-						Chunk newEntry;
-						newEntry.part = i;
-						newEntry.frequency = m_SrcpartFrequency[i];
-						chunksList.AddTail(newEntry);
-					}
-				}
-				chunklist_initialized = true; //Xman Dynamic block request
-
-				// Check if any block(s) could be downloaded
-				if(chunksList.IsEmpty() == TRUE){
-					break; // Exit main loop while()
-				}
-
-				// Define the bounds of the three zones (very rare, rare)
-				// more depending on available sources
-				uint8 modif=10;
-				if (GetSourceCount()>800) modif=2; else if (GetSourceCount()>200) modif=5;
-				//Xman better chunk selection
-				uint16 limit= (uint16)ceil((float)modif*GetSourceCount()/ 100) + 1; //Xman: better if we have very low sources
-				//if (limit==0) limit=1;
-
-				const uint16 veryRareBound = limit;
-				const uint16 rareBound = 2*limit;
-
-				// Cache Preview state (Criterion 2)
-				const bool isPreviewEnable = (thePrefs.GetPreviewPrio() || thePrefs.IsExtControlsEnabled() && GetPreviewPrio()) && IsPreviewableFileType();
-
-				// Collect and calculate criteria for all chunks
-				for(POSITION pos = chunksList.GetHeadPosition(); pos != NULL; ){
-					Chunk& cur_chunk = chunksList.GetNext(pos);
-
-					// Offsets of chunk
-					const uint64 uStart = (uint64)cur_chunk.part * PARTSIZE;
-					const uint64 uEnd  = ((GetFileSize() - (uint64)1) < (uStart + PARTSIZE - 1)) ? 
-						(GetFileSize() - (uint64)1) : (uStart + PARTSIZE - 1);
-					ASSERT( uStart <= uEnd );
-
-					// Criterion 2. Parts used for preview
-					// Remark: - We need to download the first part and the last part(s).
-					//        - When the last part is very small, it's necessary to 
-					//          download the two last parts.
-					bool critPreview = false;
-					if(isPreviewEnable == true){
-						if(cur_chunk.part == 0){
-							critPreview = true; // First chunk
-						}
-						else if(cur_chunk.part == partCount-1){
-							critPreview = true; // Last chunk 
-						}
-						else if(cur_chunk.part == partCount-2){
-							// Last chunk - 1 (only if last chunk is too small)
-							if( (GetFileSize() - uEnd) < (uint64)PARTSIZE/3){
-								critPreview = true; // Last chunk - 1
-							}
-						}
-					}
-
-					// Criterion 3. Request state (downloading in process from other source(s))
-					const bool critRequested = cur_chunk.frequency > veryRareBound &&  // => CPU load
-						IsAlreadyRequested(uStart, uEnd);
-
-					// Criterion 4. Completion
-					uint64 partSize = PARTSIZE;
-					for(POSITION pos = gaplist.GetHeadPosition(); pos != NULL; ) {
-						const Gap_Struct* cur_gap = gaplist.GetNext(pos);
-						// Check if Gap is into the limit
-						if(cur_gap->start < uStart) {
-							if(cur_gap->end > uStart && cur_gap->end < uEnd) {
-								partSize -= cur_gap->end - uStart + 1;
-							}
-							else if(cur_gap->end >= uEnd) {
-								partSize = 0;
-								break; // exit loop for()
-							}
-						}
-						else if(cur_gap->start <= uEnd) {
-							if(cur_gap->end < uEnd) {
-								partSize -= cur_gap->end - cur_gap->start + 1;
-							}
-							else {
-								partSize -= uEnd - cur_gap->start + 1;
-							}
-						}
-					}
-					const uint16 critCompletion = (uint16)(partSize/(PARTSIZE/100)); // in [%]
-
-					// Calculate priority with all criteria
-					if(cur_chunk.frequency <= veryRareBound){
-						// 0..xxxx unrequested + requested very rare chunks
-						cur_chunk.rank = (25 * cur_chunk.frequency) +      // Criterion 1
-							((critPreview == true) ? 0 : 1) + // Criterion 2
-							(100 - critCompletion);           // Criterion 4
-					}
-					else if(critPreview == true){
-						// 10000..10100  unrequested preview chunks
-						// 30000..30100  requested preview chunks
-						cur_chunk.rank = ((critRequested == false) ? 10000 : 30000) + // Criterion 3
-							(100 - critCompletion);                      // Criterion 4
-					}
-					else if(cur_chunk.frequency <= rareBound){
-						// 10101..1xxxx  unrequested rare chunks
-						// 30101..3xxxx  requested rare chunks
-						cur_chunk.rank = (25 * cur_chunk.frequency) +                 // Criterion 1 
-							((critRequested == false) ? 10101 : 30101) + // Criterion 3
-							(100 - critCompletion);                      // Criterion 4
-					}
-					else { // common chunk
-						if(critRequested == false){ // Criterion 3
-							// 20000..2xxxx  unrequested common chunks
-							cur_chunk.rank = 20000 +                // Criterion 3
-								(100 - critCompletion); // Criterion 4
-						}
-						else{
-							// 40000..4xxxx  requested common chunks
-							// Remark: The weight of the completion criterion is inversed
-							//         to spead the requests over the completing chunks. 
-							//         Without this, the chunk closest to completion will  
-							//         received every new sources.
-							cur_chunk.rank = 40000 +                // Criterion 3
-								(critCompletion);       // Criterion 4				
-						}
-					}
-				}
-			}
-
-			// Select the next chunk to download
-			if(chunksList.IsEmpty() == FALSE){
-				// Find and count the chunck(s) with the highest priority
-				uint16 count = 0; // Number of found chunks with same priority
-				uint16 rank = 0xffff; // Highest priority found
-				for(POSITION pos = chunksList.GetHeadPosition(); pos != NULL; ){
-					const Chunk& cur_chunk = chunksList.GetNext(pos);
-					if(cur_chunk.rank < rank){
-						count = 1;
-						rank = cur_chunk.rank;
-					}
-					else if(cur_chunk.rank == rank){
-						count++;
-					}
-				}
-
-				// Use a random access to avoid that everybody tries to download the 
-				// same chunks at the same time (=> spread the selected chunk among clients)
-				uint16 randomness = 1 + (uint16)((((uint32)rand()*(count-1))+(RAND_MAX/2))/RAND_MAX);
-				for(POSITION pos = chunksList.GetHeadPosition(); ; ){
-					POSITION cur_pos = pos;
-					const Chunk& cur_chunk = chunksList.GetNext(pos);
-					if(cur_chunk.rank == rank){
-						randomness--; 
-						if(randomness == 0){
-							// Selection process is over 
-							sender->m_lastPartAsked = cur_chunk.part;
-							// Remark: this list might be reused up to ‘*count’ times
-							chunksList.RemoveAt(cur_pos);
-							break; // exit loop for()
-						}  
-					}
-				}
-			}
-			else {
-				// There is no remaining chunk to download
-				break; // Exit main loop while()
-			}
-		}
-	}
-	// Return the number of the blocks 
-	*count = newBlockCount;
-
-	// Return
-	return (newBlockCount > 0);
-}
-// Maella end
-
-//zz_fly :: remove unused code :: start
-/*
-//Xman Dynamic block request (netfinity/morph)
-uint64 CPartFile::GetRemainingAvailableData(const CUpDownClient* sender) const
-{
-	const uint8* srcstatus = sender->GetPartStatus();
-	if (srcstatus)
-		return GetRemainingAvailableData(srcstatus);
-	return 0;
-}
-uint64 CPartFile::GetRemainingAvailableData(const uint8* srcstatus) const
-{
-	uint64 uTotalGapSizeInCommun = 0;
-	POSITION pos = gaplist.GetHeadPosition();
-	while (pos)
-	{
-		const Gap_Struct* pGap = gaplist.GetNext(pos);
-		uint16 i = (uint16)(pGap->start/PARTSIZE);
-		uint16 end_chunk = (uint16)(pGap->end/PARTSIZE);
-		if (i == end_chunk) {
-			if (srcstatus[i]!=0)
-				uTotalGapSizeInCommun += pGap->end - pGap->start + 1;
-		} 
-		else {
-			if (srcstatus[i]!=0)
-				uTotalGapSizeInCommun += PARTSIZE - pGap->start%PARTSIZE;
-			while (++i < end_chunk) {
-				if ((srcstatus[i]!=0))
-					uTotalGapSizeInCommun += PARTSIZE;
-			}
-			if (srcstatus[end_chunk]!=0)
-				uTotalGapSizeInCommun += pGap->end%PARTSIZE + 1;
-		}
-	}
-	return uTotalGapSizeInCommun;
-}
-//Xman end
-*/
-//zz_fly :: remove unused code :: end
 
 CString CPartFile::GetInfoSummary() const
 {
@@ -8219,6 +7968,394 @@ void CPartFile::RefilterFileComments(){
 	UpdateFileRatingCommentAvail();
 }
 
+//Xman Dynamic block request
+bool CPartFile::GetNextRequestedBlock_Maella(CUpDownClient* sender, 
+									  Requested_Block_Struct** newblocks, 
+									  uint16* count) /*const*/
+{
+	// The purpose of this function is to return a list of blocks (~180KB) to
+	// download. To avoid a prematurely stop of the downloading, all blocks that 
+	// are requested from the same source must be located within the same 
+	// chunk (=> part ~9MB).
+	//  
+	// The selection of the chunk to download is one of the CRITICAL parts of the 
+	// edonkey network. The selection algorithm must insure the best spreading
+	// of files.
+	//  
+	// The selection is based on 4 criteria:
+	//  1.  Frequency of the chunk (availability), very rare chunks must be downloaded 
+	//      as quickly as possible to become a new available source.
+	//  2.  Parts used for preview (first + last chunk), preview or check a 
+	//      file (e.g. movie, mp3)
+	//  3.  Request state (downloading in process), try to ask each source for another 
+	//      chunk. Spread the requests between all sources.
+	//  4.  Completion (shortest-to-complete), partially retrieved chunks should be 
+	//      completed before starting to download other one.
+	//  
+	// The frequency criterion defines three zones: very rare (<10%), rare (<50%)
+	// and common (>30%). Inside each zone, the criteria have a specific ‘weight’, used 
+	// to calculate the priority of chunks. The chunk(s) with the highest 
+	// priority (highest=0, lowest=0xffff) is/are selected first.
+	//  
+	//          very rare   (preview)       rare                      common
+	//    0% <---- +0 pt ----> 10% <----- +10000 pt -----> 50% <---- +20000 pt ----> 100%
+	// 1.  <------- frequency: +25*frequency pt ----------->
+	// 2.  <- preview: +1 pt --><-------------- preview: set to 10000 pt ------------->
+	// 3.                       <------ request: download in progress +20000 pt ------>
+	// 4a. <- completion: 0% +100, 25% +75 .. 100% +0 pt --><-- !req => completion --->
+	// 4b.                                                  <--- req => !completion -->
+	//  
+	// Unrolled, the priority scale is:
+	//  
+	// 0..xxxx       unrequested and requested very rare chunks
+	// 10000..1xxxx  unrequested rare chunks + unrequested preview chunks
+	// 20000..2xxxx  unrequested common chunks (priority to the most complete)
+	// 30000..3xxxx  requested rare chunks + requested preview chunks
+	// 40000..4xxxx  requested common chunks (priority to the least complete)
+	//
+	// This algorithm usually selects first the rarest chunk(s). However, partially
+	// complete chunk(s) that is/are close to completion may overtake the priority 
+	// (priority inversion).
+	// For the common chuncks, the algorithm tries to spread the dowload between
+	// the sources
+	//
+
+	// Check input parameters
+	if(count == 0)
+		return false;
+	if(sender->GetPartStatus() == NULL)
+		return false;
+
+	// Define and create the list of the chunks to download
+	const uint16 partCount = GetPartCount();
+	CList<Chunk> chunksList(partCount);
+
+
+	//Xman Dynamic block request (netfinity/Xman)
+	//uint16 countin=*count; //Xman for debug 
+	uint64	bytesPerRequest = EMBLOCKSIZE;
+	//Xman 5.4.2: removed the faster chunk completion because: 
+	//e.g. downloading 2 different chunks from 2 different sources... there is no need 
+	//to reduce the blocksize for the slow source. It would only make sense if we know
+	//that both sources are downloading the same chunk ==>would need much more calculation
+	//also reducing the blocksize means more stress for the uploader. Only do it at the end of the download!
+	uint64	bytesLeftToDownload = GetFileSize()-GetCompletedSize();
+	uint32	fileDatarate = max(GetDownloadDatarate10(), UPLOAD_CLIENT_DATARATE); // Always assume file is being downloaded at at least 3072 B/s 
+	uint32	sourceDatarate = max(sender->GetDownloadDatarate10(), 22); // Always assume client is uploading at at least 25 B/s //Xman changed from 10
+	uint32	timeToFileCompletion = max((uint32) (bytesLeftToDownload / (uint64) fileDatarate) + 1, 10); // Always assume it will take atleast 10 seconds to complete
+	bool	is_slow_source=false; 
+
+	bytesPerRequest = (sourceDatarate * timeToFileCompletion) >>1;
+
+	//uint64 bytesPerRequest_total=bytesPerRequest; //Xman for debug
+
+	uint16 remainingblocks = sender->GetRemainingBlocksToDownload();
+
+	UINT blockstorequest;
+	if (bytesPerRequest > EMBLOCKSIZE) {
+		blockstorequest = (UINT)(bytesPerRequest/EMBLOCKSIZE);
+		bytesPerRequest = EMBLOCKSIZE;
+	}
+	else
+		blockstorequest = 1;
+	if(remainingblocks >= blockstorequest)
+		return false;
+
+	*count = (uint16)min(blockstorequest - remainingblocks , *count);
+
+	if (bytesPerRequest < 10240)
+	{
+		// Let an other client request this packet if we are close to completion and source is slow
+		// Use the true file datarate here, otherwise we might get stuck in NNP state
+		if (GetDownloadDatarate10()>0)
+		{
+			uint32 realtimeToFileCompletion=(uint32)(bytesLeftToDownload/GetDownloadDatarate10());
+
+			if (!requestedblocks_list.IsEmpty() && realtimeToFileCompletion < 30 && bytesPerRequest < 3400 /* && 5 * sourceDatarate < GetDownloadDatarate10()*/)
+			{
+				is_slow_source=true;
+			}
+		}
+		bytesPerRequest = 10240;
+	}
+
+	if(sender->GetDownTimeDifference(false)< 10001 && bytesLeftToDownload > 1024*1024 && bytesPerRequest <= 10240)  //we need 10 seconds until a proper Speed measurement
+	{
+		bytesPerRequest = 5*10240; //don´t let the first request become too short !!
+	}
+
+
+	//Xman for debug
+	//AddDebugLogLine(false, _T("DBR: Trying to request %u blocks(%u) of size(%u): %u for client:%s, file: %s"), *count, countin, (uint32)bytesPerRequest,(uint32)bytesPerRequest_total,  sender->DbgGetClientInfo(), GetFileName());
+	//AddDebugLogLine(false, _T("DBR+: bytesLeftToDownload:%u, timeToFileCompletion:%u, fileDatarate: %u, sourceDatarate=%u(%u), pending:%u"), (uint32)bytesLeftToDownload, timeToFileCompletion, fileDatarate, sourceDatarate,sender->GetDownloadDatarate(), sender->GetPendingBlockCount());
+
+	//prevent an endless loop
+	bool chunklist_initialized=false;
+
+	//Xman end
+
+	// Main loop
+	uint16 newBlockCount = 0;
+	while(newBlockCount != *count){
+		// Create a request block stucture if a chunk has been previously selected
+		if(sender->m_lastPartAsked != (uint16)-1){
+			//Xman Dynamic block request
+			//a slow source could be dropped when there are fast sources and the fiel is near to completion
+			//but it could happen that we drop a slow source, although it is the only one which has the last part needed
+			//now I drop only if there are no other (and faster) clients uploading the wanted chunk
+			if (is_slow_source && 5 * sourceDatarate < GetDownloadSpeedInPart(sender->m_lastPartAsked,sender) )
+			{
+				DebugLog(_T("No request block given as source is slow and chunk near completion! -->trying an other chunk"));
+				//return false;
+
+				// => Try to select another chunk
+				sender->m_lastPartAsked = (uint16)-1;
+			}
+			else
+			{
+			//Xman end
+
+			Requested_Block_Struct* pBlock = new Requested_Block_Struct;
+			if(GetNextEmptyBlockInPart(sender->m_lastPartAsked, pBlock, bytesPerRequest) == true){ //Xman Dynamic block request (netfinity/Xman)
+				// Keep a track of all pending requested blocks
+				requestedblocks_list.AddTail(pBlock);
+				// Update list of blocks to return
+				newblocks[newBlockCount++] = pBlock;
+				// Skip end of loop (=> CPU load)
+				continue;
+			} 
+			else {
+				// All blocks for this chunk have been already requested
+				delete pBlock;
+				// => Try to select another chunk
+				sender->m_lastPartAsked = (uint16)-1;
+			}
+			}//Xman Dynamic block request
+		}
+
+		// Check if a new chunk must be selected (e.g. download starting, previous chunk complete)
+		if(sender->m_lastPartAsked == (uint16)-1){
+
+			// Quantify all chunks (create list of chunks to download) 
+			// This is done only one time and only if it is necessary (=> CPU load)
+			if(chunksList.IsEmpty() == TRUE && chunklist_initialized==false){ //Xman Dynamic block request
+				// Indentify the locally missing part(s) that this source has
+				for(uint16 i = 0; i < partCount; i++){
+					if(sender->IsPartAvailable(i) == true && GetNextEmptyBlockInPart(i, NULL) == true){
+						// Create a new entry for this chunk and add it to the list
+						Chunk newEntry;
+						newEntry.part = i;
+						newEntry.frequency = m_SrcpartFrequency[i];
+						chunksList.AddTail(newEntry);
+					}
+				}
+				chunklist_initialized = true; //Xman Dynamic block request
+
+				// Check if any block(s) could be downloaded
+				if(chunksList.IsEmpty() == TRUE){
+					break; // Exit main loop while()
+				}
+
+				// Define the bounds of the three zones (very rare, rare)
+				// more depending on available sources
+				uint8 modif=10;
+				if (GetSourceCount()>800) modif=2; else if (GetSourceCount()>200) modif=5;
+				//Xman better chunk selection
+				uint16 limit= (uint16)ceil((float)modif*GetSourceCount()/ 100) + 1; //Xman: better if we have very low sources
+				//if (limit==0) limit=1;
+
+				const uint16 veryRareBound = limit;
+				const uint16 rareBound = 2*limit;
+
+				// Cache Preview state (Criterion 2)
+				const bool isPreviewEnable = (thePrefs.GetPreviewPrio() || thePrefs.IsExtControlsEnabled() && GetPreviewPrio()) && IsPreviewableFileType();
+
+				// Collect and calculate criteria for all chunks
+				for(POSITION pos = chunksList.GetHeadPosition(); pos != NULL; ){
+					Chunk& cur_chunk = chunksList.GetNext(pos);
+
+					// Offsets of chunk
+					const uint64 uStart = (uint64)cur_chunk.part * PARTSIZE;
+					const uint64 uEnd  = ((GetFileSize() - (uint64)1) < (uStart + PARTSIZE - 1)) ? 
+						(GetFileSize() - (uint64)1) : (uStart + PARTSIZE - 1);
+					ASSERT( uStart <= uEnd );
+
+					// Criterion 2. Parts used for preview
+					// Remark: - We need to download the first part and the last part(s).
+					//        - When the last part is very small, it's necessary to 
+					//          download the two last parts.
+					bool critPreview = false;
+					if(isPreviewEnable == true){
+						if(cur_chunk.part == 0){
+							critPreview = true; // First chunk
+						}
+						else if(cur_chunk.part == partCount-1){
+							critPreview = true; // Last chunk 
+						}
+						else if(cur_chunk.part == partCount-2){
+							// Last chunk - 1 (only if last chunk is too small)
+							if( (GetFileSize() - uEnd) < (uint64)PARTSIZE/3){
+								critPreview = true; // Last chunk - 1
+							}
+						}
+					}
+
+					// Criterion 3. Request state (downloading in process from other source(s))
+					const bool critRequested = cur_chunk.frequency > veryRareBound &&  // => CPU load
+						IsAlreadyRequested(uStart, uEnd);
+
+					// Criterion 4. Completion
+					uint64 partSize = PARTSIZE;
+					for(POSITION pos = gaplist.GetHeadPosition(); pos != NULL; ) {
+						const Gap_Struct* cur_gap = gaplist.GetNext(pos);
+						// Check if Gap is into the limit
+						if(cur_gap->start < uStart) {
+							if(cur_gap->end > uStart && cur_gap->end < uEnd) {
+								partSize -= cur_gap->end - uStart + 1;
+							}
+							else if(cur_gap->end >= uEnd) {
+								partSize = 0;
+								break; // exit loop for()
+							}
+						}
+						else if(cur_gap->start <= uEnd) {
+							if(cur_gap->end < uEnd) {
+								partSize -= cur_gap->end - cur_gap->start + 1;
+							}
+							else {
+								partSize -= uEnd - cur_gap->start + 1;
+							}
+						}
+					}
+					const uint16 critCompletion = (uint16)(partSize/(PARTSIZE/100)); // in [%]
+
+					// Calculate priority with all criteria
+					if(cur_chunk.frequency <= veryRareBound){
+						// 0..xxxx unrequested + requested very rare chunks
+						cur_chunk.rank = (25 * cur_chunk.frequency) +      // Criterion 1
+							((critPreview == true) ? 0 : 1) + // Criterion 2
+							(100 - critCompletion);           // Criterion 4
+					}
+					else if(critPreview == true){
+						// 10000..10100  unrequested preview chunks
+						// 30000..30100  requested preview chunks
+						cur_chunk.rank = ((critRequested == false) ? 10000 : 30000) + // Criterion 3
+							(100 - critCompletion);                      // Criterion 4
+					}
+					else if(cur_chunk.frequency <= rareBound){
+						// 10101..1xxxx  unrequested rare chunks
+						// 30101..3xxxx  requested rare chunks
+						cur_chunk.rank = (25 * cur_chunk.frequency) +                 // Criterion 1 
+							((critRequested == false) ? 10101 : 30101) + // Criterion 3
+							(100 - critCompletion);                      // Criterion 4
+					}
+					else { // common chunk
+						if(critRequested == false){ // Criterion 3
+							// 20000..2xxxx  unrequested common chunks
+							cur_chunk.rank = 20000 +                // Criterion 3
+								(100 - critCompletion); // Criterion 4
+						}
+						else{
+							// 40000..4xxxx  requested common chunks
+							// Remark: The weight of the completion criterion is inversed
+							//         to spead the requests over the completing chunks. 
+							//         Without this, the chunk closest to completion will  
+							//         received every new sources.
+							cur_chunk.rank = 40000 +                // Criterion 3
+								(critCompletion);       // Criterion 4				
+						}
+					}
+				}
+			}
+
+			// Select the next chunk to download
+			if(chunksList.IsEmpty() == FALSE){
+				// Find and count the chunck(s) with the highest priority
+				uint16 count = 0; // Number of found chunks with same priority
+				uint16 rank = 0xffff; // Highest priority found
+				for(POSITION pos = chunksList.GetHeadPosition(); pos != NULL; ){
+					const Chunk& cur_chunk = chunksList.GetNext(pos);
+					if(cur_chunk.rank < rank){
+						count = 1;
+						rank = cur_chunk.rank;
+					}
+					else if(cur_chunk.rank == rank){
+						count++;
+					}
+				}
+
+				// Use a random access to avoid that everybody tries to download the 
+				// same chunks at the same time (=> spread the selected chunk among clients)
+				uint16 randomness = 1 + (uint16)((((uint32)rand()*(count-1))+(RAND_MAX/2))/RAND_MAX);
+				for(POSITION pos = chunksList.GetHeadPosition(); ; ){
+					POSITION cur_pos = pos;
+					const Chunk& cur_chunk = chunksList.GetNext(pos);
+					if(cur_chunk.rank == rank){
+						randomness--; 
+						if(randomness == 0){
+							// Selection process is over 
+							sender->m_lastPartAsked = cur_chunk.part;
+							// Remark: this list might be reused up to ‘*count’ times
+							chunksList.RemoveAt(cur_pos);
+							break; // exit loop for()
+						}  
+					}
+				}
+			}
+			else {
+				// There is no remaining chunk to download
+				break; // Exit main loop while()
+			}
+		}
+	}
+	// Return the number of the blocks 
+	*count = newBlockCount;
+
+	// Return
+	return (newBlockCount > 0);
+}
+// Maella end
+
+//zz_fly :: remove unused code :: start
+/*
+//Xman Dynamic block request (netfinity/morph)
+uint64 CPartFile::GetRemainingAvailableData(const CUpDownClient* sender) const
+{
+	const uint8* srcstatus = sender->GetPartStatus();
+	if (srcstatus)
+		return GetRemainingAvailableData(srcstatus);
+	return 0;
+}
+uint64 CPartFile::GetRemainingAvailableData(const uint8* srcstatus) const
+{
+	uint64 uTotalGapSizeInCommun = 0;
+	POSITION pos = gaplist.GetHeadPosition();
+	while (pos)
+	{
+		const Gap_Struct* pGap = gaplist.GetNext(pos);
+		uint16 i = (uint16)(pGap->start/PARTSIZE);
+		uint16 end_chunk = (uint16)(pGap->end/PARTSIZE);
+		if (i == end_chunk) {
+			if (srcstatus[i]!=0)
+				uTotalGapSizeInCommun += pGap->end - pGap->start + 1;
+		} 
+		else {
+			if (srcstatus[i]!=0)
+				uTotalGapSizeInCommun += PARTSIZE - pGap->start%PARTSIZE;
+			while (++i < end_chunk) {
+				if ((srcstatus[i]!=0))
+					uTotalGapSizeInCommun += PARTSIZE;
+			}
+			if (srcstatus[end_chunk]!=0)
+				uTotalGapSizeInCommun += pGap->end%PARTSIZE + 1;
+		}
+	}
+	return uTotalGapSizeInCommun;
+}
+//Xman end
+*/
+//zz_fly :: remove unused code :: end
+
 //Xman
 // Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 void CPartFile::CompDownloadRate(){	
@@ -8234,6 +8371,10 @@ void CPartFile::CompDownloadRate(){
 		// Process and retrieve m_nUpDatarate form clients
 		for(POSITION pos = m_downloadingSourceList.GetHeadPosition(); pos != NULL; ){
 			CUpDownClient* cur_client = m_downloadingSourceList.GetNext(pos);
+			//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+			if (m_downloadingDeleteList.Find(cur_client))
+				continue;
+			//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 			if(cur_client->GetDownloadState() == DS_DOWNLOADING){ 
 				cur_client->CompDownloadRate();
 				m_nDownDatarate += cur_client->GetDownloadDatarate();  // [bytes/s]
@@ -8807,24 +8948,31 @@ int CPartHashThread::Run()
 // END SiRoB, SLUGFILLER: SafeHash
 
 //zz_fly :: Drop stalled downloads :: netfinity :: start
-//note: all friend class is removed, i use some getters instead of it.
+//note: all friend class is removed, i use some getters instead of it. revised by Enig123
 bool CPartFile::FindAndDropStalledDownload(CUpDownClient* ignore_client) const
 {
 	bool			dropped = false;
 	CUpDownClient*	candidate = NULL;
-	CUpDownClient*	slowest = NULL;
+	CUpDownClient*	slowest = ignore_client; //Enig123
+
+	DWORD cur_tick = ::GetTickCount(); //Enig123
 
 	try {
 	//DebugLog(_T(__FUNCTION__) _T("; Drop requested!"));
-	for(POSITION pos = m_downloadingSourceList.GetHeadPosition();pos!=0;)
+	for(POSITION pos = m_downloadingSourceList.GetHeadPosition(); pos != NULL; )
 	{
 		CUpDownClient* cur_src = m_downloadingSourceList.GetNext(pos);
+#if defined(_DEBUG) || defined(USE_DEBUG_DEVICE)
 		if (thePrefs.m_iDbgHeap >= 2)
 			ASSERT_VALID( cur_src );
-		if (cur_src && cur_src != ignore_client && cur_src->socket && cur_src->GetDownloadState() == DS_DOWNLOADING /*&& cur_src->m_dwNoNeededPartsPending == 0*/)
+#endif
+		if (cur_src == NULL || m_downloadingDeleteList.Find(cur_src)) //zz_fly :: delayed deletion of downloading source :: Enig123
+			continue;
+
+		if (cur_src != ignore_client && cur_src->socket && cur_src->GetDownloadState() == DS_DOWNLOADING /*&& cur_src->m_dwNoNeededPartsPending == 0*/)
 		{
 			// No activity for more than 5 seconds
-			if ((::GetTickCount() - cur_src->GetLastBlockReceived()) > SEC2MS(10) && (::GetTickCount() - cur_src->socket->GetTimeOutTimer()) > SEC2MS(5))
+			if ((cur_tick - cur_src->GetLastBlockReceived()) > SEC2MS(10) && (cur_tick - cur_src->socket->GetTimeOutTimer()) > SEC2MS(5))
 			{
 				//DebugLog(_T(__FUNCTION__) _T("; Found possible candidate!"));
 				// Blocks requested but nothing received
@@ -8832,21 +8980,13 @@ bool CPartFile::FindAndDropStalledDownload(CUpDownClient* ignore_client) const
 				{
 				//	DebugLog(_T(__FUNCTION__) _T("; Definitly a candidate!"));
 					// Remember client that has been stalled longest 
-					if (candidate == NULL || (cur_src->socket->GetTimeOutTimer() - candidate->socket->GetTimeOutTimer()) > 0)
+					if (candidate == NULL || (cur_tick - cur_src->socket->GetTimeOutTimer() < cur_tick - candidate->socket->GetTimeOutTimer()) )
 						candidate = cur_src;
 				}
 			}
 			// Slowest source that did not just begun a block
-			if (!cur_src->IsPendingBlocksListEmpty() && (::GetTickCount() - cur_src->GetLastBlockReceived()) > SEC2MS(5))
+			if (!cur_src->IsPendingBlocksListEmpty() && (cur_tick - cur_src->GetLastBlockReceived()) > SEC2MS(3)) //zz_fly :: 3 seconds is enough
 			{
-				/* //moved to CUpDownClient::GetBytesRemaining()
-				uint64	bytesRemaining = 0;
-				for (POSITION pos = cur_src->m_PendingBlocks_list.GetHeadPosition(); pos !=0;)
-				{
-					Pending_Block_Struct* pendBlock = cur_src->m_PendingBlocks_list.GetNext(pos);
-					bytesRemaining += (pendBlock->block->EndOffset + 1 - pendBlock->block->StartOffset) - pendBlock->block->transferred;
-				}
-				*/
 				uint32	timeRemaining = (uint32) (cur_src->GetBytesRemaining() / (uint64) max(100, cur_src->GetDownloadDatarate10()));
 				if (timeRemaining > 15)
 				{
@@ -8858,8 +8998,9 @@ bool CPartFile::FindAndDropStalledDownload(CUpDownClient* ignore_client) const
 	}
 
 	// Drop stalled client if any
-	if (candidate == NULL)
+	if (candidate == NULL && slowest != ignore_client) //Enig123
 		candidate = slowest;
+
 	if (candidate != NULL)
 	{
 		//if (candidate->socket)
@@ -8893,3 +9034,22 @@ uint64 CPartFile::GetUnrequestedSize() const
 	return GetFileSize() - requestedSize;
 }
 //zz_fly :: Drop stalled downloads :: netfinity :: end
+//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+void CPartFile::DoDelayedDeletion()
+{
+	if (m_downloadingDeleteList.IsEmpty() || m_downloadingSourceList.IsEmpty())
+		return;
+
+	for(POSITION pos = m_downloadingDeleteList.GetHeadPosition(); pos!=0; )
+	{
+		POSITION posLast = pos;
+		CUpDownClient* cur_src = m_downloadingDeleteList.GetNext(pos);
+
+		POSITION pos2 = m_downloadingSourceList.Find(cur_src);
+		if (pos2) {
+			m_downloadingSourceList.RemoveAt(pos2);
+			m_downloadingDeleteList.RemoveAt(posLast);
+		}
+	}
+}
+//zz_fly :: delayed deletion of downloading source :: Enig123 :: End

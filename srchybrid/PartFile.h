@@ -559,7 +559,11 @@ private:
 	CWinThread* m_AllocateThread;
 	DWORD	m_lastRefreshedDLDisplay;
 	CUpDownClientPtrList m_downloadingSourceList;
-	bool m_sourceListChange; //Xman // Maella -New bandwidth control-
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
+	CUpDownClientPtrList m_downloadingDeleteList;
+	void	DoDelayedDeletion();
+	volatile bool	m_sourceListChange; //Xman // Maella -New bandwidth control-
+	//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 	bool	m_bDeleteAfterAlloc;
     bool	m_bpreviewprio;
 	// Barry - Buffered data to be written

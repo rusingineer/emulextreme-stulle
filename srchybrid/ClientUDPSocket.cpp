@@ -311,7 +311,6 @@ bool CClientUDPSocket::ProcessPacket(const BYTE* packet, UINT size, uint8 opcode
 					DebugRecv("OP_ReaskFilePing", NULL, reqfilehash, ip);
 					DebugSend("OP__FileNotFound", NULL);
 				}
-
 				Packet* response = new Packet(OP_FILENOTFOUND,0,OP_EMULEPROT);
 				theStats.AddUpDataOverheadFileRequest(response->size);
 				if (sender != NULL)
@@ -324,7 +323,6 @@ bool CClientUDPSocket::ProcessPacket(const BYTE* packet, UINT size, uint8 opcode
 			{
 				if (thePrefs.GetDebugClientUDPLevel() > 0)
 					DebugRecv("OP_ReaskFilePing", sender, reqfilehash);
-
 				//Xman uploading problem client
 				//we don't answer this client, to force a tcp connection, then we can add him to upload
 				//Xman 4.8.2 update: we don't answer every client with the flag... because there are buggy clients (shareaza) out 

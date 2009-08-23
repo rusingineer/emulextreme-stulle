@@ -613,6 +613,14 @@ bool CKnownFileList::ShouldPurgeAICHHashset(const CAICHHash& rAICHHash) const
 	const CKnownFile* pFile = NULL;
 	if (m_mapKnownFilesByAICH.Lookup(rAICHHash, pFile))
 	{
+		//Xman remove unused AICH-hashes
+		if (!thePrefs.GetRememberAICH())
+		{
+			if(!pFile->IsPartFile() && // this is neither a download
+				(theApp.sharedfiles && theApp.sharedfiles->GetFileByID(pFile->GetFileHash()) == NULL)) // and nor shared
+				return true; // so purge it immediatly
+		}
+		//Xman end
 		if (!pFile->ShouldPartiallyPurgeFile())
 			return false;
 	}

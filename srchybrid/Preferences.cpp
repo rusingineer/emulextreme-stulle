@@ -651,12 +651,7 @@ LPCTSTR CPreferences::GetConfigFile()
 
 void CPreferences::Init()
 {
-	//zz_fly :: avoid userhash collision :: start
-	/*
 	srand((uint32)time(0)); // we need random numbers sometimes
-	*/
-	srand((uint32)time(0)+(uint32)(GetFreeDiskSpaceX(GetMuleDirectory(EMULE_CONFIGDIR))%1073741824 /*1G, avoid overflow*/ )); // DreaMule: Users with same userhash !
-	//zz_fly :: avoid userhash collision :: end
 
 	prefsExt = new Preferences_Ext_Struct;
 	memset(prefsExt, 0, sizeof *prefsExt);
@@ -3253,12 +3248,13 @@ void CPreferences::LoadCats()
 		/*
 		if (!IsShareableDirectory(newcat->strIncomingPath)
 			|| (!PathFileExists(newcat->strIncomingPath) && !::CreateDirectory(newcat->strIncomingPath, 0)))
+		*/
+		if(!PathFileExists(newcat->strIncomingPath) && !::CreateDirectory(newcat->strIncomingPath, 0))
+		// SLUGFILLER: SafeHash remove - removed installation dir unsharing
 		{
 			newcat->strIncomingPath = GetMuleDirectory(EMULE_INCOMINGDIR);
 			MakeFoldername(newcat->strIncomingPath);
 		}
-		*/
-		// SLUGFILLER: SafeHash remove - removed installation dir unsharing
 		newcat->strComment = ini.GetStringUTF8(L"Comment");
 		newcat->prio = ini.GetInt(L"a4afPriority", PR_NORMAL); // ZZ:DownloadManager
 		newcat->filter = ini.GetInt(L"Filter", 0);

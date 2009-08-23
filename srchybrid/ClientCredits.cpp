@@ -64,24 +64,45 @@ CClientCredits::CClientCredits(CreditStruct* in_credits)
 	m_dwUnSecureWaitTime = 0;
 	m_dwSecureWaitTime = 0;
 	m_dwWaitTimeIP = 0;
+	//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+	/*
 	m_bmarktodelete=false; //Xman Extened credit- table-arragement
+	*/
+	m_nReferredTimes = 0; //Xman Extened credit- table-arragement
+	//zz_fly :: End
 }
 
+//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+/*
 CClientCredits::CClientCredits(const uchar* key)
 {
 	m_pCredits = new CreditStruct;
+*/
+CClientCredits::CClientCredits(const uchar* key, CreditStruct* in_credits)
+{
+	m_pCredits = in_credits;
+//zz_fly :: Optimized :: Enig123, DolphinX :: End
 	memset(m_pCredits, 0, sizeof(CreditStruct));
 	md4cpy(m_pCredits->abyKey, key);
 	InitalizeIdent();
 	m_dwUnSecureWaitTime = ::GetTickCount();
 	m_dwSecureWaitTime = ::GetTickCount();
 	m_dwWaitTimeIP = 0;
+	//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+	/*
 	m_bmarktodelete=false; //Xman Extened credit- table-arragement
+	*/
+	m_nReferredTimes = 0; //Xman Extened credit- table-arragement
+	//zz_fly :: End
 }
 
 CClientCredits::~CClientCredits()
 {
+	//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+	/*
 	delete m_pCredits;
+	*/
+	//zz_fly :: Optimized :: Enig123, DolphinX :: End
 }
 
 void CClientCredits::AddDownloaded(uint32 bytes, uint32 dwForIP) {
@@ -397,11 +418,20 @@ CClientCreditsList::CClientCreditsList()
 CClientCreditsList::~CClientCreditsList()
 {
 	SaveList();
+	//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+	/*
 	CClientCredits* cur_credit;
+	*/
+	ClientCreditContainer* cur_credit;
+	//zz_fly :: Optimized :: Enig123, DolphinX :: End
 	CCKey tmpkey(0);
 	POSITION pos = m_mapClients.GetStartPosition();
 	while (pos){
 		m_mapClients.GetNextAssoc(pos, tmpkey, cur_credit);
+		//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+		if(cur_credit->clientCredit)
+			delete cur_credit->clientCredit;
+		//zz_fly :: Optimized :: Enig123, DolphinX :: End
 		delete cur_credit;
 	}
 	delete m_pSignkey;
@@ -423,6 +453,7 @@ void CClientCreditsList::LoadList()
 			}
 			LogError(LOG_STATUSBAR, _T("%s"), strError);
 		}
+		m_mapClients.InitHashTable(10007);	//zz_fly :: First time run, give a bigger hash value :: Enig123
 		return;
 	}
 	setvbuf(file.m_pStream, NULL, _IOFBF, 16384);
@@ -432,6 +463,7 @@ void CClientCreditsList::LoadList()
 		if (version != CREDITFILE_VERSION && version != CREDITFILE_VERSION_29){
 			LogWarning(GetResString(IDS_ERR_CREDITFILEOLD));
 			file.Close();
+			m_mapClients.InitHashTable(10007);	//zz_fly :: First time run, give a bigger hash value :: Enig123
 			return;
 		}
 
@@ -509,8 +541,15 @@ void CClientCreditsList::LoadList()
 		// <== Make code VS 2005 and VS 2008 ready [MorphXT] - Stulle
 		uint32 cDeleted = 0;
 		for (UINT i = 0; i < count; i++){
+			//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+			/*
 			CreditStruct* newcstruct = new CreditStruct;
+			*/
+			ClientCreditContainer* newcstruct_parent = new ClientCreditContainer;
+			CreditStruct* newcstruct = &newcstruct_parent->theCredit;
+			//zz_fly :: Optimized :: Enig123, DolphinX :: End
 			memset(newcstruct, 0, sizeof(CreditStruct));
+			newcstruct_parent->clientCredit = NULL; //zz_fly :: Optimized :: Enig123, DolphinX
 			if (version == CREDITFILE_VERSION_29)
 				file.Read(newcstruct, sizeof(CreditStruct_29a));
 			else
@@ -518,12 +557,22 @@ void CClientCreditsList::LoadList()
 
 			if (newcstruct->nLastSeen < dwExpired){
 				cDeleted++;
+				//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+				/*
 				delete newcstruct;
+				*/
+				delete newcstruct_parent;
+				//zz_fly :: Optimized :: Enig123, DolphinX :: End
 				continue;
 			}
 
+			//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+			/*
 			CClientCredits* newcredits = new CClientCredits(newcstruct);
 			m_mapClients.SetAt(CCKey(newcredits->GetKey()), newcredits);
+			*/
+			m_mapClients.SetAt(CCKey(newcstruct->abyKey), newcstruct_parent);
+			//zz_fly :: Optimized :: Enig123, DolphinX :: End
 		}
 		file.Close();
 
@@ -548,7 +597,11 @@ void CClientCreditsList::SaveList()
 {
 	if (thePrefs.GetLogFileSaving())
 		AddDebugLogLine(false, _T("Saving clients credit list file \"%s\""), CLIENTS_MET_FILENAME);
+	//Enig123 :: moved to Process()
+	/*
 	m_nLastSaved = ::GetTickCount();
+	*/
+	//Enig123 :: end
 
 	CString name = thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + CLIENTS_MET_FILENAME;
 	CFile file;// no buffering needed here since we swap out the entire array
@@ -566,16 +619,29 @@ void CClientCreditsList::SaveList()
 
 	uint32 count = m_mapClients.GetCount();
 	BYTE* pBuffer = new BYTE[count*sizeof(CreditStruct)];
+	//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+	/*
 	CClientCredits* cur_credit;
+	*/
+	ClientCreditContainer* cur_credit;
+	//zz_fly :: Optimized :: Enig123, DolphinX :: End
 	CCKey tempkey(0);
 	POSITION pos = m_mapClients.GetStartPosition();
 	count = 0;
 	while (pos)
 	{
 		m_mapClients.GetNextAssoc(pos, tempkey, cur_credit);
+		//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+		/*		
 		if (cur_credit->GetUploadedTotal() || cur_credit->GetDownloadedTotal())
 		{
 			memcpy(pBuffer+(count*sizeof(CreditStruct)), cur_credit->GetDataStruct(), sizeof(CreditStruct));
+		*/
+		CreditStruct* credit = &cur_credit->theCredit;
+		if (credit->nUploadedHi || credit->nUploadedLo || credit->nDownloadedHi || credit->nDownloadedLo)
+		{
+			memcpy(pBuffer+(count*sizeof(CreditStruct)), credit, sizeof(CreditStruct));
+		//zz_fly :: Optimized :: Enig123, DolphinX :: End 
 			count++; 
 		}
 	}
@@ -605,16 +671,45 @@ void CClientCreditsList::SaveList()
 
 CClientCredits* CClientCreditsList::GetCredit(const uchar* key)
 {
+	//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+	/*
 	CClientCredits* result;
+	*/
+	ClientCreditContainer* result;
+	//zz_fly :: Optimized :: Enig123, DolphinX :: End
 	CCKey tkey(key);
 	if (!m_mapClients.Lookup(tkey, result)){
+		//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+		/*
 		result = new CClientCredits(key);
 		m_mapClients.SetAt(CCKey(result->GetKey()), result);
+		*/
+		result = new ClientCreditContainer;
+		result->clientCredit = new CClientCredits(key, &result->theCredit);
+		m_mapClients.SetAt(CCKey(result->clientCredit->GetKey()), result);
+		//zz_fly :: Optimized :: Enig123, DolphinX :: End
 	}
+	//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+	else if(!result->clientCredit)
+		result->clientCredit = new CClientCredits(&result->theCredit);
+	//zz_fly :: Optimized :: Enig123, DolphinX :: End
+
+	//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+	/*
 	result->SetLastSeen();
 
 	result->UnMarkToDelete(); //Xman Extened credit- table-arragement
 	return result;
+	*/
+	result->clientCredit->SetLastSeen();
+	//zz_fly :: Optimized on table-arragement ::Enig123 :: Start
+	/*
+	result->clientCredit->UnMarkToDelete(); //Xman Extened credit- table-arragement
+	*/
+	result->clientCredit->IncReferredTimes();
+	//zz_fly :: End
+	return result->clientCredit;
+	//zz_fly :: Optimized :: Enig123, DolphinX :: End
 }
 
 void CClientCreditsList::Process()
@@ -625,27 +720,89 @@ void CClientCreditsList::Process()
 	if (::GetTickCount() - m_nLastSaved > MIN2MS(13))
 	//Xman Extened credit- table-arragement
 	{
+		m_nLastSaved = ::GetTickCount(); //Enig123 :: moved from SaveList()
+		//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+		/*
 		CClientCredits* cur_credit;
+		*/
+		ClientCreditContainer* result;
+		//zz_fly :: Optimized :: Enig123, DolphinX :: End
 		CCKey tmpkey(0);
+		//zz_fly :: show statistics :: Start
+		int credit_count = 0;
+		int unused_count = 0;
+		//zz_fly :: show statistics :: End
 		POSITION pos = m_mapClients.GetStartPosition();
 		while (pos){
+			//zz_fly :: Optimized :: Enig123, DolphinX :: Start
+			/*
 			m_mapClients.GetNextAssoc(pos, tmpkey, cur_credit);
+			*/
+			m_mapClients.GetNextAssoc(pos, tmpkey, result);
+			CClientCredits* cur_credit = result->clientCredit;
+			//zz_fly :: Optimized :: Enig123, DolphinX :: End
 
+			if(cur_credit) credit_count++; //zz_fly :: show statistics
+
+			//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+			/*
 			if(cur_credit->GetMarkToDelete() && (time(NULL) - cur_credit->GetLastSeen() > (3600 * HOURS_KEEP_IN_MEMORY))) //not seen for > 3 hours
+			*/			
+			if(cur_credit && cur_credit->isDeletable() && (time(NULL) - cur_credit->GetLastSeen() > (3600 * HOURS_KEEP_IN_MEMORY))) //not seen for > 6 hours
+			//zz_fly :: End
 			{
 				//two security-checks, it can happen that there is a second user using this hash
+				//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+				/*
 				if(cur_credit->GetUploadedTotal()==0 && cur_credit->GetDownloadedTotal()==0
 					&& theApp.clientlist->FindClientByUserHash(cur_credit->GetKey())==NULL)
+				*/
+				if(theApp.clientlist->FindClientByUserHash(cur_credit->GetKey())==NULL)
+				//zz_fly :: End
 				{
+					//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+					CreditStruct* credit = &result->theCredit;
+					uint64 ul = (((uint64)credit->nUploadedHi << 32) | credit->nUploadedLo);
+					uint64 dl = (((uint64)credit->nDownloadedHi << 32) | credit->nDownloadedLo);
+					//zz_fly :: End
 					//this key isn't longer used
+					//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+					/*
 					m_mapClients.RemoveKey(CCKey(cur_credit->GetKey()));
+					*/
+					//zz_fly :: End
+					unused_count++; //zz_fly :: debug only
+					if(cur_credit){
 					delete cur_credit;
+					//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+					/*
+					delete result;
+					*/
+					cur_credit = NULL;
+					result->clientCredit = NULL; //fix crash
+					}
+					if(ul==0 && dl==0)
+					{
+						m_mapClients.RemoveKey(tmpkey);
+						delete result;
+					}
+					//zz_fly :: End
+					
 				}
+				//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+				/*
 				else
 					cur_credit->UnMarkToDelete();
+				*/
+				//zz_fly :: End
 			}
 		}
 	//Xman end
+		//zz_fly :: show statistics :: Start
+		AddDebugLogLine( false, _T("%i ClientCredits in memory(Total:%i)"), credit_count, m_mapClients.GetSize());
+		if (unused_count)
+			AddDebugLogLine( false, _T("%i unused credits cleared"), unused_count);
+		//zz_fly :: show statistics :: End
 		SaveList();
 	} //Xman
 }
@@ -913,6 +1070,8 @@ bool CClientCreditsList::Debug_CheckCrypting()
 	asink.MessageEnd();
 	uint32 challenge = rand();
 	// create fake client which pretends to be this emule
+	//zz_fly start
+	/*
 	CreditStruct* newcstruct = new CreditStruct;
 	memset(newcstruct, 0, sizeof(CreditStruct));
 	CClientCredits* newcredits = new CClientCredits(newcstruct);
@@ -942,6 +1101,48 @@ bool CClientCreditsList::Debug_CheckCrypting()
 
 	delete newcredits;
 	delete newcredits2;
+	*/
+	ClientCreditContainer* newContainer = new ClientCreditContainer;
+	CreditStruct* newcstruct = &newContainer->theCredit;
+
+	memset(newcstruct, 0, sizeof(CreditStruct));
+
+	newContainer->clientCredit = new CClientCredits(newcstruct);
+	newContainer->clientCredit->SetSecureIdent(m_abyMyPublicKey,m_nMyPublicKeyLen);
+	newContainer->clientCredit->m_dwCryptRndChallengeFrom = challenge;
+
+	// create signature with fake priv key
+	uchar pachSignature[200];
+	memset(pachSignature,0,200);
+
+	uint8 sigsize = CreateSignature(newContainer->clientCredit,pachSignature,200,0,false, &priv);
+
+	// next fake client uses the random created public key
+	ClientCreditContainer* newContainer2 = new ClientCreditContainer;
+	CreditStruct* newcstruct2 = &newContainer2->theCredit;
+
+	memset(newcstruct2, 0, sizeof(CreditStruct));
+
+	newContainer2->clientCredit = new CClientCredits(newcstruct2);
+	newContainer2->clientCredit->m_dwCryptRndChallengeFor = challenge;
+
+	// if you uncomment one of the following lines the check has to fail
+	//abyPublicKey[5] = 34;
+	//m_abyMyPublicKey[5] = 22;
+	//pachSignature[5] = 232;
+
+	newContainer2->clientCredit->SetSecureIdent(abyPublicKey,PublicKeyLen);
+
+	//now verify this signature - if it's true everything is fine
+	bool bResult = VerifyIdent(newContainer2->clientCredit,pachSignature,sigsize,0,0);
+
+	if(newContainer->clientCredit) 
+		delete newContainer->clientCredit;
+	delete newContainer;
+	if(newContainer2->clientCredit) 
+		delete newContainer2->clientCredit;
+	delete newContainer2;
+	//zz_fly end
 
 	return bResult;
 }

@@ -212,6 +212,8 @@ CHistoryListCtrl::~CHistoryListCtrl()
 
 BEGIN_MESSAGE_MAP(CHistoryListCtrl, CMuleListCtrl)
 	ON_NOTIFY_REFLECT(LVN_COLUMNCLICK, OnLvnColumnClick)
+	ON_NOTIFY_REFLECT(LVN_GETDISPINFO, OnLvnGetDispInfo)
+	ON_NOTIFY_REFLECT(NM_DBLCLK, OnNMDblclk)
 	ON_WM_CONTEXTMENU()
 END_MESSAGE_MAP()
 
@@ -229,6 +231,11 @@ void CHistoryListCtrl::Init(void)
 	InsertColumn(4,GetResString(IDS_DATE),LVCFMT_LEFT, 120);
 	InsertColumn(5,GetResString(IDS_DOWNHISTORY_SHARED),LVCFMT_LEFT, 65);
 	InsertColumn(6,GetResString(IDS_COMMENT),LVCFMT_LEFT, 260);
+	//EastShare START - Added by Pretender
+	InsertColumn(7,GetResString(IDS_SF_TRANSFERRED),LVCFMT_RIGHT,120);
+	InsertColumn(8,GetResString(IDS_SF_REQUESTS),LVCFMT_RIGHT,100);
+	InsertColumn(9,GetResString(IDS_SF_ACCEPTS),LVCFMT_RIGHT,100);
+	//EastShare END
 
 	LoadSettings();
 
@@ -409,6 +416,17 @@ void CHistoryListCtrl::GetItemDisplayText(CKnownFile* file, int iSubItem, LPTSTR
 	case 6:
 		_tcsncpy(pszText, file->GetFileComment(), cchTextMax);
 		break;
+	//EastShare START - Added by Pretender
+	case 7:
+		_tcsncpy(pszText, CastItoXBytes(file->statistic.GetAllTimeTransferred()), cchTextMax);
+		break;
+	case 8:
+		_sntprintf(pszText, cchTextMax, _T("%u"), file->statistic.GetAllTimeRequests());
+		break;
+	case 9:
+		_sntprintf(pszText, cchTextMax, _T("%u"), file->statistic.GetAllTimeAccepts());
+		break;
+	//EastShare END
 	}
 	pszText[cchTextMax - 1] = _T('\0');
 }
@@ -421,6 +439,11 @@ void CHistoryListCtrl::OnLvnColumnClick( NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		switch (pNMListView->iSubItem)
 		{
+			case 7:
+			case 8:
+			case 9:
+				sortAscending = false;
+				break;
 			default:
 				sortAscending = true;
 				break;
@@ -456,8 +479,18 @@ int CHistoryListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort
 				break;
 
 			case 2: //filetype asc
-				iResult= item1->GetFileType().CompareNoCase(item2->GetFileType());
-				break;
+			iResult= item1->GetFileType().CompareNoCase(item2->GetFileType());
+			// if the type is equal, subsort by extension
+			if (iResult == 0)
+			{
+				LPCTSTR pszExt1 = PathFindExtension(item1->GetFileName());
+				LPCTSTR pszExt2 = PathFindExtension(item2->GetFileName());
+				if ((pszExt1 == NULL) ^ (pszExt2 == NULL))
+					iResult = pszExt1 == NULL ? 1 : (-1);
+				else
+					iResult = pszExt1 != NULL ? _tcsicmp(pszExt1, pszExt2) : 0;
+			}
+			break;
 
 			case 3: //file ID
 				iResult= memcmp(item1->GetFileHash(),item2->GetFileHash(),16);
@@ -479,6 +512,20 @@ int CHistoryListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort
 			case 6: //comment
 				iResult= _tcsicmp(item1->GetFileComment(),item2->GetFileComment());
 				break;
+
+			//EastShare START - Added by Pretender
+			case 7: //all transferred asc
+				iResult=item1->statistic.GetAllTimeTransferred()==item2->statistic.GetAllTimeTransferred()?0:(item1->statistic.GetAllTimeTransferred()>item2->statistic.GetAllTimeTransferred()?1:-1);
+				break;
+
+			case 8: //acc requests asc
+				iResult=item1->statistic.GetAllTimeAccepts() - item2->statistic.GetAllTimeAccepts();
+				break;
+		
+			case 9: //acc accepts asc
+				iResult=item1->statistic.GetAllTimeAccepts() - item2->statistic.GetAllTimeAccepts();
+				break;
+			//EastShare END
 		}
 	}
 	catch (...) {
@@ -532,6 +579,18 @@ void CHistoryListCtrl::Localize() {
 			case 6:
 				strRes = GetResString(IDS_COMMENT);
 				break;
+
+			//EastShare
+			case 7:
+				strRes = GetResString(IDS_SF_TRANSFERRED);
+				break;
+			case 8:
+				strRes = GetResString(IDS_SF_REQUESTS);
+				break;
+			case 9:
+				strRes = GetResString(IDS_SF_ACCEPTS);
+				break;
+			//EastShare
 			default:
 				strRes = "No Text!!";
 		}
@@ -612,6 +671,7 @@ void CHistoryListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	m_HistoryMenu.AppendMenu(MF_SEPARATOR); 
 	m_HistoryMenu.AppendMenu(MF_STRING | (GetItemCount() > 0 ? MF_ENABLED : MF_GRAYED), MP_FIND, GetResString(IDS_FIND), _T("Search"));
 
+	GetPopupMenuPos(*this, point);
 	m_HistoryMenu.TrackPopupMenu(TPM_LEFTALIGN |TPM_RIGHTBUTTON,point.x,point.y,this);
 
 	m_HistoryMenu.RemoveMenu(m_HistoryMenu.GetMenuItemCount()-1,MF_BYPOSITION); //find menu
@@ -843,4 +903,27 @@ void CHistoryListCtrl::ShowFileDialog(CTypedPtrList<CPtrList, CKnownFile*>& aFil
 		CHistoryFileDetailsSheet dialog(aFiles, uPshInvokePage, this);
 		dialog.DoModal();
 	}
+}
+void CHistoryListCtrl::OnLvnGetDispInfo(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	if (theApp.emuledlg->IsRunning()) {
+		// Although we have an owner drawn listview control we store the text for the primary item in the listview, to be
+		// capable of quick searching those items via the keyboard. Because our listview items may change their contents,
+		// we do this via a text callback function. The listview control will send us the LVN_DISPINFO notification if
+		// it needs to know the contents of the primary item.
+		//
+		// But, the listview control sends this notification all the time, even if we do not search for an item. At least
+		// this notification is only sent for the visible items and not for all items in the list. Though, because this
+		// function is invoked *very* often, do *NOT* put any time consuming code in here.
+		//
+		// Vista: That callback is used to get the strings for the label tips for the sub(!) items.
+		//
+		NMLVDISPINFO *pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+		if (pDispInfo->item.mask & LVIF_TEXT) {
+			CKnownFile* pFile = reinterpret_cast<CKnownFile*>(pDispInfo->item.lParam);
+			if (pFile != NULL)
+				GetItemDisplayText(pFile, pDispInfo->item.iSubItem, pDispInfo->item.pszText, pDispInfo->item.cchTextMax);
+		}
+	}
+	*pResult = 0;
 }

@@ -632,13 +632,6 @@ bool CKnownFile::CreateFromFile(LPCTSTR in_directory, LPCTSTR in_filename, LPVOI
 		m_pAICHHashSet->SetStatus(AICH_HASHSETCOMPLETE);
 		if (!m_pAICHHashSet->SaveHashSet())
 			LogError(LOG_STATUSBAR, GetResString(IDS_SAVEACFAILED));
-		//Xman remove unused AICH-hashes
-		//we must apply the status a second time, because aich-synthread could be running
-		//and change the Status,
-		//however the hashset is saved correctly because saving is using the mutex
-		//better solution would be to move the mutex here
-		m_pAICHHashSet->SetStatus(AICH_HASHSETCOMPLETE);
-		//Xman end
 	}
 	else{
 		// now something went pretty wrong

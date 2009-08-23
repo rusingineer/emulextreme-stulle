@@ -337,7 +337,7 @@ void CDownloadClientsCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						//Xman end
 
 						//EastShare Start - added by AndCycle, IP to Country 
-						if(theApp.ip2country->ShowCountryFlag() && IsColumnHidden(12)){
+						if(theApp.ip2country->ShowCountryFlag()){
 							cur_rec.left+=20;
 							POINT point2= {cur_rec.left,cur_rec.top+1};
 							int index = client->GetCountryFlagIndex();
@@ -352,7 +352,7 @@ void CDownloadClientsCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						cur_rec.right -= sm_iSubItemInset;
 
 						//EastShare Start - added by AndCycle, IP to Country
-						if(theApp.ip2country->ShowCountryFlag() && IsColumnHidden(12)){
+						if(theApp.ip2country->ShowCountryFlag()){
 							cur_rec.left-=20;
 							cur_rec.left -= sm_iLabelOffset;
 						}
@@ -586,15 +586,15 @@ int CDownloadClientsCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParam
 		    else 
 				iResult = -(item1->GetClientSoft() - item2->GetClientSoft()); // invert result to place eMule's at top
 			*/
-			if( item1->GetClientSoft() == item2->GetClientSoft() )
-				if(item2->GetVersion() == item1->GetVersion() && item1->GetClientSoft() == SO_EMULE){
-					iResult= item2->DbgGetFullClientSoftVer().CompareNoCase( item1->DbgGetFullClientSoftVer());
+			if(item1->GetClientSoft() == item2->GetClientSoft())
+				if(item1->GetVersion() == item2->GetVersion() && item1->GetClientSoft() == SO_EMULE){
+					iResult = item2->DbgGetFullClientSoftVer().CompareNoCase( item1->DbgGetFullClientSoftVer());
 				}
 				else {
-					iResult= item2->GetVersion() - item1->GetVersion();
+					iResult = item1->GetVersion() - item2->GetVersion();
 				}
 			else
-				iResult= item1->GetClientSoft() - item2->GetClientSoft();
+				iResult = -(item1->GetClientSoft() - item2->GetClientSoft()); // invert result to place eMule's at top
 			//Xman end
 			break;
 

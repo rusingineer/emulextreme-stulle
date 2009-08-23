@@ -62,6 +62,7 @@ protected:
 	//Xman end
 	bool m_bAutoArchDisable;
 	int m_iExtractMetaData;
+	bool m_bIsUPnPEnabled; //zz_fly :: add UPnP option in Tweaks
 	bool m_bCloseUPnPOnExit;
 	bool m_bSkipWANIPSetup;
 	bool m_bSkipWANPPPSetup;
@@ -132,6 +133,7 @@ protected:
 	HTREEITEM m_htiExtractMetaDataID3Lib;
 	HTREEITEM m_htiAutoArch;
 	HTREEITEM m_htiUPnP;
+	HTREEITEM m_htiIsUPnPEnabled; //zz_fly :: add UPnP option in Tweaks
 	HTREEITEM m_htiCloseUPnPPorts;
 	HTREEITEM m_htiSkipWANIPSetup;
 	HTREEITEM m_htiSkipWANPPPSetup;

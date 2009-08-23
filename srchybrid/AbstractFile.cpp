@@ -217,9 +217,19 @@ void CAbstractFile::SetFileName(LPCTSTR pszFileName, bool bReplaceInvalidFileSys
 		ext.MakeLower();
 
 		// Skip compressed file
+		//zz_fly :: also .mkv and .mp4
+		/*
 		if(thePrefs.GetDontCompressAvi() && ext == _T(".avi"))
+		*/
+		if(thePrefs.GetDontCompressAvi() && (ext == _T(".avi") || ext == _T(".mkv") || ext == _T(".mp4")))
+		//zz_fly :: also .mkv and .mp4
 			compressible = false;
+		//zz_fly :: also .7z
+		/*
 		else if(ext == _T(".zip") || ext == _T(".rar") || ext == _T(".ace") || ext == _T(".ogm") || ext == _T(".cbz") || ext == _T(".cbr"))
+		*/
+		else if(ext == _T(".zip") || ext == _T(".rar") || ext == _T(".ace") || ext == _T(".ogm") || ext == _T(".cbz") || ext == _T(".cbr") || ext == _T(".7z"))
+		//zz_fly :: also .7z
 			compressible = false;
 	}
 	//Xman end

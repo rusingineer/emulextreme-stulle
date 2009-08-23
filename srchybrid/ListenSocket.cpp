@@ -321,6 +321,9 @@ void CClientReqSocket::Delete_Timed(){
 	//because we had already some waiting-time we can reduce this one (maybe we don't need it anymore)
 	//for the moment 10 seconds for safety
 	//Xman end
+	//zz_fly :: it is confirm that this fix is necessary to very big uploaders(upload>3000). normal user do not need this fix.
+	//			a simple solution is increase the time here. but for unknown reason, Xman had dropped it.
+	//			althought Xman's fix use more memory(about 10~20MB), but i restore it.
 	if (::GetTickCount() - deltimer > 10000)
 		delete this;
 }

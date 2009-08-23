@@ -140,16 +140,17 @@ public:
 	UINT				m_uCurVersionShort;
 	UINT				m_uCurVersionCheck;
 	ULONGLONG			m_ullComCtrlVer;
+	//MORPH
+	/*
 	AppState			m_app_state; // defines application state for shutdown 
+	*/
+	volatile AppState		m_app_state; // defines application state for shutdown 
+	//MORPH END
 	CMutex				hashing_mut;
 	//Xman
 	CReadWriteLock		m_threadlock;	// SLUGFILLER: SafeHash - This will ensure eMule goes last
 	CString*			pstrPendingLink;
 	COPYDATASTRUCT		sendstruct;
-
-	//Xman remove unused AICH-hashes
-	volatile bool				m_AICH_Is_synchronizing;
-	//Xman end
 
 // Implementierung
 	virtual BOOL InitInstance();

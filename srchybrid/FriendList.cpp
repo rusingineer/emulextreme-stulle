@@ -208,7 +208,12 @@ bool CFriendList::AddFriend(CUpDownClient* toadd){
 	// client must have an IP (HighID) or a hash
 	if (toadd->HasLowID() && !toadd->HasValidHash())
 		return false;
+	//zz_fly :: minor issue with friends handling :: WiZaRd :: start
+	/*
 	if (SearchFriend(toadd->GetUserHash(), toadd->GetIP(), toadd->GetUserPort()) != NULL)
+	*/
+	if (SearchFriend(toadd->GetUserHash(), toadd->GetConnectIP(), toadd->GetUserPort()) != NULL)
+	//zz_fly :: end
 		return false;
 
 	CFriend* NewFriend = new CFriend(toadd);

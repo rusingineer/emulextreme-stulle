@@ -825,6 +825,8 @@ BOOL CemuleApp::InitInstance()
         }
     }
 
+	UpdateSplash(_T("Loading bandwidthcontrol ...")); //Xman new slpash-screen arrangement
+
 	// ZZ:UploadSpeedSense -->
 	//Xman
 	// - Maella [patch] -Bandwidth: overall bandwidth measure-	// Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-

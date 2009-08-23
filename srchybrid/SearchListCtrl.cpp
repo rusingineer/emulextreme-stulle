@@ -454,6 +454,11 @@ void CSearchListCtrl::UpdateSearch(CSearchFile* toupdate)
 {
 	if (!toupdate || !theApp.emuledlg->IsRunning())
 		return;
+	//MORPH START - SiRoB, Don't Refresh item if not needed
+	if( theApp.emuledlg->activewnd != theApp.emuledlg->searchwnd || IsWindowVisible() == FALSE )
+		return;
+	//MORPH END   - SiRoB, Don't Refresh item if not needed
+
 	LVFINDINFO find;
 	find.flags = LVFI_PARAM;
 	find.lParam = (LPARAM)toupdate;
@@ -1783,7 +1788,12 @@ void CSearchListCtrl::SetHighlightColors()
 	//Xman end
 
 	theApp.LoadSkinColor(GetSkinKey() + _T("Fg_Downloading"), m_crSearchResultDownloading);
+	//zz_fly :: bug fix :: DolphinX :: start
+	/*
 	if (!theApp.LoadSkinColor(_T("Fg_DownloadStopped"), m_crSearchResultDownloadStopped))
+	*/
+	if (!theApp.LoadSkinColor(GetSkinKey() + _T("Fg_DownloadStopped"), m_crSearchResultDownloadStopped))
+	//zz_fly :: end
 		m_crSearchResultDownloadStopped = m_crSearchResultDownloading;
 	theApp.LoadSkinColor(GetSkinKey() + _T("Fg_Sharing"), m_crSearchResultShareing);
 	theApp.LoadSkinColor(GetSkinKey() + _T("Fg_Known"), m_crSearchResultKnown);

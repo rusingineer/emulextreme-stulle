@@ -434,11 +434,15 @@ CUpDownClient::~CUpDownClient(){
 
 	free(m_pszUsername);
 
-	delete[] m_abyPartStatus;
-	m_abyPartStatus = NULL;
+	if (m_abyPartStatus){ //from MorphXT
+		delete[] m_abyPartStatus;
+		m_abyPartStatus = NULL;
+	}
 
-	delete[] m_abyUpPartStatus;
-	m_abyUpPartStatus = NULL;
+	if (m_abyUpPartStatus){ //from MorphXT
+		delete[] m_abyUpPartStatus;
+		m_abyUpPartStatus = NULL;
+	}
 
 	ClearUploadBlockRequests();
 
@@ -486,8 +490,13 @@ CUpDownClient::~CUpDownClient(){
 	if(Credits())
 	{
 		Credits()->SetLastSeen(); //ensure we keep the credits at least 6 hours in memory, without this line our LastSeen can be outdated if we did only UDP
+		//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+		/*
 		if(Credits()->GetDownloadedTotal()==0 && Credits()->GetUploadedTotal()==0) //just to save some CPU-cycles, a second test is done at credits
 			Credits()->MarkToDelete();
+		*/
+			Credits()->DecReferredTimes();
+		//zz_fly :: End
 	}
 	//Xman end
 
@@ -916,9 +925,18 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 	if(!HasLowID() || m_nUserIDHybrid == 0 || m_nUserIDHybrid == m_dwUserIP ) 
 		m_nUserIDHybrid = ntohl(m_dwUserIP);
 
+	//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+	//note: do not create credit in memory when we going to ban the client
+	/*
 	CClientCredits* pFoundCredits = theApp.clientcredits->GetCredit(m_achUserHash);
+	*/
+	//zz_fly :: End
 	if (credits == NULL){
+		//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+		/*
 		credits = pFoundCredits;
+		*/
+		//zz_fly :: End
 		//Xman Extened credit- table-arragement
 		/*
 		if (!theApp.clientlist->ComparePriorUserhash(m_dwUserIP, m_nUserPort, pFoundCredits)){
@@ -929,16 +947,36 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 			AddLeecherLogLine(false, _T("Clients: %s (%s), Banreason: Userhash changed (Found in TrackedClientsList)"), GetUserName(), ipstr(GetConnectIP()));
 		//Xman end
 			Ban();
-		}	
+		}
+		//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+		else if (GetUploadState()!=US_BANNED){
+			credits = theApp.clientcredits->GetCredit(m_achUserHash);
+		}
+		//zz_fly :: End
 	}
+	//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+	/*
 	else if (credits != pFoundCredits){
+	*/
+	else if (md4cmp(credits->GetKey(), m_achUserHash)){
+	//zz_fly :: End
 		//Xman Extened credit- table-arragement
 		credits->SetLastSeen(); //ensure to keep it at least 5 hours
+		//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+		/*
 		if(credits->GetUploadedTotal()==0 && credits->GetDownloadedTotal()==0)
 			credits->MarkToDelete(); //check also if the old hash is used by an other client
+		*/		
+			credits->DecReferredTimes(); //check also if the old hash is used by an other client
+		//zz_fly :: End
 		//Xman end
 		// userhash change ok, however two hours "waittime" before it can be used
+		//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+		/*
 		credits = pFoundCredits;
+		*/
+		credits = NULL;
+		//zz_fly :: End
 		//Xman Extened credit- table-arragement
 		/*
 		if (thePrefs.GetLogBannedClients())
@@ -948,7 +986,11 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 		//Xman end
 		Ban();
 	}
-
+	//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
+	else {
+		credits->SetLastSeen(); //Enig123::refresh is neccessary here to avoid wrong judgement
+	}
+	//zz_fly :: End
 
 	if (GetFriend() != NULL && GetFriend()->HasUserhash() && md4cmp(GetFriend()->m_abyUserhash, m_achUserHash) != 0)
 	{
@@ -963,7 +1005,12 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 	if (GetFriend() == NULL || GetFriend()->HasUserhash() || GetFriend()->m_dwLastUsedIP != GetConnectIP()
 		|| GetFriend()->m_nLastUsedPort != GetUserPort())
 	{
+		//zz_fly :: minor issue with friends handling :: WiZaRd :: start
+		/*
 		if ((m_Friend = theApp.friendlist->SearchFriend(m_achUserHash, m_dwUserIP, m_nUserPort)) != NULL){
+		*/
+		if ((m_Friend = theApp.friendlist->SearchFriend(m_achUserHash, GetConnectIP(), m_nUserPort)) != NULL){
+		//zz_fly :: end
 			// Link the friend to that client
 			m_Friend->SetLinkedClient(this);
 		}
@@ -1747,7 +1794,12 @@ bool CUpDownClient::Disconnected(LPCTSTR pszReason, bool bFromSocket, UpStopReas
 	//If this is a KAD client object, just delete it!
 	SetKadState(KS_NONE);
 
+	//Xman Xtreme Mod
+	/*
     if (GetUploadState() == US_UPLOADING || GetUploadState() == US_CONNECTING)
+	*/
+	if (GetUploadState() == US_UPLOADING) //uploading problem client
+	//Xman end
 	{
 		// sets US_NONE
 		// Maella -Upload Stop Reason-
@@ -1779,6 +1831,7 @@ bool CUpDownClient::Disconnected(LPCTSTR pszReason, bool bFromSocket, UpStopReas
 		ASSERT( m_nConnectingState == CCS_NONE );
 		if (m_ePeerCacheDownState == PCDS_WAIT_CACHE_REPLY || m_ePeerCacheDownState == PCDS_DOWNLOADING)
 			theApp.m_pPeerCache->DownloadAttemptFailed();
+		//Xman remark: the only reason can be a socket-error/timeout
 		// Maella -Download Stop Reason-
 		/*
 		SetDownloadState(DS_ONQUEUE, CString(_T("Disconnected: ")) + pszReason);
@@ -2757,7 +2810,11 @@ void CUpDownClient::SendPublicKeyPacket()
 {
 	// send our public key to the client who requested it
 	if (socket == NULL || credits == NULL || m_SecureIdentState != IS_KEYANDSIGNEEDED){
+		//zz_fly :: see the changes in clientcreditlist
+		/*
 		ASSERT ( false );
+		*/
+		//zz_fly :: see the changes in clientcreditlist
 		return;
 	}
 	if (!theApp.clientcredits->CryptoAvailable())
@@ -2777,7 +2834,11 @@ void CUpDownClient::SendSignaturePacket()
 {
 	// signate the public key of this client and send it
 	if (socket == NULL || credits == NULL || m_SecureIdentState == 0){
+		//zz_fly :: see the changes in clientcreditlist
+		/*
 		ASSERT ( false );
+		*/
+		//zz_fly :: see the changes in clientcreditlist
 		return;
 	}
 
@@ -2837,7 +2898,11 @@ void CUpDownClient::ProcessPublicKeyPacket(const uchar* pachPacket, uint32 nSize
 
 	if (socket == NULL || credits == NULL || pachPacket[0] != nSize-1
 		|| nSize < 10 || nSize > 250){
+		//zz_fly :: see the changes in clientcreditlist
+		/*
 		ASSERT ( false );
+		*/
+		//zz_fly :: see the changes in clientcreditlist
 		return;
 	}
 	if (!theApp.clientcredits->CryptoAvailable())
@@ -2867,7 +2932,11 @@ void CUpDownClient::ProcessSignaturePacket(const uchar* pachPacket, uint32 nSize
 	// here we spread the good guys from the bad ones ;)
 
 	if (socket == NULL || credits == NULL || nSize > 250 || nSize < 10){
+		//zz_fly :: see the changes in clientcreditlist
+		/*
 		ASSERT ( false );
+		*/
+		//zz_fly :: see the changes in clientcreditlist
 		return;
 	}
 
@@ -3146,7 +3215,8 @@ void CUpDownClient::ProcessPreviewAnswer(const uchar* pachPacket, uint32 nSize)
 		}
 	}
 	catch(...){
-		delete[] pBuffer;
+		if(pBuffer) //zz_fly :: from ACAT
+			delete[] pBuffer;
 		throw;
 	}
 	(new PreviewDlg())->SetFile(sfile);
@@ -3804,7 +3874,6 @@ void CUpDownClient::ProcessChatMessage(CSafeMemFile* data, uint32 nLength)
 	CString strMessage(data->ReadString(GetUnicodeSupport()!=utf8strNone, nLength));
 	if (thePrefs.GetDebugClientTCPLevel() > 0)
 		Debug(_T("  %s\n"), strMessage);
-	
 	// default filtering
 	CString strMessageCheck(strMessage);
 

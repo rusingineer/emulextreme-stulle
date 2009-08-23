@@ -689,6 +689,10 @@ void CUDPSocket::DnsLookupDone(WPARAM wp, LPARAM lp)
 			delete pDNSReq;
 			return;
 		}
+		//zz_fly :: support dynamic ip servers :: DolphinX :: Start
+		if (pServer)
+			pServer->ResetIP2Country(); //EastShare - added by AndCycle, IP to Country
+		//zz_fly :: End
 
 		// Send all of the queued packets for this server.
 		POSITION posPacket = pDNSReq->m_aPackets.GetHeadPosition();

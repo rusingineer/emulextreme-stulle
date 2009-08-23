@@ -1373,8 +1373,19 @@ void CMuleListCtrl::InitItemMemDC(CMemDC *dc, LPDRAWITEMSTRUCT lpDrawItemStruct,
 
 void CMuleListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-	//set up our flicker free drawing
+	//MORPH START - Added by SiRoB, Don't draw hidden Rect
+	RECT clientRect;
+	GetClientRect(&clientRect);
 	CRect rcItem(lpDrawItemStruct->rcItem);
+	if (rcItem.top >= clientRect.bottom || rcItem.bottom <= clientRect.top)
+		return;
+	//MORPH END   - Added by SiRoB, Don't draw hidden Rect
+
+	//set up our flicker free drawing
+	//MORPH - Moved by SiRoB, Don't draw hidden Rect
+	/*
+	CRect rcItem(lpDrawItemStruct->rcItem);
+	*/
 	CDC *oDC = CDC::FromHandle(lpDrawItemStruct->hDC);
 	CMemDC pDC(oDC, &rcItem, m_crWindow);
 	CFont *pOldFont = pDC->SelectObject(GetFont());

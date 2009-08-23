@@ -24,6 +24,7 @@
 #include ".\miniupnpc\miniupnpc.h"
 #include ".\miniupnpc\upnpcommands.h"
 #include ".\miniupnpc\upnperrors.h"
+#include "Resource.h" //zz_fly :: show UPnP status
 
 
 #ifdef _DEBUG
@@ -251,6 +252,7 @@ int CUPnPImplMiniLib::CStartDiscoveryThread::Run()
 			if (structDeviceList == NULL){
 				DebugLog(_T("UPNP: No Internet Gateway Devices found, aborting"));
 				m_pOwner->m_bUPnPPortsForwarded = TRIS_FALSE;
+				m_pOwner->SetStatusString(GetResString(IDS_UPNPSTATUS_ERROR)); //zz_fly :: show UPnP status
 				m_pOwner->SendResultMessage();
 				return 0;
 			}
@@ -290,6 +292,7 @@ int CUPnPImplMiniLib::CStartDiscoveryThread::Run()
 			}
 			if (bNotFound || m_pOwner->m_pURLs->controlURL == NULL)
 			{
+				m_pOwner->SetStatusString(GetResString(IDS_UPNPSTATUS_ERROR)); //zz_fly :: show UPnP status
 				m_pOwner->m_bUPnPPortsForwarded = TRIS_FALSE;
 				m_pOwner->SendResultMessage();
 				return 0;
