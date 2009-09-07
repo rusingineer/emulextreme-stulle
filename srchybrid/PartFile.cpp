@@ -1082,12 +1082,7 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 						if (newtag->IsInt())
 						{
 						    SetLastPublishTimeKadSrc(newtag->GetInt(), 0);
-							// ==> Make code VS 2005 and VS 2008 ready [MorphXT] - Stulle
-							/*
 							if(GetLastPublishTimeKadSrc() > (uint32)time(NULL)+KADEMLIAREPUBLISHTIMES)
-							*/
-							if(GetLastPublishTimeKadSrc() > time(NULL)+KADEMLIAREPUBLISHTIMES)
-							// <== Make code VS 2005 and VS 2008 ready [MorphXT] - Stulle
 							{
 								//There may be a posibility of an older client that saved a random number here.. This will check for that..
 								SetLastPublishTimeKadSrc(0,0);
