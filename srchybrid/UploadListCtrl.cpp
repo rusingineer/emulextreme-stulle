@@ -438,7 +438,9 @@ void CUploadListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 					{
 						cur_rec.bottom--;
 						cur_rec.top++;
+						COLORREF crOldBackColor = dc->GetBkColor(); //Xman Code Improvement: FillSolidRect
 						client->DrawUpStatusBar(dc, &cur_rec, false, thePrefs.UseFlatBar());
+						dc.SetBkColor(crOldBackColor); //Xman Code Improvement: FillSolidRect
 						//Xman client percentage (font idea by morph)
 						CString buffer;
 						if (thePrefs.GetUseDwlPercentage())
