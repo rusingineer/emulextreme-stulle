@@ -1411,7 +1411,7 @@ void CSharedFileList::Publish()
 	/*
 	UINT tNow = time(NULL);
 	*/
-	time_t tNow = time(NULL);
+	UINT tNow = (UINT)time(NULL);
 	// <== Make code VS 2005 and VS 2008 ready [MorphXT] - Stulle
 	bool isFirewalled = theApp.IsFirewalled();
 	bool bDirectCallback = Kademlia::CKademlia::IsRunning() && !Kademlia::CUDPFirewallTester::IsFirewalledUDP(true) && Kademlia::CUDPFirewallTester::IsVerified();
