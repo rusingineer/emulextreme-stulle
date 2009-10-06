@@ -34,6 +34,10 @@ MiniUPnP Lib (as of official)
 
 Xtreme 7.2
 * this version is modded by Stulle
+- fixed: MassRename in SharedFilesCtrl was broken (Stulle)
+
+Xtreme 7.2
+* this version is modded by Stulle
 - updated to 0.49c codebase
 - improved: simply unsharing single shared files instead of excluding them
 - improved: greatly simplified remove unused AICH-hashes code while keeping original idea
