@@ -32,9 +32,11 @@ DirectX SDK
 MiniUPnP Lib (as of official)
 
 
-Xtreme 7.2
+Xtreme 7.2 second source edit
 * this version is modded by Stulle
+- add: added VS08 solution and project files (Stulle)
 - fixed: MassRename in SharedFilesCtrl was broken (Stulle)
+- change: cleaned up VS03 and VS05 solution and project files (Stulle)
 
 Xtreme 7.2
 * this version is modded by Stulle
