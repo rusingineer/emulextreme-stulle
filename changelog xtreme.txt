@@ -37,6 +37,7 @@ Xtreme 7.2 second source edit
 - add: added VS08 solution and project files (Stulle)
 - fixed: MassRename in SharedFilesCtrl was broken (Stulle)
 - change: cleaned up VS03 and VS05 solution and project files (Stulle)
+- change: revert to original tray right-click dialog and adapted it for 0.1 increase (Stulle)
 
 Xtreme 7.2
 * this version is modded by Stulle
