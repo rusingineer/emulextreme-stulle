@@ -46,7 +46,6 @@ protected:
 	CString m_sYourHostname;
 	bool m_bFirewallStartup;
 	int m_iLogLevel;
-	bool m_bDisablePeerCache;
 	//Xman
 	/*
     bool m_bDynUpEnabled;
@@ -110,7 +109,6 @@ protected:
 	HTREEITEM m_htiYourHostname;
 	HTREEITEM m_htiFirewallStartup;
 	HTREEITEM m_htiLogLevel;
-	HTREEITEM m_htiDisablePeerCache;
 	//Xman
 	/*
     HTREEITEM m_htiDynUp;

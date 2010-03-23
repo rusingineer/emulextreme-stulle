@@ -357,6 +357,7 @@ void CIPFilter::SaveToDefaultFile()
 
 			if (fprintf(fp, "%-15s - %-15s , %3u , %s\n", szStart, szEnd, flt->level, flt->desc) == 0 || ferror(fp))
 			{
+				fclose(fp);
 				CString strError;
 				strError.Format(_T("Failed to save IP filter to file \"%s\" - %s"), strFilePath, _tcserror(errno));
 				throw strError;

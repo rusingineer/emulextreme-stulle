@@ -315,6 +315,27 @@ CUInt128& CUInt128::Subtract(ULONG uValue)
 	return *this;
 }
 
+/* Untested
+CUInt128& CUInt128::Div(ULONG uValue)
+{
+	ULONG uBit, uRemain = 0;
+	for (i = 0; i < 128; i++)
+	{
+		uBit = GetBitNumber(0);
+		uRemain <<= 1;
+		if (uBit)
+			uRemain |= 1;
+		ShiftLeft(1);
+		if (uRemain >= uValue)
+		{
+			uRemain -= uValue;
+			SetBitNumber(127, 1);
+		}
+	}
+	return *this;
+}
+*/
+
 CUInt128& CUInt128::ShiftLeft(UINT uBits)
 {
 	if ((uBits == 0) || (CompareTo(0) == 0))

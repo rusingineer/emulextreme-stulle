@@ -214,10 +214,7 @@ void CSearchListCtrl::OnDestroy()
 
 void CSearchListCtrl::SetStyle()
 {
-	if (thePrefs.IsDoubleClickEnabled())
-		SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
-	else
-		SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_ONECLICKACTIVATE);
+	SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 }
 
 void CSearchListCtrl::SetAllIcons()
@@ -274,6 +271,7 @@ void CSearchListCtrl::Init(CSearchList* in_searchlist)
 	InsertColumn(11,GetResString(IDS_CODEC),		LVCFMT_LEFT,  DFLT_CODEC_COL_WIDTH);
 	InsertColumn(12,GetResString(IDS_FOLDER),		LVCFMT_LEFT,  DFLT_FOLDER_COL_WIDTH,		-1, true);
 	InsertColumn(13,GetResString(IDS_KNOWN),		LVCFMT_LEFT,   50);
+	InsertColumn(14,GetResString(IDS_AICHHASH),		LVCFMT_LEFT,  DFLT_HASH_COL_WIDTH	,		-1, true);
 
 	SetAllIcons();
 
@@ -340,6 +338,7 @@ void CSearchListCtrl::Localize()
 			case 11: strRes = GetResString(IDS_CODEC); break;
 			case 12: strRes = GetResString(IDS_FOLDER); break;
 			case 13: strRes = GetResString(IDS_KNOWN); break;
+			case 14: strRes = GetResString(IDS_AICHHASH); break;
 		}
 	
 		hdi.pszText = const_cast<LPTSTR>((LPCTSTR)strRes);
@@ -698,6 +697,9 @@ int CSearchListCtrl::CompareChild(const CSearchFile *item1, const CSearchFile *i
 			iResult = CompareLocaleStringNoCase(item1->GetFileName(), item2->GetFileName());
 			break;
 
+		case 14: // AICH Hash
+			iResult = CompareAICHHash(item1->GetFileIdentifierC(), item2->GetFileIdentifierC(), true);
+			break;
 		default:
 			// always sort by descending availability
 			iResult = -CompareUnsigned(item1->GetIntTagValue(FT_SOURCES), item2->GetIntTagValue(FT_SOURCES));
@@ -779,6 +781,9 @@ int CSearchListCtrl::Compare(const CSearchFile *item1, const CSearchFile *item2,
 
 		case 13:
 			return item1->GetKnownType() - item2->GetKnownType();
+
+		case 14:
+			return CompareAICHHash(item1->GetFileIdentifierC(), item2->GetFileIdentifierC(), bSortAscending);
 	}
 	return 0;
 }
@@ -925,9 +930,16 @@ BOOL CSearchListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 			//Xman end
 
 			case MP_RESUME:
+				if (thePrefs.IsExtControlsEnabled())
+					theApp.emuledlg->searchwnd->DownloadSelected(false);
+				else
+					theApp.emuledlg->searchwnd->DownloadSelected();
+				return TRUE;
 			case MP_RESUMEPAUSED:
+				theApp.emuledlg->searchwnd->DownloadSelected(true);
+				return TRUE;
 			case IDA_ENTER:
-				theApp.emuledlg->searchwnd->DownloadSelected(wParam==MP_RESUMEPAUSED);
+				theApp.emuledlg->searchwnd->DownloadSelected();
 				return TRUE;
 			case MP_REMOVESELECTED:
 			case MPG_DELETE:
@@ -1971,6 +1983,10 @@ void CSearchListCtrl::GetItemDisplayText(const CSearchFile *src, int iSubItem, L
 				_tcsncpy(pszText, strBuffer, cchTextMax);
 			}
 #endif
+			break;
+		case 14:
+			if (src->GetFileIdentifierC().HasAICHHash())
+				_tcsncpy(pszText, src->GetFileIdentifierC().GetAICHHash().GetString(), cchTextMax);
 			break;
 	}
 	pszText[cchTextMax - 1] = _T('\0');

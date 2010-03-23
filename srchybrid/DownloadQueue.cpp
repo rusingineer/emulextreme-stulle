@@ -35,7 +35,7 @@
 #include "kademlia/utils/uint128.h"
 #include "ipfilter.h"
 #include "emuledlg.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "TaskbarNotifier.h"
 #include "MenuCmds.h"
 #include "Log.h"
@@ -176,7 +176,7 @@ void CDownloadQueue::Init(){
 				if (toadd->GetStatus(true) == PS_READY)
 					theApp.sharedfiles->SafeAddKFile(toadd); // part files are always shared files
 				*/
-				theApp.emuledlg->transferwnd->downloadlistctrl.AddFile(toadd);// show in downloadwindow
+				theApp.emuledlg->transferwnd->GetDownloadList()->AddFile(toadd);// show in downloadwindow
 			}
 			else
 			{
@@ -230,7 +230,7 @@ void CDownloadQueue::Init(){
 				if (toadd->GetStatus(true) == PS_READY)
 					theApp.sharedfiles->SafeAddKFile(toadd); // part files are always shared files
 				*/
-				theApp.emuledlg->transferwnd->downloadlistctrl.AddFile(toadd);// show in downloadwindow
+				theApp.emuledlg->transferwnd->GetDownloadList()->AddFile(toadd);// show in downloadwindow
 
 				AddLogLine(false, GetResString(IDS_RECOVERED_PARTMET), toadd->GetFileName());
 			}
@@ -263,7 +263,7 @@ void CDownloadQueue::AddSearchToDownload(CSearchFile* toadd, uint8 paused, int c
 	if (toadd->GetFileSize()== (uint64)0 || IsFileExisting(toadd->GetFileHash()))
 		return;
 
-	if (toadd->GetFileSize() > OLD_MAX_EMULE_FILE_SIZE && !thePrefs.CanFSHandleLargeFiles()){
+	if (toadd->GetFileSize() > OLD_MAX_EMULE_FILE_SIZE && !thePrefs.CanFSHandleLargeFiles(cat)){
 		LogError(LOG_STATUSBAR, GetResString(IDS_ERR_FSCANTHANDLEFILE));
 		return;
 	}
@@ -390,14 +390,23 @@ void CDownloadQueue::AddFileLinkToDownload(CED2KFileLink* pLink, int cat)
 		partfile = GetFileByID(pLink->GetHashKey());
 	if (partfile)
 	{
-		if (pLink->HasValidSources())
-			partfile->AddClientSources(pLink->SourcesList, 1, false);
-		if (pLink->HasValidAICHHash() ){
-			if ( !(partfile->GetAICHHashset()->HasValidMasterHash() && partfile->GetAICHHashset()->GetMasterHash() == pLink->GetAICHHash())){
-				partfile->GetAICHHashset()->SetMasterHash(pLink->GetAICHHash(), AICH_VERIFIED);
-				partfile->GetAICHHashset()->FreeHashSet();
+		// match the fileidentifier and only if the are the same add possible sources
+		CFileIdentifierSA tmpFileIdent(pLink->GetHashKey(), pLink->GetSize(), pLink->GetAICHHash(), pLink->HasValidAICHHash());
+		if (partfile->GetFileIdentifier().CompareRelaxed(tmpFileIdent))
+		{
+			if (pLink->HasValidSources())
+				partfile->AddClientSources(pLink->SourcesList, 1, false);
+			if (!partfile->GetFileIdentifier().HasAICHHash() && tmpFileIdent.HasAICHHash())
+			{
+				partfile->GetFileIdentifier().SetAICHHash(tmpFileIdent.GetAICHHash());
+				partfile->GetAICHRecoveryHashSet()->SetMasterHash(tmpFileIdent.GetAICHHash(), AICH_VERIFIED);
+				partfile->GetAICHRecoveryHashSet()->FreeHashSet();
+
 			}
 		}
+		else
+			DebugLogWarning(_T("FileIdentifier mismatch when trying to add ed2k link to existing download - AICH Hash or Size might differ, no sources added. File: %s"),
+				partfile->GetFileName());
 	}
 
 	if (pLink->HasHostnameSources())
@@ -427,7 +436,7 @@ void CDownloadQueue::AddDownload(CPartFile* newfile,bool paused) {
 	filelist.AddTail(newfile);
 	SortByPriority();
 	CheckDiskspace();
-	theApp.emuledlg->transferwnd->downloadlistctrl.AddFile(newfile);
+	theApp.emuledlg->transferwnd->GetDownloadList()->AddFile(newfile);
 	AddLogLine(true, GetResString(IDS_NEWDOWNLOAD), newfile->GetFileName());
 	CString msgTemp;
 	msgTemp.Format(GetResString(IDS_NEWDOWNLOAD) + _T("\n"), newfile->GetFileName());
@@ -483,9 +492,23 @@ void CDownloadQueue::Process(){
 	uint32 datarateX=0;
 	udcounter++;
 
+	theStats.m_fGlobalDone = 0;
+	theStats.m_fGlobalSize = 0;
+	theStats.m_dwOverallStatus=0;
 	//filelist is already sorted by prio, therefore I removed all the extra loops..
 	for (POSITION pos = filelist.GetHeadPosition();pos != 0;){
 		CPartFile* cur_file = filelist.GetNext(pos);
+
+		// maintain global download stats
+		theStats.m_fGlobalDone += (uint64)cur_file->GetCompletedSize();
+		theStats.m_fGlobalSize += (uint64)cur_file->GetFileSize();
+		
+		if (cur_file->GetTransferringSrcCount()>0)
+			theStats.m_dwOverallStatus  |= STATE_DOWNLOADING;
+		if (cur_file->GetStatus()==PS_ERROR)
+			theStats.m_dwOverallStatus  |= STATE_ERROROUS;
+
+
 		if (cur_file->GetStatus() == PS_READY || cur_file->GetStatus() == PS_EMPTY){
 			datarateX += cur_file->Process(downspeed, udcounter);
 		}
@@ -627,6 +650,9 @@ void CDownloadQueue::Process(){
 		}
 		//Xman end
 
+		theStats.m_fGlobalDone = 0;
+		theStats.m_fGlobalSize = 0;
+		theStats.m_dwOverallStatus=0;
 		// Remark: filelist is not sorted by priority (see 'balancing' below), needed to priorize the connection (e.g. during start-up)
 		for(int priority = 0; priority < 3; priority++)
 		{
@@ -643,6 +669,14 @@ void CDownloadQueue::Process(){
 						(priority == 1 && cur_file->GetDownPriority() == PR_NORMAL) ||
 						(priority == 2 && (cur_file->GetDownPriority() == PR_LOW)))
 					{			
+						// maintain global download stats
+						theStats.m_fGlobalDone += (uint64)cur_file->GetCompletedSize();
+						theStats.m_fGlobalSize += (uint64)cur_file->GetFileSize();
+
+						if (cur_file->GetTransferringSrcCount()>0)
+							theStats.m_dwOverallStatus  |= STATE_DOWNLOADING;
+						if (cur_file->GetStatus()==PS_ERROR)
+							theStats.m_dwOverallStatus  |= STATE_ERROROUS;
 
 						//Xman sourcecache
 						cur_file->ProcessSourceCache();
@@ -849,7 +883,7 @@ bool CDownloadQueue::CheckAndAddSource(CPartFile* sender,CUpDownClient* source){
 				}
 				// set request for this source
 				if (cur_client->AddRequestForAnotherFile(sender)){
-					theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(sender,cur_client,true);
+					theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(sender,cur_client,true);
 					delete source;
                     //Xman remark: this is done in filerequest
                     /*
@@ -920,7 +954,7 @@ bool CDownloadQueue::CheckAndAddSource(CPartFile* sender,CUpDownClient* source){
 	sender->srclist.AddTail(source);
 
 	srcLock.Unlock();	//zz_fly :: make source add action thread safe :: Enig123
-	theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(sender,source,false);
+	theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(sender,source,false);
 
 	//Xman GlobalMaxHarlimit for fairness
 	IncGlobSources();
@@ -996,7 +1030,7 @@ bool CDownloadQueue::CheckAndAddKnownSource(CPartFile* sender,CUpDownClient* sou
 				return false;
 			} //zz_fly :: make source add action thread safe :: Enig123
 			if (source->AddRequestForAnotherFile(sender))
-				theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(sender,source,true);
+				theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(sender,source,true);
                 //Xman
                 /*
                 if(source->GetDownloadState() != DS_CONNECTED) {
@@ -1041,7 +1075,7 @@ bool CDownloadQueue::CheckAndAddKnownSource(CPartFile* sender,CUpDownClient* sou
 	source->enterqueuetime=0;
 	//Xman end
 
-	theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(sender,source,false);
+	theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(sender,source,false);
 	//UpdateDisplayedInfo();
 
 	//Xman GlobalMaxHarlimit for fairness
@@ -1103,7 +1137,7 @@ bool CDownloadQueue::RemoveSource(CUpDownClient* toremove, bool bDoStatsUpdate)
 		if(pos5)
 		{ 
 			toremove->m_OtherRequests_list.GetAt(pos4)->A4AFsrclist.RemoveAt(pos5);
-			theApp.emuledlg->transferwnd->downloadlistctrl.RemoveSource(toremove,toremove->m_OtherRequests_list.GetAt(pos4));
+			theApp.emuledlg->transferwnd->GetDownloadList()->RemoveSource(toremove,toremove->m_OtherRequests_list.GetAt(pos4));
 			toremove->m_OtherRequests_list.RemoveAt(pos4);
 		}
 	}
@@ -1114,7 +1148,7 @@ bool CDownloadQueue::RemoveSource(CUpDownClient* toremove, bool bDoStatsUpdate)
 		if(pos5)
 		{ 
 			toremove->m_OtherNoNeeded_list.GetAt(pos4)->A4AFsrclist.RemoveAt(pos5);
-			theApp.emuledlg->transferwnd->downloadlistctrl.RemoveSource(toremove,toremove->m_OtherNoNeeded_list.GetAt(pos4));
+			theApp.emuledlg->transferwnd->GetDownloadList()->RemoveSource(toremove,toremove->m_OtherNoNeeded_list.GetAt(pos4));
 			toremove->m_OtherNoNeeded_list.RemoveAt(pos4);
 		}
 	}
@@ -1130,7 +1164,7 @@ bool CDownloadQueue::RemoveSource(CUpDownClient* toremove, bool bDoStatsUpdate)
 	//Xman fix for startupload (downloading side)
 		toremove->protocolstepflag1=false; //to be sure
 	//Xman end
-	theApp.emuledlg->transferwnd->downloadlistctrl.RemoveSource(toremove,0);
+	theApp.emuledlg->transferwnd->GetDownloadList()->RemoveSource(toremove,0);
 	toremove->SetRequestFile(NULL);
 
 	//Xman GlobalMaxHarlimit for fairness

@@ -32,6 +32,10 @@ DirectX SDK
 MiniUPnP Lib (as of official)
 
 
+Xtreme 8.0
+* this version is modded by Stulle
+- updated to 0.50a codebase
+
 Xtreme 7.2 second source edit
 * this version is modded by Stulle
 - add: added VS08 solution and project files (Stulle)

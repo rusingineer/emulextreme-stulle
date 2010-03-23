@@ -631,6 +631,7 @@ UINT UploadBandwidthThrottler::RunInternal() {
 	uint16 minslots=0;
 	//Xman count block/success send
 	uint32 last_block_process = timeGetTime() >> 10;
+	bool bAlwaysEnableBigSocketBuffers = false;
 
 	while(doRun) 
 	{
@@ -830,6 +831,14 @@ UINT UploadBandwidthThrottler::RunInternal() {
 				}
 				SetNumberOfFullyActivatedSlots();
 			}
+			// if we are uploading fast, increase the sockets sendbuffers in order to be able to archive faster
+			// speeds
+			// NOTE: We do not call this an awful lot so it's fine to use a more constant approach here.
+			//bool bUseBigBuffers = bAlwaysEnableBigSocketBuffers;
+			if (allowedDataRate/slots > 100 * 1024 && realallowedDatarate > 300 * 1024)
+				bAlwaysEnableBigSocketBuffers = true;
+			else
+				bAlwaysEnableBigSocketBuffers = false;
 		}
 		else if(nexttrickletofull)		
 		{
@@ -988,6 +997,8 @@ UINT UploadBandwidthThrottler::RunInternal() {
 						theApp.QueueDebugLogLine(false, _T("Warning full on wrong possition"));
 						recalculate=true;
 					}
+					if (bAlwaysEnableBigSocketBuffers)
+						socket->UseBigSendBuffer();
 					SocketSentBytes socketSentBytes = socket->SendFileAndControlData(doubleSendSize,doubleSendSize); 
 					uint32 lastSpentBytes = socketSentBytes.sentBytesControlPackets + socketSentBytes.sentBytesStandardPackets;
 					spentBytes += lastSpentBytes;

@@ -294,6 +294,8 @@ void CreateNetworkInfo(CRichEditCtrlX& rCtrl, CHARFORMAT& rcfDef, CHARFORMAT& rc
 			rCtrl << GetResString(IDS_FIREWALLED);
 		else
 			rCtrl << GetResString(IDS_KADOPEN);
+		if (Kademlia::CKademlia::IsRunningInLANMode())
+			rCtrl << _T(" (") << GetResString(IDS_LANMODE) << _T(")");
 		rCtrl << _T("\r\n");
 		rCtrl << _T("UDP ") + GetResString(IDS_STATUS) << _T(":\t");
 		if(Kademlia::CUDPFirewallTester::IsFirewalledUDP(true))

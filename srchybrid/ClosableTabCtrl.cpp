@@ -551,3 +551,11 @@ BOOL CClosableTabCtrl::OnEraseBkgnd(CDC* pDC)
 {
 	return CTabCtrl::OnEraseBkgnd(pDC);
 }
+
+BOOL CClosableTabCtrl::DeleteItem(int nItem)
+{
+	// if we remove a tab which would lead to scrolling back to other tabs, all those become hidden for... whatever reasons
+	// its easy enough wo work arround by scrolling to the first visible tab _before_ we delete the other one
+	SetCurSel(0);
+	return __super::DeleteItem(nItem);
+}

@@ -1,4 +1,4 @@
-/* $Id: miniupnpc.h,v 1.17 2007/12/19 14:58:54 nanard Exp $ */
+/* $Id: miniupnpc.h,v 1.19 2009/10/10 19:15:35 nanard Exp $ */
 /* Project: miniupnp
  * http://miniupnp.free.fr/
  * Author: Thomas Bernard
@@ -39,9 +39,11 @@ struct UPNPDev {
  * Default path for minissdpd socket will be used if minissdpdsock argument
  * is NULL.
  * If multicastif is not NULL, it will be used instead of the default
- * multicast interface for sending SSDP discover packets. */
+ * multicast interface for sending SSDP discover packets.
+ * If sameport is not null, SSDP packets will be sent from the source port
+ * 1900 (same as destination port) otherwise system assign a source port. */
 LIBSPEC struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
-                                      const char * minissdpdsock);
+                                      const char * minissdpdsock, int sameport);
 /* freeUPNPDevlist()
  * free list returned by upnpDiscover() */
 LIBSPEC void freeUPNPDevlist(struct UPNPDev * devlist);
@@ -99,6 +101,10 @@ LIBSPEC void FreeUPNPUrls(struct UPNPUrls *);
  * Returns the number of bytes read if successful, zero if no bytes were 
  * read or if we timed out. Returns negative if there was an error. */
 int ReceiveData(int socket, char * data, int length, int timeout);
+
+/* return 0 or 1 */
+LIBSPEC int UPNPIGD_IsConnected(struct UPNPUrls *, struct IGDdatas *);
+
 
 #ifdef __cplusplus
 }

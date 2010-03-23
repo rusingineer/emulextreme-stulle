@@ -155,6 +155,7 @@ public:
 	static	bool	beepOnError;
 	static	bool	confirmExit;
 	static	DWORD	m_adwStatsColors[15];
+	static	bool	bHasCustomTaskIconColor;
 	static  bool	m_bIconflashOnNewMessage;
 
 	static	bool	splashscreen;
@@ -489,6 +490,11 @@ public:
 	static	bool	m_bAdjustNTFSDaylightFileTime;
 	static	bool	m_bRearrangeKadSearchKeywords;
 	static  bool    m_bAllocFull;
+	static	bool	m_bShowSharedFilesDetails;
+	static  bool	m_bShowWin7TaskbarGoodies;
+	static  bool	m_bShowUpDownIconInTaskbar;
+	static	bool	m_bForceSpeedsToKB;
+	static	bool	m_bAutoShowLookups;
 
 
 	// Web Server [kuchin]
@@ -539,6 +545,7 @@ public:
 	static	CSize	m_sizToolbarIconSize;
 
 	static	bool	m_bWinaTransToolbar;
+	static	bool	m_bShowDownloadToolbar;
 
 	//preview
 	static	bool	m_bPreviewEnabled;
@@ -565,6 +572,7 @@ public:
 	static	bool	m_bResolveSharedShellLinks;
 	static	CStringList shareddir_list;
 	static	CStringList addresses_list;
+	static	bool	m_bKeepUnavailableFixedSharedDirs;
 
 	static	int		m_iDbgHeap;
 	static	UINT	m_nWebMirrorAlertLevel;
@@ -661,7 +669,7 @@ public:
 
 	static	LPCTSTR GetTempDir(int id = 0)				{return (LPCTSTR)tempdir.GetAt((id < tempdir.GetCount()) ? id : 0);}
 	static	int		GetTempDirCount()					{return tempdir.GetCount();}
-	static	bool	CanFSHandleLargeFiles();
+	static	bool	CanFSHandleLargeFiles(int nForCat);
 	static	LPCTSTR GetConfigFile();
 	static	const CString& GetFileCommentsFilePath()	{return m_strFileCommentsFilePath;}
 	static	CString	GetMuleDirectory(EDefaultDirectory eDirectory, bool bCreate = true);
@@ -1179,6 +1187,7 @@ public:
 
 	static	bool	IsErrorBeepEnabled()				{return beepOnError;}
 	static	bool	IsConfirmExitEnabled()				{return confirmExit;}
+	static	void	SetConfirmExit(bool bVal)			{confirmExit = bVal;} 
 	static	bool	UseSplashScreen()					{return splashscreen;}
 	static	bool	FilterLANIPs()						{return filterLANIPs;}
 	static	bool	GetAllowLocalHostIP()				{return m_bAllocLocalHostIP;}
@@ -1352,6 +1361,7 @@ public:
 	static	void	GetAllStatsColors(int iCount, LPDWORD pdwColors);
 	static	bool	SetAllStatsColors(int iCount, const DWORD* pdwColors);
 	static	void	ResetStatsColor(int index);
+	static	bool	HasCustomTaskIconColor()			{return bHasCustomTaskIconColor;}
 
 	static	void	SetMaxConsPerFive(UINT in)			{MaxConperFive=in;}
 	static	LPLOGFONT GetHyperTextLogFont()				{return &m_lfHyperText;}
@@ -1382,6 +1392,9 @@ public:
 	static	bool	GetSparsePartFiles();
 	static	void	SetSparsePartFiles(bool bEnable)	{m_bSparsePartFiles = bEnable;}
 	static	bool	GetResolveSharedShellLinks()		{return m_bResolveSharedShellLinks;}
+	static  bool	IsShowUpDownIconInTaskbar()			{return m_bShowUpDownIconInTaskbar;}
+	static  bool	IsWin7TaskbarGoodiesEnabled()				{return m_bShowWin7TaskbarGoodies;}
+	static  void    SetWin7TaskbarGoodiesEnabled(bool flag)	{m_bShowWin7TaskbarGoodies = flag;}
 
 	//Xman
 	/*
@@ -1510,6 +1523,11 @@ public:
 	static	bool	GetUseDwlPercentage()				{return m_bShowDwlPercentage;}
 	static	void	SetUseDwlPercentage(bool in)		{m_bShowDwlPercentage=in;}
 	static	bool	GetShowActiveDownloadsBold()		{return m_bShowActiveDownloadsBold;}
+	static	bool	GetShowSharedFilesDetails()			{return m_bShowSharedFilesDetails;}
+	static	void	SetShowSharedFilesDetails(bool bIn) {m_bShowSharedFilesDetails = bIn;}
+	static	bool	GetAutoShowLookups()				{return m_bAutoShowLookups;}
+	static	void	SetAutoShowLookups(bool bIn)		{m_bAutoShowLookups = bIn;}
+	static	bool	GetForceSpeedsToKB()				{return m_bForceSpeedsToKB;}
 
 	//Toolbar
 	static	const CString& GetToolbarSettings()					{return m_sToolbarSettings;}
@@ -1524,6 +1542,8 @@ public:
 	static	void	SetToolbarIconSize(CSize siz)		{m_sizToolbarIconSize = siz;}
 
 	static	bool	IsTransToolbarEnabled()				{return m_bWinaTransToolbar;}
+	static	bool	IsDownloadToolbarEnabled()			{return m_bShowDownloadToolbar;}
+	static	void	SetDownloadToolbar(bool bShow)		{m_bShowDownloadToolbar = bShow;}
 
 	static	int		GetSearchMethod()					{return m_iSearchMethod;}
 	static	void	SetSearchMethod(int iMethod)		{m_iSearchMethod = iMethod;}

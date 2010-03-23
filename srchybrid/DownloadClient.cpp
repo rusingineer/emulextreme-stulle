@@ -30,7 +30,7 @@
 #include "DownloadQueue.h"
 #include "ClientUDPSocket.h"
 #include "emuledlg.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "PeerCacheFinder.h"
 #include "Exceptions.h"
 #include "clientlist.h"
@@ -586,24 +586,31 @@ void CUpDownClient::SendFileRequest()
 	//Xman end
 
 	ASSERT(reqfile != NULL);
-	if(!reqfile)
+	if (!reqfile)
 		return;
 	AddAskedCountDown();
 
-	CSafeMemFile dataFileReq(16+16);
-	dataFileReq.WriteHash16(reqfile->GetFileHash());
-
-	if (SupportMultiPacket())
+	if (SupportMultiPacket() || SupportsFileIdentifiers())
 	{
-		bool bUseExtMultiPacket = SupportExtMultiPacket();
-		if (bUseExtMultiPacket){
-			dataFileReq.WriteUInt64(reqfile->GetFileSize());
+		CSafeMemFile dataFileReq(96);
+		if (SupportsFileIdentifiers())
+		{
+			reqfile->GetFileIdentifier().WriteIdentifier(&dataFileReq);
 			if (thePrefs.GetDebugClientTCPLevel() > 0)
-				DebugSend("OP__MultiPacket_Ext", this, reqfile->GetFileHash());
+				DebugSend("OP__MultiPacket_Ext2", this, reqfile->GetFileHash());			
 		}
-		else{
-			if (thePrefs.GetDebugClientTCPLevel() > 0)
-				DebugSend("OP__MultiPacket", this, reqfile->GetFileHash());
+		else
+		{
+			dataFileReq.WriteHash16(reqfile->GetFileHash());
+			if (SupportExtMultiPacket()){
+				dataFileReq.WriteUInt64(reqfile->GetFileSize());
+				if (thePrefs.GetDebugClientTCPLevel() > 0)
+					DebugSend("OP__MultiPacket_Ext", this, reqfile->GetFileHash());
+			}
+			else{
+				if (thePrefs.GetDebugClientTCPLevel() > 0)
+					DebugSend("OP__MultiPacket", this, reqfile->GetFileHash());
+			}
 		}
 
 		// OP_REQUESTFILENAME + ExtInfo
@@ -637,10 +644,10 @@ void CUpDownClient::SendFileRequest()
 		{
 			if (thePrefs.GetDebugClientTCPLevel() > 0) {
 				DebugSend("OP__MPReqSources", this, reqfile->GetFileHash());
-				if (GetLastAskedForSources() == 0)
-					Debug(_T("  first source request\n"));
-				else
-					Debug(_T("  last source request was before %s\n"), CastSecondsToHM((GetTickCount() - GetLastAskedForSources())/1000));
+			    if (GetLastAskedForSources() == 0)
+				    Debug(_T("  first source request\n"));
+			    else
+				    Debug(_T("  last source request was before %s\n"), CastSecondsToHM((GetTickCount() - GetLastAskedForSources())/1000));
 			}
 			
 			//Xman because official client has a bug, only count the XSReqs under special conditions
@@ -661,10 +668,10 @@ void CUpDownClient::SendFileRequest()
 			SetLastAskedForSources();
 			if (thePrefs.GetDebugSourceExchange())
 				AddDebugLogLine(false, _T("SXSend (%s): Client source request; %s, File=\"%s\""),SupportsSourceExchange2() ? _T("Version 2") : _T("Version 1"), DbgGetClientInfo(), reqfile->GetFileName());
-		}
+        }
 
-		// OP_AICHFILEHASHREQ
-		if (IsSupportingAICH())
+		// OP_AICHFILEHASHREQ - deprecated with fileidentifiers
+		if (IsSupportingAICH() && !SupportsFileIdentifiers())
 		{
 			if (thePrefs.GetDebugClientTCPLevel() > 0)
 				DebugSend("OP__MPAichFileHashReq", this, reqfile->GetFileHash());
@@ -672,12 +679,19 @@ void CUpDownClient::SendFileRequest()
 		}
 
 		Packet* packet = new Packet(&dataFileReq, OP_EMULEPROT);
-		packet->opcode = bUseExtMultiPacket ? OP_MULTIPACKET_EXT : OP_MULTIPACKET;
+		if (SupportsFileIdentifiers())
+			packet->opcode = OP_MULTIPACKET_EXT2;
+		else if (SupportExtMultiPacket())
+			packet->opcode = OP_MULTIPACKET_EXT;
+		else
+			packet->opcode = OP_MULTIPACKET;
 		theStats.AddUpDataOverheadFileRequest(packet->size);
 		SendPacket(packet, true);
 	}
 	else
 	{
+		CSafeMemFile dataFileReq(96);
+		dataFileReq.WriteHash16(reqfile->GetFileHash());
 		//This is extended information
 		if (GetExtendedRequestsVersion() > 0)
 			reqfile->WritePartStatus(&dataFileReq);
@@ -689,7 +703,7 @@ void CUpDownClient::SendFileRequest()
 		packet->opcode = OP_REQUESTFILENAME;
 		theStats.AddUpDataOverheadFileRequest(packet->size);
 		SendPacket(packet, true);
-
+	
 		// 26-Jul-2003: removed requesting the file status for files <= PARTSIZE for better compatibility with ed2k protocol (eDonkeyHybrid).
 		// if the remote client answers the OP_REQUESTFILENAME with OP_REQFILENAMEANSWER the file is shared by the remote client. if we
 		// know that the file is shared, we know also that the file is complete and don't need to request the file status.
@@ -697,14 +711,14 @@ void CUpDownClient::SendFileRequest()
 		{
 			if (thePrefs.GetDebugClientTCPLevel() > 0)
 				DebugSend("OP__SetReqFileID", this, reqfile->GetFileHash());
-			CSafeMemFile dataSetReqFileID(16);
+		    CSafeMemFile dataSetReqFileID(16);
 			dataSetReqFileID.WriteHash16(reqfile->GetFileHash());
-			packet = new Packet(&dataSetReqFileID);
-			packet->opcode = OP_SETREQFILEID;
-			theStats.AddUpDataOverheadFileRequest(packet->size);
+		    packet = new Packet(&dataSetReqFileID);
+		    packet->opcode = OP_SETREQFILEID;
+		    theStats.AddUpDataOverheadFileRequest(packet->size);
 		   SendPacket(packet, true);
 		}
-
+	
 		if (IsEmuleClient())
 		{
 			SetRemoteQueueFull(true);
@@ -718,13 +732,13 @@ void CUpDownClient::SendFileRequest()
 
 		if (IsSourceRequestAllowed())
 		{
-			if (thePrefs.GetDebugClientTCPLevel() > 0) {
-				DebugSend("OP__RequestSources", this, reqfile->GetFileHash());
-				if (GetLastAskedForSources() == 0)
-					Debug(_T("  first source request\n"));
-				else
-					Debug(_T("  last source request was before %s\n"), CastSecondsToHM((GetTickCount() - GetLastAskedForSources())/1000));
-			}
+		    if (thePrefs.GetDebugClientTCPLevel() > 0) {
+			    DebugSend("OP__RequestSources", this, reqfile->GetFileHash());
+			    if (GetLastAskedForSources() == 0)
+				    Debug(_T("  first source request\n"));
+			    else
+				    Debug(_T("  last source request was before %s\n"), CastSecondsToHM((GetTickCount() - GetLastAskedForSources())/1000));
+		    }
 			//Xman because official client has a bug, only count the XSReqs under special conditions
 			/*
 			reqfile->SetLastAnsweredTimeTimeout();
@@ -735,7 +749,7 @@ void CUpDownClient::SendFileRequest()
 				IncXSReqs();//>>> Anti-XS-Exploit (Xman)
 			reqfile->SetLastAnsweredTimeTimeout();
 			//Xman end
-
+			
 			Packet* packet;
 			if (SupportsSourceExchange2()){
 				packet = new Packet(OP_REQUESTSOURCES2,19,OP_EMULEPROT);
@@ -754,12 +768,12 @@ void CUpDownClient::SendFileRequest()
 			SetLastAskedForSources();
 			if (thePrefs.GetDebugSourceExchange())
 				AddDebugLogLine(false, _T("SXSend (%s): Client source request; %s, File=\"%s\""),SupportsSourceExchange2() ? _T("Version 2") : _T("Version 1"), DbgGetClientInfo(), reqfile->GetFileName());
-		}
+        }
 
 		if (IsSupportingAICH())
 		{
-			if (thePrefs.GetDebugClientTCPLevel() > 0)
-				DebugSend("OP__AichFileHashReq", this, reqfile->GetFileHash());
+		    if (thePrefs.GetDebugClientTCPLevel() > 0)
+			    DebugSend("OP__AichFileHashReq", this, reqfile->GetFileHash());
 			Packet* packet = new Packet(OP_AICHFILEHASHREQ,16,OP_EMULEPROT);
 			md4cpy(packet->pBuffer,reqfile->GetFileHash());
 			theStats.AddUpDataOverheadFileRequest(packet->size);
@@ -866,11 +880,11 @@ void CUpDownClient::ProcessFileInfo(CSafeMemFile* data, CPartFile* file)
 
 		if (thePrefs.GetDebugClientTCPLevel() > 0)
 		{
-			int iNeeded = 0;
+		    int iNeeded = 0;
 			UINT i;
 			for (i = 0; i < m_nPartCount; i++) {
-				if (!reqfile->IsComplete((uint64)i*PARTSIZE, ((uint64)(i+1)*PARTSIZE)-1, false))
-					iNeeded++;
+			    if (!reqfile->IsComplete((uint64)i*PARTSIZE, ((uint64)(i+1)*PARTSIZE)-1, false))
+				    iNeeded++;
 			}
 			char* psz = new char[m_nPartCount + 1];
 			for (i = 0; i < m_nPartCount; i++)
@@ -882,27 +896,11 @@ void CUpDownClient::ProcessFileInfo(CSafeMemFile* data, CPartFile* file)
 		UpdateDisplayedInfo();
 		reqfile->UpdateAvailablePartsCount();
 		// even if the file is <= PARTSIZE, we _may_ need the hashset for that file (if the file size == PARTSIZE)
-		if (reqfile->hashsetneeded)
-		{
-			if (socket)
-			{
-				if (thePrefs.GetDebugClientTCPLevel() > 0)
-					DebugSend("OP__HashSetRequest", this, reqfile->GetFileHash());
-				Packet* packet = new Packet(OP_HASHSETREQUEST,16);
-				md4cpy(packet->pBuffer,reqfile->GetFileHash());
-				theStats.AddUpDataOverheadFileRequest(packet->size);
-				SendPacket(packet, true);
-				SetDownloadState(DS_REQHASHSET);
-				m_fHashsetRequesting = 1;
-				reqfile->hashsetneeded = false;
-			}
-			else
-				ASSERT(0);
-		}
+		if (reqfile->m_bMD4HashsetNeeded || (reqfile->IsAICHPartHashSetNeeded() && SupportsFileIdentifiers() 
+			&& GetReqFileAICHHash() != NULL && *GetReqFileAICHHash() == reqfile->GetFileIdentifier().GetAICHHash()))
+			SendHashSetRequest();
 		else
-		{
 			SendStartupLoadReq();
-		}
 		reqfile->UpdatePartsInfo();
 	}
 }
@@ -1032,27 +1030,11 @@ void CUpDownClient::ProcessFileStatus(bool bUdpPacket, CSafeMemFile* data, CPart
 			}
 			//Xman end
 		}
-		else if (reqfile->hashsetneeded) //If we are using the eMule filerequest packets, this is taken care of in the Multipacket!
-		{
-			if (socket)
-			{
-				if (thePrefs.GetDebugClientTCPLevel() > 0)
-					DebugSend("OP__HashSetRequest", this, reqfile->GetFileHash());
-				Packet* packet = new Packet(OP_HASHSETREQUEST,16);
-				md4cpy(packet->pBuffer,reqfile->GetFileHash());
-				theStats.AddUpDataOverheadFileRequest(packet->size);
-				SendPacket(packet, true);
-				SetDownloadState(DS_REQHASHSET);
-				m_fHashsetRequesting = 1;
-				reqfile->hashsetneeded = false;
-			}
-			else
-				ASSERT(0);
-		}
+        else if (reqfile->m_bMD4HashsetNeeded || (reqfile->IsAICHPartHashSetNeeded() && SupportsFileIdentifiers() 
+			&& GetReqFileAICHHash() != NULL && *GetReqFileAICHHash() == reqfile->GetFileIdentifier().GetAICHHash())) //If we are using the eMule filerequest packets, this is taken care of in the Multipacket!
+			SendHashSetRequest();
 		else
-		{
 			SendStartupLoadReq();
-		}
 		//Xman 4.8.2 moved the update display here. Because in most  cases it has been already updated, if not it will be done now:
 		UpdateDisplayedInfo();
 		//Xman end
@@ -1190,13 +1172,13 @@ void CUpDownClient::SetDownloadState(EDownloadState nNewState, LPCTSTR pszReason
 
 		if (reqfile){
 		    if(nNewState == DS_DOWNLOADING){
-				if(thePrefs.GetLogUlDlEvents())
-					//Xman Code Improvement
-					/*
+                if(thePrefs.GetLogUlDlEvents())
+                    //Xman Code Improvement
+                    /*
                     AddDebugLogLine(DLP_VERYLOW, false, _T("Download session started. User: %s in SetDownloadState(). New State: %i"), DbgGetClientInfo(), nNewState);
-					*/
-					AddDebugLogLine(DLP_VERYLOW, false, _T("Download session started. User: %s in SetDownloadState()."), DbgGetClientInfo());
-					//Xman end
+                    */
+                    AddDebugLogLine(DLP_VERYLOW, false, _T("Download session started. User: %s in SetDownloadState()."), DbgGetClientInfo());
+                    //Xman end
 
 			    reqfile->AddDownloadingSource(this);
 		    }
@@ -1245,7 +1227,7 @@ void CUpDownClient::SetDownloadState(EDownloadState nNewState, LPCTSTR pszReason
                 if(thePrefs.GetLogUlDlEvents())
                 */
                 //Xman end
-				AddDebugLogLine(DLP_VERYLOW, false, _T("Download session ended: %s User: %s in SetDownloadState(). New State: %i, Length: %s, Payload: %s, Transferred: %s, Req blocks not yet completed: %i."), pszReason, DbgGetClientInfo(), nNewState, CastSecondsToHM(GetDownTimeDifference(false)/1000), CastItoXBytes(GetSessionPayloadDown(), false, false), CastItoXBytes(GetSessionDown(), false, false), m_PendingBlocks_list.GetCount());
+                    AddDebugLogLine(DLP_VERYLOW, false, _T("Download session ended: %s User: %s in SetDownloadState(). New State: %i, Length: %s, Payload: %s, Transferred: %s, Req blocks not yet completed: %i."), pszReason, DbgGetClientInfo(), nNewState, CastSecondsToHM(GetDownTimeDifference(false)/1000), CastItoXBytes(GetSessionPayloadDown(), false, false), CastItoXBytes(GetSessionDown(), false, false), m_PendingBlocks_list.GetCount());
 			}
 
 
@@ -1281,7 +1263,7 @@ void CUpDownClient::SetDownloadState(EDownloadState nNewState, LPCTSTR pszReason
 			m_nDownloadState = (_EDownloadState)nNewState;
 
 			ClearDownloadBlockRequests();
-			
+				
 			m_nDownDatarate = 0;
 			//Xman				
 			// Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
@@ -1334,23 +1316,70 @@ void CUpDownClient::SetDownloadState(EDownloadState nNewState, LPCTSTR pszReason
 	}
 }
 
-void CUpDownClient::ProcessHashSet(const uchar* packet,uint32 size)
+void CUpDownClient::ProcessHashSet(const uchar* packet, uint32 size, bool bFileIdentifiers)
 {
-	if (!m_fHashsetRequesting)
-		throw CString(_T("unwanted hashset"));
-	if ( (!reqfile) || md4cmp(packet,reqfile->GetFileHash())){
-		CheckFailedFileIdReqs(packet);
-		throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (ProcessHashSet)");	
-	}
 	CSafeMemFile data(packet, size);
-	if (reqfile->LoadHashsetFromFile(&data,true)){
-		m_fHashsetRequesting = 0;
+	if (bFileIdentifiers)
+	{
+		if (!m_fHashsetRequestingMD4 && !m_fHashsetRequestingAICH)
+			throw CString(_T("unwanted hashset2"));
+		CFileIdentifierSA fileIdent;
+		if (!fileIdent.ReadIdentifier(&data))
+			throw CString(_T("Invalid FileIdentifier"));
+		if (reqfile == NULL || !reqfile->GetFileIdentifier().CompareRelaxed(fileIdent))
+		{
+			CheckFailedFileIdReqs(packet);
+			throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (ProcessHashSet2)");	
+		}
+		bool bMD4 = m_fHashsetRequestingMD4 != 0;
+		bool bAICH = m_fHashsetRequestingAICH != 0;
+		if (!reqfile->GetFileIdentifier().ReadHashSetsFromPacket(&data, bMD4, bAICH))
+		{
+			if (m_fHashsetRequestingMD4)
+				reqfile->m_bMD4HashsetNeeded = true;
+			if (m_fHashsetRequestingAICH)
+				reqfile->SetAICHHashSetNeeded(true);
+			m_fHashsetRequestingMD4 = 0;
+			m_fHashsetRequestingAICH = 0;
+			throw GetResString(IDS_ERR_BADHASHSET);
+		}
+		if (m_fHashsetRequestingMD4 && !bMD4)
+		{
+			DebugLogWarning(_T("Client was unable to deliver requested MD4 hashset (shouldn't happen) - %s, file: %s"), DbgGetClientInfo(), reqfile->GetFileName());
+			reqfile->m_bMD4HashsetNeeded = true;
+		}
+		else if (m_fHashsetRequestingMD4)
+			DebugLog(_T("Received valid MD4 Hashset (FileIdentifiers) form %s, file: %s"), DbgGetClientInfo(), reqfile->GetFileName());
+		
+		if (m_fHashsetRequestingAICH && !bAICH)
+		{
+			DebugLogWarning(_T("Client was unable to deliver requested AICH part hashset, asking other clients - %s, file: %s"), DbgGetClientInfo(), reqfile->GetFileName());
+			reqfile->SetAICHHashSetNeeded(true);
+		}
+		else if (m_fHashsetRequestingAICH)
+			DebugLog(_T("Received valid AICH Part Hashset form %s, file: %s"), DbgGetClientInfo(), reqfile->GetFileName());
+		m_fHashsetRequestingMD4 = 0;
+		m_fHashsetRequestingAICH = 0;
 		//Xman
 		reqfile->PerformFirstHash();		// SLUGFILLER: SafeHash - Rehash
 	}
-	else{
-		reqfile->hashsetneeded = true;
-		throw GetResString(IDS_ERR_BADHASHSET);
+	else
+	{
+		if (!m_fHashsetRequestingMD4)
+			throw CString(_T("unwanted hashset"));
+		if ( (!reqfile) || md4cmp(packet,reqfile->GetFileHash()))
+		{
+			CheckFailedFileIdReqs(packet);
+			throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (ProcessHashSet)");	
+		}
+		m_fHashsetRequestingMD4 = 0;
+		if (!reqfile->GetFileIdentifier().LoadMD4HashsetFromFile(&data, true))
+		{
+			reqfile->m_bMD4HashsetNeeded = true;
+			throw GetResString(IDS_ERR_BADHASHSET);
+		}
+		//Xman
+		reqfile->PerformFirstHash();		// SLUGFILLER: SafeHash - Rehash
 	}
 	SendStartupLoadReq();
 }
@@ -2057,11 +2086,11 @@ void CUpDownClient::CompDownloadRate(){
 	m_displayDownDatarateCounter++;
 	//Xman Code Improvement: slower refresh for clientlist
 	if(m_displayDownDatarateCounter%DISPLAY_REFRESH == 0 ){
-		theApp.emuledlg->transferwnd->downloadlistctrl.UpdateItem(this);
-		theApp.emuledlg->transferwnd->downloadclientsctrl.RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetDownloadList()->UpdateItem(this);
+		theApp.emuledlg->transferwnd->GetDownloadClientsList()->RefreshClient(this);
 	}
 	if(m_displayDownDatarateCounter%DISPLAY_REFRESH_CLIENTLIST == 0 ){
-		theApp.emuledlg->transferwnd->clientlistctrl.RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetClientList()->RefreshClient(this);
 		m_displayDownDatarateCounter = 0;
 	}
 }
@@ -2370,9 +2399,9 @@ void CUpDownClient::UpdateDisplayedInfo(bool force)
 #endif
     DWORD curTick = ::GetTickCount();
     if(force || curTick-m_lastRefreshedDLDisplay > MINWAIT_BEFORE_DLDISPLAY_WINDOWUPDATE+m_random_update_wait) {
-	    theApp.emuledlg->transferwnd->downloadlistctrl.UpdateItem(this);
-		theApp.emuledlg->transferwnd->clientlistctrl.RefreshClient(this);
-		theApp.emuledlg->transferwnd->downloadclientsctrl.RefreshClient(this);
+	    theApp.emuledlg->transferwnd->GetDownloadList()->UpdateItem(this);
+		theApp.emuledlg->transferwnd->GetClientList()->RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetDownloadClientsList()->RefreshClient(this);
         m_lastRefreshedDLDisplay = curTick;
     }
 }
@@ -2873,7 +2902,7 @@ bool CUpDownClient::DoSwap(CPartFile* SwapTo, bool bRemoveCompletely, LPCTSTR re
     } else {
         AddDebugLogLine(DLP_HIGH, true, _T("o-o Unsync between parfile->srclist and client otherfiles list. Swapping client where client has file in another list, but file doesn't have client in a4af srclist. %s Remove = %s '%s'   -->   '%s'  SwapReason: %s"), DbgGetClientInfo(), (bRemoveCompletely ? _T("Yes") : _T("No") ), (this->reqfile)?this->reqfile->GetFileName():_T("null"), SwapTo->GetFileName(), reason);
     }
-	theApp.emuledlg->transferwnd->downloadlistctrl.RemoveSource(this,SwapTo);
+	theApp.emuledlg->transferwnd->GetDownloadList()->RemoveSource(this,SwapTo);
 
 	reqfile->RemoveDownloadingSource(this);
 
@@ -2885,7 +2914,7 @@ bool CUpDownClient::DoSwap(CPartFile* SwapTo, bool bRemoveCompletely, LPCTSTR re
 		else
 			m_OtherRequests_list.AddTail(reqfile);
 
-		theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(reqfile,this,true);
+		theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(reqfile,this,true);
     } else {
         m_fileReaskTimes.RemoveKey(reqfile);
     }
@@ -2897,7 +2926,7 @@ bool CUpDownClient::DoSwap(CPartFile* SwapTo, bool bRemoveCompletely, LPCTSTR re
 	pOldRequestFile->UpdateAvailablePartsCount();
 
 	SwapTo->srclist.AddTail(this);
-	theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(SwapTo,this,false);
+	theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(SwapTo,this,false);
 
 	return true;
 }
@@ -2910,7 +2939,7 @@ bool CUpDownClient::DoSwap(CPartFile* SwapTo, bool bRemoveCompletely) {
 		POSITION pos2 = SwapTo->A4AFsrclist.Find(this);
 		if (pos2){
 			SwapTo->A4AFsrclist.RemoveAt(pos2);
-			theApp.emuledlg->transferwnd->downloadlistctrl.RemoveSource(this,SwapTo);
+			theApp.emuledlg->transferwnd->GetDownloadList()->RemoveSource(this,SwapTo);
 		}
 
 		reqfile->srclist.RemoveAt(pos);
@@ -2924,7 +2953,7 @@ bool CUpDownClient::DoSwap(CPartFile* SwapTo, bool bRemoveCompletely) {
 			else
 				m_OtherRequests_list.AddTail(reqfile);
 
-				theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(reqfile,this,true);
+				theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(reqfile,this,true);
 		}
 		else
 		{
@@ -2952,7 +2981,7 @@ bool CUpDownClient::DoSwap(CPartFile* SwapTo, bool bRemoveCompletely) {
 		pOldRequestFile->UpdateAvailablePartsCount();
 
 		SwapTo->srclist.AddTail(this);
-		theApp.emuledlg->transferwnd->downloadlistctrl.AddSource(SwapTo,this,false);
+		theApp.emuledlg->transferwnd->GetDownloadList()->AddSource(SwapTo,this,false);
 		
 		//Xman 4.2 just in time swapping
 		if(GetDownloadState()==DS_DOWNLOADING)
@@ -3329,7 +3358,7 @@ uint32 CUpDownClient::GetLastAskedTime(const CPartFile* partFile) const
 // Maella end
 
 void CUpDownClient::SetReqFileAICHHash(CAICHHash* val)
-{
+{	// TODO fileident optimize to save some memory
 	if (m_pReqFileAICHHash != NULL && m_pReqFileAICHHash != val)
 		delete m_pReqFileAICHHash;
 	m_pReqFileAICHHash = val;
@@ -3341,12 +3370,12 @@ void CUpDownClient::SendAICHRequest(CPartFile* pForFile, uint16 nPart)
 	request.m_nPart = nPart;
 	request.m_pClient = this;
 	request.m_pPartFile = pForFile;
-	CAICHHashSet::m_liRequestedData.AddTail(request);
+	CAICHRecoveryHashSet::m_liRequestedData.AddTail(request);
 	m_fAICHRequested = TRUE;
 	CSafeMemFile data;
 	data.WriteHash16(pForFile->GetFileHash());
 	data.WriteUInt16(nPart);
-	pForFile->GetAICHHashset()->GetMasterHash().Write(&data);
+	pForFile->GetAICHRecoveryHashSet()->GetMasterHash().Write(&data);
 	Packet* packet = new Packet(&data, OP_EMULEPROT, OP_AICHREQUEST);
 	if (thePrefs.GetDebugClientTCPLevel() > 0)
 		DebugSend("OP__AichRequest", this, (uchar*)packet->pBuffer);
@@ -3363,28 +3392,28 @@ void CUpDownClient::ProcessAICHAnswer(const uchar* packet, UINT size)
 
 	CSafeMemFile data(packet, size);
 	if (size <= 16){	
-		CAICHHashSet::ClientAICHRequestFailed(this);
+		CAICHRecoveryHashSet::ClientAICHRequestFailed(this);
 		return;
 	}
 	uchar abyHash[16];
 	data.ReadHash16(abyHash);
 	CPartFile* pPartFile = theApp.downloadqueue->GetFileByID(abyHash);
-	CAICHRequestedData request = CAICHHashSet::GetAICHReqDetails(this);
+	CAICHRequestedData request = CAICHRecoveryHashSet::GetAICHReqDetails(this);
 	uint16 nPart = data.ReadUInt16();
 	if (pPartFile != NULL && request.m_pPartFile == pPartFile && request.m_pClient == this && nPart == request.m_nPart){
 		CAICHHash ahMasterHash(&data);
-		if ( (pPartFile->GetAICHHashset()->GetStatus() == AICH_TRUSTED || pPartFile->GetAICHHashset()->GetStatus() == AICH_VERIFIED)
-			 && ahMasterHash == pPartFile->GetAICHHashset()->GetMasterHash())
+		if ( (pPartFile->GetAICHRecoveryHashSet()->GetStatus() == AICH_TRUSTED || pPartFile->GetAICHRecoveryHashSet()->GetStatus() == AICH_VERIFIED)
+			 && ahMasterHash == pPartFile->GetAICHRecoveryHashSet()->GetMasterHash())
 		{
-			if(pPartFile->GetAICHHashset()->ReadRecoveryData((uint64)request.m_nPart*PARTSIZE, &data)){
+			if(pPartFile->GetAICHRecoveryHashSet()->ReadRecoveryData((uint64)request.m_nPart*PARTSIZE, &data)){
 				// finally all checks passed, everythings seem to be fine
 				AddDebugLogLine(DLP_DEFAULT, false, _T("AICH Packet Answer: Succeeded to read and validate received recoverydata"));
-				CAICHHashSet::RemoveClientAICHRequest(this);
+				CAICHRecoveryHashSet::RemoveClientAICHRequest(this);
 				pPartFile->AICHRecoveryDataAvailable(request.m_nPart);
 				return;
 			}
 			else
-				AddDebugLogLine(DLP_DEFAULT, false, _T("AICH Packet Answer: Succeeded to read and validate received recoverydata"));
+				DebugLogError(_T("AICH Packet Answer: Failed to read and validate received recoverydata"));
 		}
 		else
 			AddDebugLogLine(DLP_HIGH, false, _T("AICH Packet Answer: Masterhash differs from packethash or hashset has no trusted Masterhash"));
@@ -3392,14 +3421,14 @@ void CUpDownClient::ProcessAICHAnswer(const uchar* packet, UINT size)
 	else
 		AddDebugLogLine(DLP_HIGH, false, _T("AICH Packet Answer: requested values differ from values in packet"));
 
-	CAICHHashSet::ClientAICHRequestFailed(this);
+	CAICHRecoveryHashSet::ClientAICHRequestFailed(this);
 }
 
 void CUpDownClient::ProcessAICHRequest(const uchar* packet, UINT size)
 {
 	if (size != (UINT)(16 + 2 + CAICHHash::GetHashSize()))
 		throw CString(_T("Received AICH Request Packet with wrong size"));
-
+	
 	CSafeMemFile data(packet, size);
 	uchar abyHash[16];
 	data.ReadHash16(abyHash);
@@ -3407,15 +3436,17 @@ void CUpDownClient::ProcessAICHRequest(const uchar* packet, UINT size)
 	CAICHHash ahMasterHash(&data);
 	CKnownFile* pKnownFile = theApp.sharedfiles->GetFileByID(abyHash);
 	if (pKnownFile != NULL){
-		if (pKnownFile->GetAICHHashset()->GetStatus() == AICH_HASHSETCOMPLETE && pKnownFile->GetAICHHashset()->HasValidMasterHash()
-			&& pKnownFile->GetAICHHashset()->GetMasterHash() == ahMasterHash && pKnownFile->GetPartCount() > nPart
+		if (pKnownFile->IsAICHRecoverHashSetAvailable() && pKnownFile->GetFileIdentifier().HasAICHHash()
+			&& pKnownFile->GetFileIdentifier().GetAICHHash() == ahMasterHash && pKnownFile->GetPartCount() > nPart
 			&& pKnownFile->GetFileSize() > (uint64)EMBLOCKSIZE && (uint64)pKnownFile->GetFileSize() - PARTSIZE*(uint64)nPart > EMBLOCKSIZE)
 		{
 			CSafeMemFile fileResponse;
 			fileResponse.WriteHash16(pKnownFile->GetFileHash());
 			fileResponse.WriteUInt16(nPart);
-			pKnownFile->GetAICHHashset()->GetMasterHash().Write(&fileResponse);
-			if (pKnownFile->GetAICHHashset()->CreatePartRecoveryData((uint64)nPart*PARTSIZE, &fileResponse)){
+			pKnownFile->GetFileIdentifier().GetAICHHash().Write(&fileResponse);
+			CAICHRecoveryHashSet recHashSet(pKnownFile, pKnownFile->GetFileSize());
+			recHashSet.SetMasterHash(pKnownFile->GetFileIdentifier().GetAICHHash(), AICH_HASHSETCOMPLETE);
+			if (recHashSet.CreatePartRecoveryData((uint64)nPart*PARTSIZE, &fileResponse)){
 				AddDebugLogLine(DLP_HIGH, false, _T("AICH Packet Request: Successfully created and send recoverydata for %s to %s"), pKnownFile->GetFileName(), DbgGetClientInfo());
 				if (thePrefs.GetDebugClientTCPLevel() > 0)
 					DebugSend("OP__AichAnswer", this, pKnownFile->GetFileHash());
@@ -3434,6 +3465,7 @@ void CUpDownClient::ProcessAICHRequest(const uchar* packet, UINT size)
 	}
 	else
 		AddDebugLogLine(DLP_HIGH, false, _T("AICH Packet Request: Failed to find requested shared file -  %s"), DbgGetClientInfo());
+	
 	if (thePrefs.GetDebugClientTCPLevel() > 0)
 		DebugSend("OP__AichAnswer", this, abyHash);
 	Packet* packAnswer = new Packet(OP_AICHANSWER, 16, OP_EMULEPROT);
@@ -3442,21 +3474,124 @@ void CUpDownClient::ProcessAICHRequest(const uchar* packet, UINT size)
 	SafeConnectAndSendPacket(packAnswer);
 }
 
-void CUpDownClient::ProcessAICHFileHash(CSafeMemFile* data, CPartFile* file)
+void CUpDownClient::ProcessAICHFileHash(CSafeMemFile* data, CPartFile* file, const CAICHHash* pAICHHash)
 {
 	CPartFile* pPartFile = file;
-	if (pPartFile == NULL){
+	if (pPartFile == NULL && data != NULL){
 		uchar abyHash[16];
 		data->ReadHash16(abyHash);
 		pPartFile = theApp.downloadqueue->GetFileByID(abyHash);
 	}
-	CAICHHash ahMasterHash(data);
+	CAICHHash ahMasterHash;
+	if (pAICHHash == NULL && data != NULL)
+		ahMasterHash.Read(data);
+	else
+		ahMasterHash = *pAICHHash;
 	if(pPartFile != NULL && pPartFile == GetRequestFile()){
 		SetReqFileAICHHash(new CAICHHash(ahMasterHash));
-		pPartFile->GetAICHHashset()->UntrustedHashReceived(ahMasterHash, GetConnectIP());
+		pPartFile->GetAICHRecoveryHashSet()->UntrustedHashReceived(ahMasterHash, GetConnectIP());
+
+		if (pPartFile->GetFileIdentifierC().HasAICHHash() && pPartFile->GetFileIdentifierC().GetAICHHash() != ahMasterHash)
+		{
+			// this an legacy client and he sent us a hash different from our verified one, which menas the fileidentifiers
+			// are different. We handle this just like a FNF-Answer to our downloadrequest and remove the client from our sourcelist, because we
+			// sure don't want to download from him
+			pPartFile->m_DeadSourceList.AddDeadSource(this);
+			DebugLogWarning(_T("Client answered with different AICH hash than local verified on in ProcessAICHFileHash, removing source. File %s, client %s"), pPartFile->GetFileName(), DbgGetClientInfo());
+			// if that client does not have my file maybe has another different
+			// we try to swap to another file ignoring no needed parts files
+			switch (GetDownloadState())
+			{
+				case DS_REQHASHSET:
+					// for the love of eMule, don't accept a hashset from him :)
+					if (m_fHashsetRequestingMD4)
+					{
+						DebugLogWarning(_T("... also cancelled hash set request from client due to AICH mismatch"));
+						pPartFile->m_bMD4HashsetNeeded = true;
+					}
+					if (m_fHashsetRequestingAICH)
+					{
+						ASSERT( false );
+						pPartFile->SetAICHHashSetNeeded(true);
+					}
+					m_fHashsetRequestingMD4 = false;
+					m_fHashsetRequestingAICH = false;
+				case DS_CONNECTED:
+				case DS_ONQUEUE:
+				case DS_NONEEDEDPARTS:
+				case DS_DOWNLOADING:
+					//Xman Xtreme Downloadmanager
+					/*
+					DontSwapTo(pPartFile); // ZZ:DownloadManager
+					if (!SwapToAnotherFile(_T("Source says it doesn't have the file (AICH mismatch). CUpDownClient::ProcessAICHFileHash"), true, true, true, NULL, false, false)) { // ZZ:DownloadManager
+						theApp.downloadqueue->RemoveSource(this);
+					}
+					*/
+					if (SwapToAnotherFile(true, true, true, NULL)) 
+					{ 
+						theApp.downloadqueue->RemoveSource(this);
+					}
+					//Xman end
+				return;
+			}
+		}
 	}
 	else
 		AddDebugLogLine(DLP_HIGH, false, _T("ProcessAICHFileHash(): PartFile not found or Partfile differs from requested file, %s"), DbgGetClientInfo());
+}
+
+void CUpDownClient::SendHashSetRequest()
+{
+	if (socket && socket->IsConnected())
+	{
+		Packet* packet = NULL;
+		if (SupportsFileIdentifiers())
+		{
+			if (thePrefs.GetDebugClientTCPLevel() > 0)
+				DebugSend("OP__HashSetRequest2", this, reqfile->GetFileHash());
+			CSafeMemFile filePacket(60);
+			reqfile->GetFileIdentifier().WriteIdentifier(&filePacket);
+			// 6 Request Options - RESERVED
+			// 1 Request AICH HashSet
+			// 1 Request MD4 HashSet
+			uint8 byOptions = 0;
+			if (reqfile->m_bMD4HashsetNeeded)
+			{
+				m_fHashsetRequestingMD4 = 1;
+				byOptions |= 0x01;
+				reqfile->m_bMD4HashsetNeeded = false;
+			}
+			if (reqfile->IsAICHPartHashSetNeeded() && GetReqFileAICHHash() != NULL && *GetReqFileAICHHash() == reqfile->GetFileIdentifier().GetAICHHash())
+			{
+				m_fHashsetRequestingAICH = 1;
+				byOptions |= 0x02;
+				reqfile->SetAICHHashSetNeeded(false);
+			}
+			if (byOptions == 0)
+			{
+				ASSERT( false );
+				return;
+			}
+			DEBUG_ONLY( DebugLog(_T("Sending HashSet Request: MD4 %s, AICH %s to client %s"), m_fHashsetRequestingMD4 ? _T("Yes") : _T("No")
+				, m_fHashsetRequestingAICH ? _T("Yes") : _T("No"), DbgGetClientInfo()) );
+			filePacket.WriteUInt8(byOptions);
+			packet = new Packet(&filePacket, OP_EMULEPROT, OP_HASHSETREQUEST2);
+		}
+		else
+		{
+			if (thePrefs.GetDebugClientTCPLevel() > 0)
+				DebugSend("OP__HashSetRequest", this, reqfile->GetFileHash());
+			packet = new Packet(OP_HASHSETREQUEST,16);
+			md4cpy(packet->pBuffer,reqfile->GetFileHash());
+			m_fHashsetRequestingMD4 = 1;
+			reqfile->m_bMD4HashsetNeeded = false;
+		}
+		theStats.AddUpDataOverheadFileRequest(packet->size);
+		SendPacket(packet, true);
+		SetDownloadState(DS_REQHASHSET);
+	}
+	else
+		ASSERT(0);
 }
 
 //Xman

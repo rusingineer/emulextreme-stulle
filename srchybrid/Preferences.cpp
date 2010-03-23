@@ -249,6 +249,7 @@ bool	CPreferences::beepOnError;
 bool	CPreferences::m_bIconflashOnNewMessage;
 bool	CPreferences::confirmExit;
 DWORD	CPreferences::m_adwStatsColors[15];
+bool	CPreferences::bHasCustomTaskIconColor;
 bool	CPreferences::splashscreen;
 bool	CPreferences::filterLANIPs;
 bool	CPreferences::m_bAllocLocalHostIP;
@@ -570,6 +571,12 @@ int		CPreferences::m_iDynUpNumberOfPings;
 int		CPreferences::m_iDynUpPingToleranceMilliseconds;
 bool	CPreferences::m_bDynUpUseMillisecondPingTolerance;
 bool    CPreferences::m_bAllocFull;
+bool	CPreferences::m_bShowSharedFilesDetails;
+bool	CPreferences::m_bShowUpDownIconInTaskbar;
+bool	CPreferences::m_bShowWin7TaskbarGoodies;
+bool	CPreferences::m_bForceSpeedsToKB;
+bool	CPreferences::m_bAutoShowLookups;
+
 // ZZ:DownloadManager -->
 //Xman
 /*
@@ -579,6 +586,7 @@ bool    CPreferences::m_bA4AFSaveCpu;
 // ZZ:DownloadManager <--
 bool    CPreferences::m_bHighresTimer;
 bool	CPreferences::m_bResolveSharedShellLinks;
+bool	CPreferences::m_bKeepUnavailableFixedSharedDirs;
 CStringList CPreferences::shareddir_list;
 CStringList CPreferences::addresses_list;
 CString CPreferences::m_strFileCommentsFilePath;
@@ -608,6 +616,7 @@ CString	CPreferences::m_strNotifierMailSender;
 CString	CPreferences::m_strNotifierMailReceiver;
 
 bool	CPreferences::m_bWinaTransToolbar;
+bool	CPreferences::m_bShowDownloadToolbar;
 
 bool	CPreferences::m_bCryptLayerRequested;
 bool	CPreferences::m_bCryptLayerSupported;
@@ -717,12 +726,7 @@ void CPreferences::Init()
 	userhash[5] = 0;
 	userhash[14] = 0;
 
-	//Xman Bugfix by ilmira, right place
-	/*
-	if (((int*)userhash[0]) == 0 && ((int*)userhash[1]) == 0 && ((int*)userhash[2]) == 0 && ((int*)userhash[3]) == 0)
-	*/
-	if (((int*)userhash)[0] == 0 && ((int*)userhash)[1] == 0 && ((int*)userhash)[2] == 0 && ((int*)userhash)[3] == 0)
-	//Xman end
+	if (isnulmd4(userhash))
 		CreateUserHash();
 
 	userhash[5] = 14;
@@ -764,7 +768,7 @@ void CPreferences::Init()
 				if (iDrive >= 0 && iDrive <= 25) {
 					WCHAR szRootPath[4] = L" :\\";
 					szRootPath[0] = (WCHAR)(L'A' + iDrive);
-					if (GetDriveType(szRootPath) == DRIVE_FIXED) {
+					if (GetDriveType(szRootPath) == DRIVE_FIXED && !m_bKeepUnavailableFixedSharedDirs) {
 						if (_taccess(toadd, 0) != 0)
 							continue;
 					}
@@ -862,7 +866,7 @@ void CPreferences::Init()
 
 	//zz_fly :: move up
 	/*
-	if (((int*)userhash[0]) == 0 && ((int*)userhash[1]) == 0 && ((int*)userhash[2]) == 0 && ((int*)userhash[3]) == 0)
+	if (isnulmd4(userhash))
 		CreateUserHash();
 	*/
 	//zz_fly :: end
@@ -1873,7 +1877,6 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"Splashscreen",splashscreen);
 	ini.WriteBool(L"BringToFront",bringtoforeground);
 	ini.WriteBool(L"TransferDoubleClick",transferDoubleclick);
-	ini.WriteBool(L"BeepOnError",beepOnError);
 	ini.WriteBool(L"ConfirmExit",confirmExit);
 	ini.WriteBool(L"FilterBadIPs",filterLANIPs);
     ini.WriteBool(L"Autoconnect",autoconnect);
@@ -1893,6 +1896,7 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"ResolveSharedShellLinks",m_bResolveSharedShellLinks);
 	ini.WriteString(L"YourHostname",m_strYourHostname);
 	ini.WriteBool(L"CheckFileOpen",m_bCheckFileOpen);
+	ini.WriteBool(L"ShowWin7TaskbarGoodies", m_bShowWin7TaskbarGoodies );
 
 	// Barry - New properties...
     ini.WriteBool(L"AutoConnectStaticOnly", m_bAutoConnectToStaticServersOnly);
@@ -1972,7 +1976,6 @@ void CPreferences::SavePreferences()
 	ini.WriteInt(L"DebugClientKadUDP",m_iDebugClientKadUDPLevel);
 #endif
 	ini.WriteBool(L"PreviewPrio", m_bpreviewprio);
-	ini.WriteBool(L"UpdateQueueListPref", m_bupdatequeuelist);
 	ini.WriteBool(L"ManualHighPrio", m_bManualAddedServersHighPriority);
 	ini.WriteBool(L"FullChunkTransfers", m_btransferfullchunks);
 	ini.WriteBool(L"ShowOverhead", m_bshowoverhead);
@@ -1996,10 +1999,8 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"SaveDebugToDisk",debug2disk);
 	ini.WriteBool(L"EnableScheduler",scheduler);
 	ini.WriteBool(L"MessagesFromFriendsOnly",msgonlyfriends);
-	ini.WriteBool(L"MessageFromValidSourcesOnly",msgsecure);
 	ini.WriteBool(L"MessageUseCaptchas", m_bUseChatCaptchas);
 	ini.WriteBool(L"ShowInfoOnCatTabs",showCatTabInfos);
-	ini.WriteBool(L"DontRecreateStatGraphsOnResize",dontRecreateGraphs);
 	ini.WriteBool(L"AutoFilenameCleanup",autofilenamecleanup);
 	ini.WriteBool(L"ShowExtControls",m_bExtControls);
 	ini.WriteBool(L"UseAutocompletion",m_bUseAutocompl);
@@ -2009,6 +2010,8 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"TransflstRemainOrder",m_bTransflstRemain);
 	ini.WriteBool(L"UseSimpleTimeRemainingcomputation",m_bUseOldTimeRemaining);
 	ini.WriteBool(L"AllocateFullFile",m_bAllocFull);
+	ini.WriteBool(L"ShowSharedFilesDetails", m_bShowSharedFilesDetails);
+	ini.WriteBool(L"AutoShowLookups", m_bAutoShowLookups);
 
 	ini.WriteInt(L"VersionCheckLastAutomatic", versioncheckLastAutomatic);
 	//Xman versions check
@@ -2065,6 +2068,7 @@ void CPreferences::SavePreferences()
 	ini.WriteString(L"NotifierMailRecipient", m_strNotifierMailReceiver);
 
 	ini.WriteBool(L"WinaTransToolbar", m_bWinaTransToolbar);
+	ini.WriteBool(L"ShowDownloadToolbar", m_bShowDownloadToolbar);
 
 	ini.WriteBool(L"CryptLayerRequested", m_bCryptLayerRequested);
 	ini.WriteBool(L"CryptLayerRequired", m_bCryptLayerRequired);
@@ -2100,6 +2104,7 @@ void CPreferences::SavePreferences()
 		buffer2.Format(L"StatColor%i",i);
 		ini.WriteString(buffer2,buffer,L"Statistics" );
 	}
+	ini.WriteBool(L"HasCustomTaskIconColor", bHasCustomTaskIconColor, L"Statistics");
 
 
 	///////////////////////////////////////////////////////////////////////////
@@ -2130,7 +2135,6 @@ void CPreferences::SavePreferences()
 	//
 	ini.WriteInt(L"LastSearch", m_uPeerCacheLastSearch, L"PeerCache");
 	ini.WriteBool(L"Found", m_bPeerCacheWasFound);
-	ini.WriteBool(L"EnabledDeprecated", m_bPeerCacheEnabled);
 	ini.WriteInt(L"PCPort", m_nPeerCachePort);
 
 	///////////////////////////////////////////////////////////////////////////
@@ -2281,7 +2285,7 @@ void CPreferences::ResetStatsColor(int index)
 		case  8: m_adwStatsColors[ 8]=RGB(150,150,255);break;
 		case  9: m_adwStatsColors[ 9]=RGB(192,  0,192);break;
 		case 10: m_adwStatsColors[10]=RGB(255,255,128);break;
-		case 11: m_adwStatsColors[11]=RGB(  0,  0,  0);break;
+		case 11: m_adwStatsColors[11]=RGB(  0,  0,  0); bHasCustomTaskIconColor = false; break;
 		case 12: m_adwStatsColors[12]=RGB(255,255,255);break;
 		case 13: m_adwStatsColors[13]=RGB(255,255,255);break;
 		case 14: m_adwStatsColors[14]=RGB(255,190,190);break;
@@ -2304,6 +2308,8 @@ bool CPreferences::SetAllStatsColors(int iCount, const DWORD* pdwColors)
 		{
 			m_adwStatsColors[i] = pdwColors[i];
 			bModified = true;
+			if (i == 11)
+				bHasCustomTaskIconColor = true;
 		}
 	}
 	return bModified;
@@ -2334,7 +2340,7 @@ void CPreferences::LoadPreferences()
 
 	m_bFirstStart = false;
 
-	if (strCurrVersion != strPrefsVersion){
+	if (strPrefsVersion.IsEmpty()){
 		m_bFirstStart = true;
 	}
 
@@ -2586,6 +2592,7 @@ void CPreferences::LoadPreferences()
 	m_uMinFreeDiskSpace=ini.GetInt(L"MinFreeDiskSpace",20*1024*1024);
 	m_bSparsePartFiles=ini.GetBool(L"SparsePartFiles",false);
 	m_bResolveSharedShellLinks=ini.GetBool(L"ResolveSharedShellLinks",false);
+	m_bKeepUnavailableFixedSharedDirs = ini.GetBool(L"KeepUnavailableFixedSharedDirs", false);
 	m_strYourHostname=ini.GetString(L"YourHostname", L"");
 
 	// Barry - New properties...
@@ -2696,7 +2703,12 @@ void CPreferences::LoadPreferences()
 	m_bPreviewCopiedArchives=ini.GetBool(L"PreviewCopiedArchives", true);
 	m_iInspectAllFileTypes=ini.GetInt(L"InspectAllFileTypes", 0);
 	m_bAllocFull=ini.GetBool(L"AllocateFullFile",0);
-	m_bAutomaticArcPreviewStart=ini.GetBool(L"AutoArchivePreviewStart", true );
+	m_bAutomaticArcPreviewStart=ini.GetBool(L"AutoArchivePreviewStart", true);
+	m_bShowSharedFilesDetails = ini.GetBool(L"ShowSharedFilesDetails", true);
+	m_bAutoShowLookups = ini.GetBool(L"AutoShowLookups", true);
+	m_bShowUpDownIconInTaskbar = ini.GetBool(L"ShowUpDownIconInTaskbar", false );
+	m_bShowWin7TaskbarGoodies  = ini.GetBool(L"ShowWin7TaskbarGoodies", true);
+	m_bForceSpeedsToKB = ini.GetBool(L"ForceSpeedsToKB", false);
 
 	// read file buffer size (with backward compatibility)
 	m_iFileBufferSize=ini.GetInt(L"FileBufferSizePref",0); // old setting
@@ -2867,6 +2879,7 @@ void CPreferences::LoadPreferences()
 	m_strNotifierMailReceiver = ini.GetString(L"NotifierMailRecipient", L"");
 
 	m_bWinaTransToolbar = ini.GetBool(L"WinaTransToolbar", true);
+	m_bShowDownloadToolbar = ini.GetBool(L"ShowDownloadToolbar", true);
 
 	m_bCryptLayerRequested = ini.GetBool(L"CryptLayerRequested", false);
 	m_bCryptLayerRequired = ini.GetBool(L"CryptLayerRequired", false);
@@ -2903,6 +2916,7 @@ void CPreferences::LoadPreferences()
 		if (_stscanf(ini.GetString(buffer2, L"", L"Statistics"), L"%i", &m_adwStatsColors[i]) != 1)
 			ResetStatsColor(i);
 	}
+	bHasCustomTaskIconColor = ini.GetBool(L"HasCustomTaskIconColor",false, L"Statistics");
 	m_bShowVerticalHourMarkers = ini.GetBool(L"ShowVerticalHourMarkers", true, L"Statistics");
 
 	// -khaos--+++> Load Stats
@@ -3242,19 +3256,24 @@ void CPreferences::LoadCats()
 		Category_Struct* newcat = new Category_Struct;
 		newcat->filter = 0;
 		newcat->strTitle = ini.GetStringUTF8(L"Title");
-		newcat->strIncomingPath = ini.GetStringUTF8(L"Incoming");
-		MakeFoldername(newcat->strIncomingPath);
-		// SLUGFILLER: SafeHash remove - removed installation dir unsharing
-		/*
-		if (!IsShareableDirectory(newcat->strIncomingPath)
-			|| (!PathFileExists(newcat->strIncomingPath) && !::CreateDirectory(newcat->strIncomingPath, 0)))
-		*/
-		if(!PathFileExists(newcat->strIncomingPath) && !::CreateDirectory(newcat->strIncomingPath, 0))
-		// SLUGFILLER: SafeHash remove - removed installation dir unsharing
+		if (i != 0) // All category
 		{
-			newcat->strIncomingPath = GetMuleDirectory(EMULE_INCOMINGDIR);
+			newcat->strIncomingPath = ini.GetStringUTF8(L"Incoming");
 			MakeFoldername(newcat->strIncomingPath);
+			// SLUGFILLER: SafeHash remove - removed installation dir unsharing
+			/*
+			if (!IsShareableDirectory(newcat->strIncomingPath)
+				|| (!PathFileExists(newcat->strIncomingPath) && !::CreateDirectory(newcat->strIncomingPath, 0)))
+			*/
+			if(!PathFileExists(newcat->strIncomingPath) && !::CreateDirectory(newcat->strIncomingPath, 0))
+			// SLUGFILLER: SafeHash remove - removed installation dir unsharing
+			{
+				newcat->strIncomingPath = GetMuleDirectory(EMULE_INCOMINGDIR);
+				MakeFoldername(newcat->strIncomingPath);
+			}
 		}
+		else
+			newcat->strIncomingPath.Empty();
 		newcat->strComment = ini.GetStringUTF8(L"Comment");
 		newcat->prio = ini.GetInt(L"a4afPriority", PR_NORMAL); // ZZ:DownloadManager
 		newcat->filter = ini.GetInt(L"Filter", 0);
@@ -3552,7 +3571,7 @@ bool CPreferences::IsDynUpEnabled()	{
 */
 //Xman end
 
-bool CPreferences::CanFSHandleLargeFiles()	{
+bool CPreferences::CanFSHandleLargeFiles(int nForCat)	{
 	bool bResult = false;
 	for (int i = 0; i != tempdir.GetCount(); i++){
 		if (!IsFileOnFATVolume(tempdir.GetAt(i))){
@@ -3560,7 +3579,7 @@ bool CPreferences::CanFSHandleLargeFiles()	{
 			break;
 		}
 	}
-	return bResult && !IsFileOnFATVolume(GetMuleDirectory(EMULE_INCOMINGDIR));
+	return bResult && !IsFileOnFATVolume((nForCat > 0) ? GetCatPath(nForCat) : GetMuleDirectory(EMULE_INCOMINGDIR));
 }
 
 uint16 CPreferences::GetRandomTCPPort()
@@ -3748,12 +3767,12 @@ CString CPreferences::GetDefaultDirectory(EDefaultDirectory eDirectory, bool bCr
 
 		// Do we need to get SystemFolders or do we use our old Default anyway? (Executable Dir)
 		if (   nRegistrySetting == 0
-			|| (nRegistrySetting == 1 && GetWindowsVersion() == _WINVER_VISTA_)
-			|| (nRegistrySetting == -1 && (!bConfigAvailableExecuteable || GetWindowsVersion() == _WINVER_VISTA_)))
+			|| (nRegistrySetting == 1 && GetWindowsVersion() >= _WINVER_VISTA_)
+			|| (nRegistrySetting == -1 && (!bConfigAvailableExecuteable || GetWindowsVersion() >= _WINVER_VISTA_)))
 		{
 			HMODULE hShell32 = LoadLibrary(_T("shell32.dll"));
 			if (hShell32){
-				if (GetWindowsVersion() == _WINVER_VISTA_){
+				if (GetWindowsVersion() >= _WINVER_VISTA_){
 					
 					PWSTR pszLocalAppData = NULL;
 					PWSTR pszPersonalDownloads = NULL;
@@ -3833,7 +3852,7 @@ CString CPreferences::GetDefaultDirectory(EDefaultDirectory eDirectory, bool bCr
 						CoTaskMemFree(pszPublicDownloads);
 						CoTaskMemFree(pszProgrammData);
 				}
-				else { // GetWindowsVersion() == _WINVER_VISTA_
+				else { // GetWindowsVersion() >= _WINVER_VISTA_
 
 					CString strAppData = ShellGetFolderPath(CSIDL_APPDATA);
 					CString strPersonal = ShellGetFolderPath(CSIDL_PERSONAL);
@@ -3952,7 +3971,7 @@ void CPreferences::SetMuleDirectory(EDefaultDirectory eDirectory, CString strNew
 void CPreferences::ChangeUserDirMode(int nNewMode){
 	if (m_nCurrentUserDirMode == nNewMode)
 		return;
-	if (nNewMode == 1 && GetWindowsVersion() != _WINVER_VISTA_)
+	if (nNewMode == 1 && GetWindowsVersion() < _WINVER_VISTA_)
 	{
 		ASSERT( false );
 		return;
@@ -3979,6 +3998,8 @@ bool CPreferences::GetSparsePartFiles()	{
 	// make much sense for a sparse file implementation nevertheless.
 	// Due to the fact that eMule wirtes a lot small blocks into sparse files and flushs them every 6 seconds,
 	// this problem pops up sooner or later for all big files. I don't see any way to walk arround this for now
+	// Update: This problem seems to be fixed on Win7, possibly on earlier Vista ServicePacks too
+	//		   In any case, we allow sparse files for vesions earlier and later than Vista
 	return m_bSparsePartFiles && (GetWindowsVersion() != _WINVER_VISTA_);
 }
 
@@ -3991,7 +4012,7 @@ bool CPreferences::IsRunningAeroGlassTheme(){
 	if (!bAeroAlreadyDetected){
 		bAeroAlreadyDetected = true;
 		m_bIsRunningAeroGlass = FALSE;
-		if (GetWindowsVersion() == _WINVER_VISTA_){
+		if (GetWindowsVersion() >= _WINVER_VISTA_){
 			HMODULE hDWMAPI = LoadLibrary(_T("dwmapi.dll"));
 			if (hDWMAPI){
 				HRESULT (WINAPI *pfnDwmIsCompositionEnabled)(BOOL*);

@@ -1,7 +1,7 @@
-/* $Id: upnpcommands.c,v 1.19 2008/02/18 13:27:23 nanard Exp $ */
+/* $Id: upnpcommands.c,v 1.25 2009/07/09 16:00:42 nanard Exp $ */
 /* Project : miniupnp
  * Author : Thomas Bernard
- * Copyright (c) 2005 Thomas Bernard
+ * Copyright (c) 2005-2009 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution.
  * */
@@ -11,15 +11,15 @@
 #include "upnpcommands.h"
 #include "miniupnpc.h"
 
-static unsigned int
+static UNSIGNED_INTEGER
 my_atoui(const char * s)
 {
-	return s ? ((unsigned int)strtoul(s, NULL, 0)) : 0;
+	return s ? ((UNSIGNED_INTEGER)STRTOUI(s, NULL, 0)) : 0;
 }
 
 /*
  * */
-unsigned int
+LIBSPEC UNSIGNED_INTEGER
 UPNP_GetTotalBytesSent(const char * controlURL,
 					const char * servicetype)
 {
@@ -39,7 +39,7 @@ UPNP_GetTotalBytesSent(const char * controlURL,
 
 /*
  * */
-unsigned int
+LIBSPEC UNSIGNED_INTEGER
 UPNP_GetTotalBytesReceived(const char * controlURL,
 						const char * servicetype)
 {
@@ -59,7 +59,7 @@ UPNP_GetTotalBytesReceived(const char * controlURL,
 
 /*
  * */
-unsigned int
+LIBSPEC UNSIGNED_INTEGER
 UPNP_GetTotalPacketsSent(const char * controlURL,
 						const char * servicetype)
 {
@@ -79,7 +79,7 @@ UPNP_GetTotalPacketsSent(const char * controlURL,
 
 /*
  * */
-unsigned int
+LIBSPEC UNSIGNED_INTEGER
 UPNP_GetTotalPacketsReceived(const char * controlURL,
 						const char * servicetype)
 {
@@ -99,11 +99,12 @@ UPNP_GetTotalPacketsReceived(const char * controlURL,
 
 /* UPNP_GetStatusInfo() call the corresponding UPNP method
  * returns the current status and uptime */
-int UPNP_GetStatusInfo(const char * controlURL,
-					const char * servicetype,
-					char * status, 
-					unsigned int * uptime,
-					char * lastconnerror)
+LIBSPEC int
+UPNP_GetStatusInfo(const char * controlURL,
+				const char * servicetype,
+				char * status, 
+				unsigned int * uptime,
+				char * lastconnerror)
 {
 	struct NameValueParserData pdata;
 	char buffer[4096];
@@ -159,9 +160,10 @@ int UPNP_GetStatusInfo(const char * controlURL,
 
 /* UPNP_GetConnectionTypeInfo() call the corresponding UPNP method
  * returns the connection type */
-int UPNP_GetConnectionTypeInfo(const char * controlURL,
-                               const char * servicetype,
-                               char * connectionType)
+LIBSPEC int
+UPNP_GetConnectionTypeInfo(const char * controlURL,
+                           const char * servicetype,
+                           char * connectionType)
 {
 	struct NameValueParserData pdata;
 	char buffer[4096];
@@ -198,7 +200,11 @@ int UPNP_GetConnectionTypeInfo(const char * controlURL,
  * One of the values can be null 
  * Note : GetLinkLayerMaxBitRates belongs to WANPPPConnection:1 only 
  * We can use the GetCommonLinkProperties from WANCommonInterfaceConfig:1 */
-int UPNP_GetLinkLayerMaxBitRates(const char * controlURL, const char * servicetype, unsigned int * bitrateDown, unsigned int* bitrateUp)
+LIBSPEC int
+UPNP_GetLinkLayerMaxBitRates(const char * controlURL,
+                             const char * servicetype,
+                             unsigned int * bitrateDown,
+                             unsigned int* bitrateUp)
 {
 	struct NameValueParserData pdata;
 	char buffer[4096];
@@ -226,16 +232,14 @@ int UPNP_GetLinkLayerMaxBitRates(const char * controlURL, const char * servicety
 	if(down && up)
 		ret = UPNPCOMMAND_SUCCESS;
 
-	if(bitrateDown)
-	{
+	if(bitrateDown) {
 		if(down)
 			sscanf(down,"%u",bitrateDown);
 		else
 			*bitrateDown = 0;
 	}
 
-	if(bitrateUp)
-	{
+	if(bitrateUp) {
 		if(up)
 			sscanf(up,"%u",bitrateUp);
 		else
@@ -262,9 +266,10 @@ int UPNP_GetLinkLayerMaxBitRates(const char * controlURL, const char * servicety
  * 402 Invalid Args - See UPnP Device Architecture section on Control.
  * 501 Action Failed - See UPnP Device Architecture section on Control.
  */
-int UPNP_GetExternalIPAddress(const char * controlURL,
-                              const char * servicetype,
-							  char * extIpAdd)
+LIBSPEC int
+UPNP_GetExternalIPAddress(const char * controlURL,
+                          const char * servicetype,
+                          char * extIpAdd)
 {
 	struct NameValueParserData pdata;
 	char buffer[4096];
@@ -297,13 +302,14 @@ int UPNP_GetExternalIPAddress(const char * controlURL,
 	return ret;
 }
 
-int
+LIBSPEC int
 UPNP_AddPortMapping(const char * controlURL, const char * servicetype,
                     const char * extPort,
 					const char * inPort,
 					const char * inClient,
 					const char * desc,
-					const char * proto)
+					const char * proto,
+                    const char * remoteHost)
 {
 	struct UPNParg * AddPortMappingArgs;
 	char buffer[4096];
@@ -317,6 +323,7 @@ UPNP_AddPortMapping(const char * controlURL, const char * servicetype,
 
 	AddPortMappingArgs = calloc(9, sizeof(struct UPNParg));
 	AddPortMappingArgs[0].elt = "NewRemoteHost";
+	AddPortMappingArgs[0].val = remoteHost;
 	AddPortMappingArgs[1].elt = "NewExternalPort";
 	AddPortMappingArgs[1].val = extPort;
 	AddPortMappingArgs[2].elt = "NewProtocol";
@@ -349,9 +356,10 @@ UPNP_AddPortMapping(const char * controlURL, const char * servicetype,
 	return ret;
 }
 
-int
+LIBSPEC int
 UPNP_DeletePortMapping(const char * controlURL, const char * servicetype,
-                       const char * extPort, const char * proto)
+                       const char * extPort, const char * proto,
+                       const char * remoteHost)
 {
 	/*struct NameValueParserData pdata;*/
 	struct UPNParg * DeletePortMappingArgs;
@@ -366,6 +374,7 @@ UPNP_DeletePortMapping(const char * controlURL, const char * servicetype,
 
 	DeletePortMappingArgs = calloc(4, sizeof(struct UPNParg));
 	DeletePortMappingArgs[0].elt = "NewRemoteHost";
+	DeletePortMappingArgs[0].val = remoteHost;
 	DeletePortMappingArgs[1].elt = "NewExternalPort";
 	DeletePortMappingArgs[1].val = extPort;
 	DeletePortMappingArgs[2].elt = "NewProtocol";
@@ -387,17 +396,18 @@ UPNP_DeletePortMapping(const char * controlURL, const char * servicetype,
 	return ret;
 }
 
-int UPNP_GetGenericPortMappingEntry(const char * controlURL,
-                                     const char * servicetype,
-									 const char * index,
-									 char * extPort,
-									 char * intClient,
-									 char * intPort,
-									 char * protocol,
-									 char * desc,
-									 char * enabled,
-									 char * rHost,
-									 char * duration)
+LIBSPEC int
+UPNP_GetGenericPortMappingEntry(const char * controlURL,
+                                const char * servicetype,
+							 const char * index,
+							 char * extPort,
+							 char * intClient,
+							 char * intPort,
+							 char * protocol,
+							 char * desc,
+							 char * enabled,
+							 char * rHost,
+							 char * duration)
 {
 	struct NameValueParserData pdata;
 	struct UPNParg * GetPortMappingArgs;
@@ -476,7 +486,10 @@ int UPNP_GetGenericPortMappingEntry(const char * controlURL,
 	return r;
 }
 
-int UPNP_GetPortMappingNumberOfEntries(const char * controlURL, const char * servicetype, unsigned int * numEntries)
+LIBSPEC int
+UPNP_GetPortMappingNumberOfEntries(const char * controlURL,
+                                   const char * servicetype,
+                                   unsigned int * numEntries)
 {
  	struct NameValueParserData pdata;
  	char buffer[4096];
@@ -484,8 +497,8 @@ int UPNP_GetPortMappingNumberOfEntries(const char * controlURL, const char * ser
  	char* p;
 	int ret = UPNPCOMMAND_UNKNOWN_ERROR;
  	simpleUPnPcommand(-1, controlURL, servicetype, "GetPortMappingNumberOfEntries", 0, buffer, &bufsize);
-#ifndef NDEBUG
-	//DisplayNameValueList(buffer, bufsize);
+#ifdef DEBUG
+	DisplayNameValueList(buffer, bufsize);
 #endif
  	ParseNameValue(buffer, bufsize, &pdata);
 
@@ -509,7 +522,7 @@ int UPNP_GetPortMappingNumberOfEntries(const char * controlURL, const char * ser
 /* UPNP_GetSpecificPortMappingEntry retrieves an existing port mapping
  * the result is returned in the intClient and intPort strings
  * please provide 16 and 6 bytes of data */
-int
+LIBSPEC int
 UPNP_GetSpecificPortMappingEntry(const char * controlURL,
                                  const char * servicetype,
                                  const char * extPort,

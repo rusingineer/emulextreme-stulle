@@ -69,7 +69,7 @@ public:
 	void	CloseSocket();
 
 	uint32	GetTimeOutTimer()	const	{return timeout_timer;} //zz_fly :: Drop stalled downloads :: netfinity
-
+	void		 OnReceive(int nErrorCode);
 protected:
 	virtual ~CClientReqSocket();
 	virtual void Close() { CAsyncSocketEx::Close(); }
@@ -78,7 +78,7 @@ protected:
 	virtual void OnConnect(int nErrorCode);
 	void		 OnClose(int nErrorCode);
 	void		 OnSend(int nErrorCode);
-	void		 OnReceive(int nErrorCode);
+
 	void		 OnError(int nErrorCode);
 
 	virtual bool PacketReceived(Packet* packet);

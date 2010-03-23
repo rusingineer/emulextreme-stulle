@@ -1092,7 +1092,7 @@ CString CemuleApp::CreateED2kSourceLink(const CAbstractFile* f)
 
 	CString strLink;
 	strLink.Format(_T("ed2k://|file|%s|%I64u|%s|/|sources,%i.%i.%i.%i:%i|/"),
-		EncodeUrlUtf8(StripInvalidFilenameChars(f->GetFileName(), false)),
+		EncodeUrlUtf8(StripInvalidFilenameChars(f->GetFileName())),
 		f->GetFileSize(),
 		EncodeBase16(f->GetFileHash(),16),
 		(uint8)dwID,(uint8)(dwID>>8),(uint8)(dwID>>16),(uint8)(dwID>>24), thePrefs.GetPort() );
@@ -1107,7 +1107,7 @@ CString CemuleApp::CreateKadSourceLink(const CAbstractFile* f)
 		CString KadID;
 		Kademlia::CKademlia::GetPrefs()->GetKadID().Xor(Kademlia::CUInt128(true)).ToHexString(&KadID);
 		strLink.Format(_T("ed2k://|file|%s|%I64u|%s|/|kadsources,%s:%s|/"),
-			EncodeUrlUtf8(StripInvalidFilenameChars(f->GetFileName(), false)),
+			EncodeUrlUtf8(StripInvalidFilenameChars(f->GetFileName())),
 			f->GetFileSize(),
 			EncodeBase16(f->GetFileHash(),16),
 			md4str(thePrefs.GetUserHash()), KadID);

@@ -21,7 +21,7 @@
 #include "otherfunctions.h"
 #include "SharedFileList.h"
 #include "emuledlg.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "CatDialog.h"
 #include "UserMsgs.h"
 
@@ -200,7 +200,7 @@ void CCatDialog::OnBnClickedOk()
 		m_myCat->filter=0;
 	}
 
-	theApp.emuledlg->transferwnd->downloadlistctrl.Invalidate();
+	theApp.emuledlg->transferwnd->GetDownloadList()->Invalidate();
 
 	OnOK();
 }

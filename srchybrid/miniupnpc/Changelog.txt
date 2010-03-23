@@ -1,5 +1,105 @@
-$Id: Changelog.txt,v 1.60 2008/02/21 13:05:27 nanard Exp $
+$Id: Changelog.txt,v 1.95 2009/10/30 09:18:18 nanard Exp $
 miniUPnP client Changelog.
+
+VERSION 1.4 : released 2009/10/30
+
+2009/10/16:
+  using Py_BEGIN_ALLOW_THREADS and Py_END_ALLOW_THREADS in python module.
+
+2009/10/10:
+  Some fixes for compilation under Solaris
+  compilation fixes : http://miniupnp.tuxfamily.org/forum/viewtopic.php?p=1464
+
+2009/09/21:
+  fixing the code to ignore EINTR during connect() calls.
+
+2009/08/07:
+  Set socket timeout for connect()
+  Some cleanup in miniwget.c
+
+2009/08/04:
+  remove multiple redirections with -d in upnpc.c
+  Print textual error code in upnpc.c
+  Ignore EINTR during the connect() and poll() calls.
+
+2009/07/29:
+  fix in updateminiupnpcstrings.sh if OS name contains "/"
+  Sending a correct value for MX: field in SSDP request
+
+2009/07/20:
+  Change the Makefile to compile under Mac OS X
+  Fixed a stackoverflow in getDevicesFromMiniSSDPD()
+
+2009/07/09:
+  Compile under Haiku
+  generate miniupnpcstrings.h.in from miniupnpcstrings.h
+
+2009/06/04:
+  patching to compile under CygWin and cross compile for minGW
+
+VERSION 1.3 :
+
+2009/04/17:
+  updating python module
+  Use strtoull() when using C99
+
+2009/02/28:
+  Fixed miniwget.c for compiling under sun
+
+2008/12/18:
+  cleanup in Makefile (thanks to Paul de Weerd)
+  minissdpc.c : win32 compatibility
+  miniupnpc.c : changed xmlns prefix from 'm' to 'u'
+  Removed NDEBUG (using DEBUG)
+
+2008/10/14:
+  Added the ExternalHost argument to DeletePortMapping()
+
+2008/10/11:
+  Added the ExternalHost argument to AddPortMapping()
+  Put a correct User-Agent: header in HTTP requests.
+
+VERSION 1.2 :
+
+2008/10/07:
+  Update docs
+
+2008/09/25:
+  Integrated sameport patch from Dario Meloni : Added a "sameport"
+  argument to upnpDiscover().
+
+2008/07/18:
+  small modif to make Clang happy :)
+
+2008/07/17:
+  #define SOAPPREFIX "s" in miniupnpc.c in order to remove SOAP-ENV... 
+
+2008/07/14:
+  include declspec.h in installation (to /usr/include/miniupnpc)
+
+VERSION 1.1 :
+
+2008/07/04:
+  standard options for install/ln instead of gnu-specific stuff.
+
+2008/07/03:
+  now builds a .dll and .lib with win32. (mingw32)
+
+2008/04/28:
+  make install now install the binary of the upnpc tool
+
+2008/04/27:
+  added testupnpigd.py
+  added error strings for miniupnpc "internal" errors
+  improved python module error/exception reporting.
+
+2008/04/23:
+  Completely rewrite igd_desc_parse.c in order to be compatible with 
+  Linksys WAG200G
+  Added testigddescparse
+  updated python module
+
+VERSION 1.0 :
 
 2008/02/21:
   put some #ifdef DEBUG around DisplayNameValueList()

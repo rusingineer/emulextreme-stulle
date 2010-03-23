@@ -22,7 +22,7 @@
 #include "DownloadQueue.h"
 #include "Preferences.h"
 #include "OtherFunctions.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "emuledlg.h"
 #include "SharedFilesWnd.h"
 #include "ServerWnd.h"
@@ -87,7 +87,6 @@ CPPgTweaks::CPPgTweaks()
 	(void)m_sYourHostname;
 	m_bFirewallStartup = false;
 	m_iLogLevel = 0;
-	m_bDisablePeerCache = false;
 	//Xman
 	/*
     m_bDynUpEnabled = false;
@@ -142,7 +141,6 @@ CPPgTweaks::CPPgTweaks()
 	m_htiYourHostname = NULL;
 	m_htiFirewallStartup = NULL;
 	m_htiLogLevel = NULL;
-	m_htiDisablePeerCache = NULL;
 	//Xman
 	/*
     m_htiDynUp = NULL;
@@ -253,7 +251,6 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 		m_htiAutoArch  = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_DISABLE_AUTOARCHPREV), TVI_ROOT, m_bAutoArchDisable);
 		m_htiYourHostname = m_ctrlTreeOptions.InsertItem(GetResString(IDS_YOURHOSTNAME), TREEOPTSCTRLIMG_EDIT, TREEOPTSCTRLIMG_EDIT, TVI_ROOT);
 		m_ctrlTreeOptions.AddEditBox(m_htiYourHostname, RUNTIME_CLASS(CTreeOptionsEditEx));
-		m_htiDisablePeerCache = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_DISABLEPEERACHE), TVI_ROOT, m_bDisablePeerCache);
 
 		/////////////////////////////////////////////////////////////////////////////
 		// File related group
@@ -387,14 +384,13 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	*/
 	//Xman end
 	DDX_TreeEdit(pDX, IDC_EXT_OPTS, m_htiYourHostname, m_sYourHostname);
-	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiDisablePeerCache, m_bDisablePeerCache);
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiAutoArch, m_bAutoArchDisable);
 	
 	/////////////////////////////////////////////////////////////////////////////
 	// File related group
 	//
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiSparsePartFiles, m_bSparsePartFiles);
-	m_ctrlTreeOptions.SetCheckBoxEnable(m_htiSparsePartFiles, thePrefs.GetWindowsVersion() != _WINVER_VISTA_);
+	m_ctrlTreeOptions.SetCheckBoxEnable(m_htiSparsePartFiles, thePrefs.GetWindowsVersion() != _WINVER_VISTA_ /*only disable on Vista, not later versions*/);
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiFullAlloc, m_bFullAlloc);
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiCheckDiskspace, m_bCheckDiskspace);
 	DDX_Text(pDX, IDC_EXT_OPTS, m_htiMinFreeDiskSpace, m_fMinFreeDiskSpaceMB);
@@ -469,7 +465,7 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	// eMule Shared User
 	//
 	DDX_TreeRadio(pDX, IDC_EXT_OPTS, m_htiShareeMule, m_iShareeMule);
-	m_ctrlTreeOptions.SetRadioButtonEnable(m_htiShareeMulePublicUser, thePrefs.GetWindowsVersion() == _WINVER_VISTA_);
+	m_ctrlTreeOptions.SetRadioButtonEnable(m_htiShareeMulePublicUser, thePrefs.GetWindowsVersion() >= _WINVER_VISTA_);
 
 	//Xman Added PaddingLength to Extended preferences
 	DDX_TreeEdit(pDX,IDC_EXT_OPTS,m_htiCryptTCPPaddingLength,m_iCryptTCPPaddingLength );
@@ -513,7 +509,6 @@ BOOL CPPgTweaks::OnInitDialog()
 	m_fMinFreeDiskSpaceMB = (float)(thePrefs.m_uMinFreeDiskSpace / (1024.0 * 1024.0));
 	m_sYourHostname = thePrefs.GetYourHostname();
 	m_bFirewallStartup = ((thePrefs.GetWindowsVersion() == _WINVER_XP_) ? thePrefs.m_bOpenPortsOnStartUp : 0); 
-	m_bDisablePeerCache = !thePrefs.m_bPeerCacheEnabled;
 	m_bAutoArchDisable = !thePrefs.m_bAutomaticArcPreviewStart;
 
 	//Xman
@@ -646,7 +641,7 @@ BOOL CPPgTweaks::OnApply()
 	thePrefs.m_iQueueSize = m_iQueueSize;
 	if (thePrefs.m_bExtControls != m_bExtControls) {
 		thePrefs.m_bExtControls = m_bExtControls;
-		theApp.emuledlg->transferwnd->downloadlistctrl.CreateMenues();
+		theApp.emuledlg->transferwnd->GetDownloadList()->CreateMenues();
 		theApp.emuledlg->searchwnd->CreateMenus();
 		theApp.emuledlg->sharedfileswnd->sharedfilesctrl.CreateMenues();
 	}
@@ -661,7 +656,6 @@ BOOL CPPgTweaks::OnApply()
 		theApp.emuledlg->serverwnd->UpdateMyInfo();
 	}
 	thePrefs.m_bOpenPortsOnStartUp = m_bFirewallStartup;
-	thePrefs.m_bPeerCacheEnabled = !m_bDisablePeerCache;
 
 	//Xman
 	/*
@@ -778,7 +772,6 @@ void CPPgTweaks::Localize(void)
 		if (m_htiMinFreeDiskSpace) m_ctrlTreeOptions.SetEditLabel(m_htiMinFreeDiskSpace, GetResString(IDS_MINFREEDISKSPACE));
 		if (m_htiYourHostname) m_ctrlTreeOptions.SetEditLabel(m_htiYourHostname, GetResString(IDS_YOURHOSTNAME));	// itsonlyme: hostnameSource
 		if (m_htiFirewallStartup) m_ctrlTreeOptions.SetItemText(m_htiFirewallStartup, GetResString(IDS_FO_PREF_STARTUP));
-		if (m_htiDisablePeerCache) m_ctrlTreeOptions.SetItemText(m_htiDisablePeerCache, GetResString(IDS_DISABLEPEERACHE));
 		//Xman
 		/*
         if (m_htiDynUp) m_ctrlTreeOptions.SetItemText(m_htiDynUp, GetResString(IDS_DYNUP));
@@ -856,7 +849,6 @@ void CPPgTweaks::OnDestroy()
 	m_htiMinFreeDiskSpace = NULL;
 	m_htiYourHostname = NULL;
 	m_htiFirewallStartup = NULL;
-	m_htiDisablePeerCache = NULL;
 	//Xman
 	/*
     m_htiDynUp = NULL;

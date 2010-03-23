@@ -15,6 +15,7 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #pragma once
+class CKnownFile;
 
 //Xman PowerRelease
 struct Spread_Struct{
@@ -26,8 +27,6 @@ struct Spread_Struct{
 
 class CStatisticFile
 {
-	friend class CKnownFile;
-	friend class CPartFile;
 public:
 	CStatisticFile()
 	{
@@ -64,6 +63,9 @@ public:
 	UINT	GetAllTimeRequests() const		{return alltimerequested;}
 	UINT	GetAllTimeAccepts() const		{return alltimeaccepted;}
 	uint64	GetAllTimeTransferred() const	{return alltimetransferred;}
+	void	SetAllTimeRequests(uint32 nVal);
+	void	SetAllTimeAccepts(uint32 nVal);
+	void	SetAllTimeTransferred(uint64 nVal);
 
 	//Xman advanced upload-priority
 	uint64	GetCountedTransferred() const	{return alltimetransferred - m_unotcountedtransferred;}
@@ -74,9 +76,9 @@ public:
 
 	
 	CKnownFile* fileParent;
+	CTypedPtrList<CPtrList, Spread_Struct*> spreadlist; //Xman PowerRelease
 
 private:
-	CTypedPtrList<CPtrList, Spread_Struct*> spreadlist; //Xman PowerRelease
 	uint32 requested;
 	uint32 accepted;
 	uint64 transferred;

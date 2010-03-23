@@ -32,6 +32,7 @@ public:
 	//Xman end
 	virtual bool	IsBusy() const = 0;
     virtual bool    HasQueues() const = 0;
+	virtual bool	UseBigSendBuffer()								{ return false; }
 
 	//Xman Full chunk:
 	virtual bool StandardPacketQueueIsEmpty() const = false ;

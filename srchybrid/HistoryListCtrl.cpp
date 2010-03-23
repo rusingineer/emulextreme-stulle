@@ -43,7 +43,7 @@
 #include "SharedFilesWnd.h"
 #include "HighColorTab.hpp"
 #include "PartFile.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -273,6 +273,8 @@ void CHistoryListCtrl::Reload(void)
 	SetRedraw(false);
 
 	DeleteAllItems();
+
+	theApp.emuledlg->sharedfileswnd->ShowSelectedFilesDetails(false, true);
 
 	//Xman 4.8
 	//don't know exactly what happend, but a few users (with old known.met) had a crash
@@ -832,7 +834,7 @@ void CHistoryListCtrl::RemoveFile(CKnownFile *toRemove) {
 		return;
 
 	if (toRemove->IsKindOf(RUNTIME_CLASS(CPartFile)))
-		theApp.emuledlg->transferwnd->downloadlistctrl.ClearCompleted(static_cast<CPartFile*>(toRemove));
+		theApp.emuledlg->transferwnd->GetDownloadList()->ClearCompleted(static_cast<CPartFile*>(toRemove));
 
 	if(theApp.knownfiles->RemoveKnownFile(toRemove)){
 		LVFINDINFO info;
@@ -885,7 +887,7 @@ void CHistoryListCtrl::UpdateFile(const CKnownFile* file)
 	{
 		Update(iItem);
 		if (GetItemState(iItem, LVIS_SELECTED))
-			theApp.emuledlg->sharedfileswnd->ShowSelectedFilesSummary();
+			theApp.emuledlg->sharedfileswnd->ShowSelectedFilesDetails(false,true);
 	}
 }
 int CHistoryListCtrl::FindFile(const CKnownFile* pFile)

@@ -1,7 +1,7 @@
-/* $Id: upnpc.c,v 1.61 2008/02/18 13:28:33 nanard Exp $ */
+/* $Id: upnpc.c,v 1.67 2009/08/03 22:58:37 nanard Exp $ */
 /* Project : miniupnp
  * Author : Thomas Bernard
- * Copyright (c) 2005-2008 Thomas Bernard
+ * Copyright (c) 2005-2009 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution.
  * */
@@ -168,25 +168,24 @@ static void SetRedirectAndTest(struct UPNPUrls * urls,
 		printf("GetExternalIPAddress failed.\n");
 	
 	r = UPNP_AddPortMapping(urls->controlURL, data->servicetype,
-	                        eport, iport, iaddr, 0, proto);
+	                        eport, iport, iaddr, 0, proto, 0);
 	if(r!=UPNPCOMMAND_SUCCESS)
-		printf("AddPortMapping(%s, %s, %s) failed with code %d\n",
-		       eport, iport, iaddr, r);
+		printf("AddPortMapping(%s, %s, %s) failed with code %d (%s)\n",
+		       eport, iport, iaddr, r, strupnperror(r));
 
 	r = UPNP_GetSpecificPortMappingEntry(urls->controlURL,
 	                                 data->servicetype,
     	                             eport, proto,
 									 intClient, intPort);
 	if(r!=UPNPCOMMAND_SUCCESS)
-		printf("GetSpecificPortMappingEntry() failed with code %d\n", r);
+		printf("GetSpecificPortMappingEntry() failed with code %d (%s)\n",
+		       r, strupnperror(r));
 	
-	if(intClient[0])
+	if(intClient[0]) {
 		printf("InternalIP:Port = %s:%s\n", intClient, intPort);
-	else
-		printf("GetSpecificPortMappingEntry failed.\n");
-
-	printf("external %s:%s is redirected to internal %s:%s\n",
-	       externalIPAddress, eport, intClient, intPort);
+		printf("external %s:%s %s is redirected to internal %s:%s\n",
+		       externalIPAddress, eport, proto, intClient, intPort);
+	}
 }
 
 static void
@@ -207,7 +206,7 @@ RemoveRedirect(struct UPNPUrls * urls,
 		fprintf(stderr, "protocol invalid\n");
 		return;
 	}
-	r = UPNP_DeletePortMapping(urls->controlURL, data->servicetype, eport, proto);
+	r = UPNP_DeletePortMapping(urls->controlURL, data->servicetype, eport, proto, 0);
 	printf("UPNP_DeletePortMapping() returned : %d\n", r);
 }
 
@@ -234,7 +233,7 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 #endif
-    printf("upnpc : miniupnpc library test client. (c) 2006-2008 Thomas Bernard\n");
+    printf("upnpc : miniupnpc library test client. (c) 2006-2009 Thomas Bernard\n");
     printf("Go to http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/\n"
 	       "for more information.\n");
 	/* command line processing */
@@ -268,7 +267,7 @@ int main(int argc, char ** argv)
 	   || (command == 'r' && argc<2))
 	{
 		fprintf(stderr, "Usage :\t%s [options] -a ip port external_port protocol\n\t\tAdd port redirection\n", argv[0]);
-		fprintf(stderr, "       \t%s [options] -d external_port protocol\n\t\tDelete port redirection\n", argv[0]);
+		fprintf(stderr, "       \t%s [options] -d external_port protocol [port2 protocol2] [...]\n\t\tDelete port redirection\n", argv[0]);
 		fprintf(stderr, "       \t%s [options] -s\n\t\tGet Connection status\n", argv[0]);
 		fprintf(stderr, "       \t%s [options] -l\n\t\tList redirections\n", argv[0]);
 		fprintf(stderr, "       \t%s [options] -r port1 protocol1 [port2 protocol2] [...]\n\t\tAdd all redirections to the current host\n", argv[0]);
@@ -281,7 +280,7 @@ int main(int argc, char ** argv)
 	}
 
 	if( rootdescurl
-	  || (devlist = upnpDiscover(2000, multicastif, minissdpdpath)))
+	  || (devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0)))
 	{
 		struct UPNPDev * device;
 		struct UPNPUrls urls;
@@ -338,7 +337,10 @@ int main(int argc, char ** argv)
 				                   commandargv[2], commandargv[3]);
 				break;
 			case 'd':
-				RemoveRedirect(&urls, &data, commandargv[0], commandargv[1]);
+				for(i=0; i<commandargc; i+=2)
+				{
+					RemoveRedirect(&urls, &data, commandargv[i], commandargv[i+1]);
+				}
 				break;
 			case 's':
 				GetConnectionStatus(&urls, &data);

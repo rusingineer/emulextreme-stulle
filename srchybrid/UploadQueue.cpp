@@ -45,7 +45,7 @@
 #include "WebServer.h"
 #include "emuledlg.h"
 #include "ServerWnd.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "SearchDlg.h"
 #include "StatisticsDlg.h"
 #include "Kademlia/Kademlia/Kademlia.h"
@@ -68,11 +68,12 @@ static char THIS_FILE[] = __FILE__;
 /* Xman moved down
 static uint32 counter, sec, statsave;
 static UINT s_uSaveStatistics = 0;
-// -khaos--+++> Added iupdateconnstats...
-static uint32 igraph, istats, iupdateconnstats;
-// <-----khaos-
+static uint32 igraph, istats, i2Secs;
 */
 //Xman end
+
+#define HIGHSPEED_UPLOADRATE_START 500*1024
+#define HIGHSPEED_UPLOADRATE_END   300*1024
 
 
 CUploadQueue::CUploadQueue()
@@ -98,9 +99,7 @@ CUploadQueue::CUploadQueue()
 	//Xman
 	/*
 	statsave=0;
-	// -khaos--+++>
-	iupdateconnstats=0;
-	// <-----khaos-
+	i2Secs=0;
 	*/
 	//Xman end
 	m_dwRemovedClientByScore = ::GetTickCount();
@@ -125,9 +124,27 @@ CUploadQueue::CUploadQueue()
 	//Xman end
 
     m_dwLastResortedUploadSlots = 0;
+	//Xman for SiRoB: ReadBlockFromFileThread
+	/*
+	m_hHighSpeedUploadTimer = NULL;
+	*/
+	m_bUseHighSpeedUpload = false;
+	//Xman end
+	m_bStatisticsWaitingListDirty = true;
 
 	//Xman always one release-slot
 	releaseslotclient=NULL;
+	//Xman end
+}
+
+CUploadQueue::~CUploadQueue(){
+	if (h_timer)
+		KillTimer(0,h_timer);
+	//Xman for SiRoB: ReadBlockFromFileThread
+	/*
+	if (m_hHighSpeedUploadTimer)
+		UseHighSpeedUploadTimer(false);
+	*/
 	//Xman end
 }
 
@@ -399,7 +416,7 @@ bool CUploadQueue::AddUpNextClient(LPCTSTR pszReason, CUpDownClient* directadd){
 	if (reqfile)
 		reqfile->statistic.AddAccepted();
 		
-	theApp.emuledlg->transferwnd->uploadlistctrl.AddClient(newclient);
+	theApp.emuledlg->transferwnd->GetUploadList()->AddClient(newclient);
 
 	return true;
 }
@@ -564,6 +581,38 @@ void CUploadQueue::Process() {
         avarage_tick_list.RemoveHead();
     }
 	*/
+	//Xman end
+
+	//Xman for SiRoB: ReadBlockFromFileThread
+	/*
+	if (GetDatarate() > HIGHSPEED_UPLOADRATE_START && m_hHighSpeedUploadTimer == 0)
+		UseHighSpeedUploadTimer(true);
+	else if (GetDatarate() < HIGHSPEED_UPLOADRATE_END && m_hHighSpeedUploadTimer != 0)
+		UseHighSpeedUploadTimer(false);
+	*/
+	uint32 eMuleOut;
+	uint32 eMuleOutOverall;
+	uint32 NetworkOut;
+	uint32 notUsed;
+	uint32 AvgOverhead;
+	theApp.pBandWidthControl->GetDatarates(20,
+		notUsed, notUsed,
+		eMuleOut, eMuleOutOverall,
+		notUsed, NetworkOut);
+	if(thePrefs.GetNAFCFullControl()==true)
+	{
+		AvgOverhead=NetworkOut-eMuleOut;
+	}
+	else
+	{
+		AvgOverhead=eMuleOutOverall-eMuleOut;
+	}
+	uint32 realallowedDatarate = (uint32)(theApp.pBandWidthControl->GetMaxUpload()*1024)-AvgOverhead;
+
+	if (realallowedDatarate > HIGHSPEED_UPLOADRATE_START)
+		m_bUseHighSpeedUpload = true;
+	else if (realallowedDatarate < HIGHSPEED_UPLOADRATE_END)
+		m_bUseHighSpeedUpload = false;
 	//Xman end
 };
 
@@ -896,11 +945,6 @@ bool CUploadQueue::ForceNewClient(bool allowEmptyWaitingQueue) {
 }
 //Xman end
     
-CUploadQueue::~CUploadQueue(){
-	if (h_timer)
-		KillTimer(0,h_timer);
-}
-
 CUpDownClient* CUploadQueue::GetWaitingClientByIP_UDP(uint32 dwIP, uint16 nUDPPort, bool bIgnorePortOnUniqueIP, bool* pbMultipleIPs){
 	CUpDownClient* pMatchingIPClient = NULL;
 	uint32 cMatches = 0;
@@ -939,7 +983,7 @@ void CUploadQueue::AddClientDirectToQueue(CUpDownClient* client)
 	{
 		theApp.uploadqueue->waitinglist.AddTail(client);
 		client->SetUploadState(US_ONUPLOADQUEUE);
-		theApp.emuledlg->transferwnd->queuelistctrl.AddClient(client,false);
+		theApp.emuledlg->transferwnd->GetQueueList()->AddClient(client,false);
 		theApp.emuledlg->transferwnd->ShowQueueCount(waitinglist.GetCount());
 		//Xman see OnUploadqueue
 		reqfile->AddOnUploadqueue();
@@ -1074,7 +1118,7 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 				return;
 			}
 			client->SendRankingInfo();
-			theApp.emuledlg->transferwnd->queuelistctrl.RefreshClient(client);
+			theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(client);
 			return;			
 		}
 		else if ( client->Compare(cur_client) ) 
@@ -1262,9 +1306,10 @@ void CUploadQueue::AddClientToQueue(CUpDownClient* client, bool bIgnoreTimelimit
 	}
 	else
 	{
+		m_bStatisticsWaitingListDirty = true;
 		waitinglist.AddTail(client);
 		client->SetUploadState(US_ONUPLOADQUEUE);
-		theApp.emuledlg->transferwnd->queuelistctrl.AddClient(client,true);
+		theApp.emuledlg->transferwnd->GetQueueList()->AddClient(client,true);
 		theApp.emuledlg->transferwnd->ShowQueueCount(waitinglist.GetCount());
 		client->SendRankingInfo();
 		//Xman see OnUploadqueue
@@ -1304,7 +1349,7 @@ bool CUploadQueue::RemoveFromUploadQueue(CUpDownClient* client, LPCTSTR pszReaso
         CUpDownClient* curClient = uploadinglist.GetNext(pos);
 		if (client == curClient){
 			if (updatewindow)
-				theApp.emuledlg->transferwnd->uploadlistctrl.RemoveClient(client);
+				theApp.emuledlg->transferwnd->GetUploadList()->RemoveClient(client);
 
 			if (thePrefs.GetLogUlDlEvents())
                 AddDebugLogLine(DLP_DEFAULT, true,_T("Removing client from upload list: %s Client: %s Transferred: %s SessionUp: %s QueueSessionPayload: %s In buffer: %s Req blocks: %i File: %s"), pszReason==NULL ? _T("") : pszReason, client->DbgGetClientInfo(), CastSecondsToHM( client->GetUpStartTimeDelay()/1000), CastItoXBytes(client->GetSessionUp(), false, false), CastItoXBytes(client->GetQueueSessionPayloadUp(), false, false), CastItoXBytes(client->GetPayloadInBuffer()), client->GetNumberOfRequestedBlocksInQueue(), (theApp.sharedfiles->GetFileByID(client->GetUploadFileID())?theApp.sharedfiles->GetFileByID(client->GetUploadFileID())->GetFileName():_T("")));
@@ -1352,7 +1397,7 @@ bool CUploadQueue::RemoveFromUploadQueue(CUpDownClient* client, LPCTSTR pszReaso
 	if(pos != NULL)
 	{
 			if (updatewindow)
-				theApp.emuledlg->transferwnd->uploadlistctrl.RemoveClient(client);
+				theApp.emuledlg->transferwnd->GetUploadList()->RemoveClient(client);
 
 			if (thePrefs.GetLogUlDlEvents())
                 AddDebugLogLine(DLP_DEFAULT, true,_T("Removing client from upload list: %s Client: %s Transferred: %s SessionUp: %s QueueSessionPayload: %s In buffer: %s Req blocks: %i File: %s"), pszReason==NULL ? _T("") : pszReason, client->DbgGetClientInfo(), CastSecondsToHM( client->GetUpStartTimeDelay()/1000), CastItoXBytes(client->GetSessionUp(), false, false), CastItoXBytes(client->GetQueueSessionPayloadUp(), false, false), CastItoXBytes(client->GetPayloadInBuffer()), client->GetNumberOfRequestedBlocksInQueue(), (theApp.sharedfiles->GetFileByID(client->GetUploadFileID())?theApp.sharedfiles->GetFileByID(client->GetUploadFileID())->GetFileName():_T("")));
@@ -1431,6 +1476,7 @@ bool CUploadQueue::RemoveFromWaitingQueue(CUpDownClient* client, bool updatewind
 }
 
 void CUploadQueue::RemoveFromWaitingQueue(POSITION pos, bool updatewindow){	
+	m_bStatisticsWaitingListDirty = true;
 	CUpDownClient* todelete = waitinglist.GetAt(pos);
 	
 	//Xman see OnUploadqueue
@@ -1458,13 +1504,13 @@ void CUploadQueue::RemoveFromWaitingQueue(POSITION pos, bool updatewindow){
 	//Xman
 	/*
 	if (updatewindow) {
-		theApp.emuledlg->transferwnd->queuelistctrl.RemoveClient(todelete);
+		theApp.emuledlg->transferwnd->GetQueueList()->RemoveClient(todelete);
 		theApp.emuledlg->transferwnd->ShowQueueCount(waitinglist.GetCount());
 	}
 	todelete->m_bAddNextConnect = false;
 	*/
 	if (updatewindow)
-		theApp.emuledlg->transferwnd->queuelistctrl.RemoveClient(todelete);
+		theApp.emuledlg->transferwnd->GetQueueList()->RemoveClient(todelete);
 	//Xman end
 	todelete->SetUploadState(US_NONE);
 }
@@ -1770,14 +1816,20 @@ UINT CUploadQueue::GetWaitingPosition(CUpDownClient* client){
 			if (theApp.serverconnect->IsConnecting())
 				theApp.serverconnect->CheckForTimeout();
 
-			// -khaos--+++> Update connection stats...
-			iupdateconnstats++;
 			// 2 seconds
-			if (iupdateconnstats>=2) {
-				iupdateconnstats=0;
+			i2Secs++;
+			if (i2Secs>=2) {
+				i2Secs=0;
+				
+				// Update connection stats...
 				theStats.UpdateConnectionStats((float)theApp.uploadqueue->GetDatarate()/1024, (float)theApp.downloadqueue->GetDatarate()/1024);
+
+#ifdef HAVE_WIN7_SDK_H
+				if (thePrefs.IsWin7TaskbarGoodiesEnabled())
+					theApp.emuledlg->UpdateStatusBarProgress();
+#endif
+
 			}
-			// <-----khaos-
 
 			// display graphs
 			if (thePrefs.GetTrafficOMeterInterval()>0) {
@@ -1834,6 +1886,7 @@ UINT CUploadQueue::GetWaitingPosition(CUpDownClient* client){
 				theApp.OnlineSig(); // Added By Bouc7 
 				if (!theApp.emuledlg->IsTrayIconToFlash())
 					theApp.emuledlg->ShowTransferRate();
+
 				thePrefs.EstimateMaxUploadCap(theApp.uploadqueue->GetDatarate()/1024);
 				
 				if (!thePrefs.TransferFullChunks())
@@ -1848,7 +1901,7 @@ UINT CUploadQueue::GetWaitingPosition(CUpDownClient* client){
 				if (thePrefs.IsSchedulerEnabled())
 					theApp.scheduler->Check();
 
-                theApp.emuledlg->transferwnd->UpdateListCount(CTransferWnd::wnd2Uploading, -1);
+                theApp.emuledlg->transferwnd->UpdateListCount(CTransferDlg::wnd2Uploading, -1);
 			}
 
 			statsave++;
@@ -1947,6 +2000,10 @@ void CUploadQueue::UploadTimer()
 			theApp.downloadqueue->CompDownloadRate(); // Update GUI for Download Queue
 			theApp.uploadqueue->CompUploadRate(); // Calcule and refresh GUI
 
+#ifdef HAVE_WIN7_SDK_H
+			if (thePrefs.IsWin7TaskbarGoodiesEnabled())
+				theApp.emuledlg->UpdateStatusBarProgress();
+#endif
 		}
 		else if(counter == (400/TIMER_PERIOD)){
 
@@ -1986,7 +2043,7 @@ void CUploadQueue::UploadTimer()
 				showRate = 0;
 				if (!theApp.emuledlg->IsTrayIconToFlash())
 					theApp.emuledlg->ShowTransferRate(); // Update GUI control bar + icon tray
-				theApp.emuledlg->transferwnd->UpdateListCount(CTransferWnd::wnd2Uploading, -1); // Update the shown amount of clients in lists
+				theApp.emuledlg->transferwnd->UpdateListCount(CTransferDlg::wnd2Uploading, -1); // Update the shown amount of clients in lists
 			}
 
 		}
@@ -2187,6 +2244,83 @@ void CUploadQueue::ReSortUploadSlots(bool force) {
         theApp.uploadBandwidthThrottler->Pause(false);
     }
 }
+
+//Xman for SiRoB: ReadBlockFromFileThread
+/*
+void  CUploadQueue::UseHighSpeedUploadTimer(bool bEnable)
+{
+	if (!bEnable)
+	{
+		if (m_hHighSpeedUploadTimer != 0)
+		{
+			KillTimer(0, m_hHighSpeedUploadTimer);
+			m_hHighSpeedUploadTimer = 0;
+		}
+	}
+	else
+	{
+		if (m_hHighSpeedUploadTimer == 0)
+			VERIFY( (m_hHighSpeedUploadTimer = SetTimer(0 ,0 , 1, HSUploadTimer)) != 0 );
+	}
+	DebugLog(_T("%s HighSpeedUploadTimer"), bEnable ? _T("Enabled") : _T("Disabled"));
+}
+
+VOID CALLBACK CUploadQueue::HSUploadTimer(HWND /*hwnd*//*, UINT /*uMsg*//*, UINT_PTR /*idEvent*//*, DWORD /*dwTime*//*)
+{
+	// this timer is called every millisecond
+	// all we do is feed the uploadslots with data, which is normally done only every 100ms with the big timer
+	// the counting, checks etc etc are all done on the normal timer
+	// the biggest effect comes actually from the BigBuffer parameter on CreateNextBlockPackage, 
+	// but beeing able to fetch a request packet up to 1/10 sec earlier gives also a slight speedbump
+	for (POSITION pos = theApp.uploadqueue->uploadinglist.GetHeadPosition(); pos != NULL;)
+	{
+		CUpDownClient* cur_client = theApp.uploadqueue->uploadinglist.GetNext(pos);
+		if (cur_client->socket != NULL)
+            cur_client->CreateNextBlockPackage(true);
+	}
+}
+*/
+//Xman end
+
+uint32 CUploadQueue::GetWaitingUserForFileCount(const CSimpleArray<CObject*>& raFiles, bool bOnlyIfChanged)
+{
+	if (bOnlyIfChanged && !m_bStatisticsWaitingListDirty)
+		return (uint32)-1;
+
+	m_bStatisticsWaitingListDirty = false;
+	uint32 nResult = 0;
+	for (POSITION pos = waitinglist.GetHeadPosition(); pos != 0; )
+	{
+		const CUpDownClient* cur_client = waitinglist.GetNext(pos);
+		for (int i = 0; i < raFiles.GetSize(); i++)
+		{
+			if (md4cmp(((CKnownFile*)raFiles[i])->GetFileHash(), cur_client->GetUploadFileID()) == 0)
+				nResult++;
+		}
+	}
+	return nResult;
+}
+
+uint32 CUploadQueue::GetDatarateForFile(const CSimpleArray<CObject*>& raFiles) const
+{
+	uint32 nResult = 0;
+	for (POSITION pos = uploadinglist.GetHeadPosition(); pos != 0; )
+	{
+		const CUpDownClient* cur_client = uploadinglist.GetNext(pos);
+		for (int i = 0; i < raFiles.GetSize(); i++)
+		{
+			if (md4cmp(((CKnownFile*)raFiles[i])->GetFileHash(), cur_client->GetUploadFileID()) == 0)
+				//Xman // Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
+				/*
+				nResult += cur_client->GetDatarate();
+				*/
+				nResult += cur_client->GetUploadDatarate();
+				//Xman end
+		}
+	}
+	return nResult;
+}
+
 //Xman Xtreme Upload: Peercache-part
 //this method replaces the resort-function
 void CUploadQueue::ReplaceSlot(CUpDownClient* client)

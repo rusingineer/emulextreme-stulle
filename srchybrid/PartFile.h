@@ -175,6 +175,7 @@ public:
 	EMFileSize	GetRealFileSize() const;
 	void	GetLeftToTransferAndAdditionalNeededSpace(uint64 &ui64LeftToTransfer, uint64 &pui32AdditionalNeededSpace) const;
 	uint64	GetNeededSpace() const;
+	virtual void SetFileSize(EMFileSize nFileSize);
 
 	// last file modification time (NT's version of UTC), to be used for stats only!
 	CTime	GetCFileDate() const { return CTime(m_tLastModified); }
@@ -198,11 +199,11 @@ public:
 
 	bool	SavePartFile(bool bDontOverrideBak = false);
 	void	PartFileHashFinished(CKnownFile* result);
-	bool	HashSinglePart(UINT partnumber); // true = ok , false = corrupted
+	bool	HashSinglePart(UINT partnumber, bool* pbAICHReportedOK = NULL); // true = ok , false = corrupted
 
 	//Xman
 	// BEGIN SLUGFILLER: SafeHash - replaced old handlers, full hash checker remains for file completion
-	void	PartHashFinished(UINT partnumber, bool corrupt);
+	void	PartHashFinished(UINT partnumber, bool bAICHAgreed, bool corrupt);
 	void	PartHashFinishedAICHRecover(UINT partnumber, bool corrupt);
 	bool	IsPartShareable(UINT partnumber) const;
 	bool	IsRangeShareable(uint64 start, uint64 end) const;
@@ -309,6 +310,7 @@ public:
 	bool	CanStopFile() const;
 	bool	CanPauseFile() const;
 	bool	CanResumeFile() const;
+	bool	IsPausingOnPreview() const										{ return m_bPauseOnPreview && IsPreviewableFileType() && CanPauseFile(); }
 
 	void	OpenFile() const;
 	void	PreviewFile();
@@ -318,6 +320,7 @@ public:
 	void	StopPausedFile();
 	void	ResumeFile(bool resort = true);
 	void	ResumeFileInsufficient();
+	void	SetPauseOnPreview(bool bVal)									{ m_bPauseOnPreview = bVal; }
 
 	virtual Packet* CreateSrcInfoPacket(const CUpDownClient* forClient, uint8 byRequestedVersion, uint16 nRequestedOptions) const;
 	void	AddClientSources(CSafeMemFile* sources, uint8 sourceexchangeversion, bool bSourceExchange2, const CUpDownClient* pClient = NULL);
@@ -353,6 +356,7 @@ public:
 	UINT	GetCategory() /*const*/;
 	UINT	GetConstCategory() const;  //Xman checkmark to catogory at contextmenu of downloadlist
 	void	SetCategory(UINT cat);
+	bool	HasDefaultCategory() const;
 	bool	CheckShowItemInGivenCat(int inCategory) /*const*/;
 
 	uint8*	MMCreatePartStatus();
@@ -374,8 +378,11 @@ public:
 	void	SetFileOpProgress(UINT uProgress);
 	UINT	GetFileOpProgress() const						{ return m_uFileOpProgress; }
 
+	CAICHRecoveryHashSet* GetAICHRecoveryHashSet()							{ return m_pAICHRecoveryHashSet; }
 	void	RequestAICHRecovery(UINT nPart);
 	void	AICHRecoveryDataAvailable(UINT nPart);
+	bool	IsAICHPartHashSetNeeded() const									{ return m_FileIdentifier.HasAICHHash() && !m_FileIdentifier.HasExpectedAICHHashCount() && m_bAICHPartHashsetNeeded; }
+	void	SetAICHHashSetNeeded(bool bVal)									{ m_bAICHPartHashsetNeeded = bVal; }
 
 	uint32	m_LastSearchTime;
 	uint32	m_LastSearchTimeKad;
@@ -391,7 +398,7 @@ public:
 	volatile bool m_bRecoveringArchive; // Is archive recovery in progress
 	bool	m_bLocalSrcReqQueued;
 	bool	srcarevisible;				// used for downloadlistctrl
-	bool	hashsetneeded;
+	bool	m_bMD4HashsetNeeded;
 	uint8	m_TotalSearchesKad;
 	//Xman Xtreme Downloadmanager
 	/*
@@ -532,9 +539,11 @@ private:
 	uint64	m_uTransferred;
 	UINT	m_uMaxSources;
 	bool	paused;
+	bool	m_bPauseOnPreview;
 	bool	stopped;
 	bool	insufficient;
 	bool	m_bCompletionError;
+	bool	m_bAICHPartHashsetNeeded;
 	uint8	m_iDownPriority;
 	bool	m_bAutoDownPriority;
 	EPartFileStatus	status;
@@ -553,7 +562,7 @@ private:
 	CList<uint16,uint16>	m_ICHPartsComplete;
 	// END SLUGFILLER: SafeHash
 	float	percentcompleted;
-	CList<uint16, uint16> corrupted_list;
+	CList<UINT,UINT>	corrupted_list;
 	uint32	m_ClientSrcAnswered;
 	UINT	availablePartsCount;
 	CWinThread* m_AllocateThread;
@@ -584,6 +593,7 @@ private:
     uint32	m_random_update_wait;	
 	volatile EPartFileOp m_eFileOp;
 	volatile UINT m_uFileOpProgress;
+	CAICHRecoveryHashSet*	m_pAICHRecoveryHashSet;
 
 	//Xman Xtreme Downloadmanager
 	/*
@@ -625,8 +635,8 @@ protected:
 public:
 	virtual	BOOL	InitInstance() {return true;}
 	virtual int		Run();
-	uint16	SetFirstHash(CPartFile* pOwner);
-	void	SetSinglePartHash(CPartFile* pOwner, uint16 part, bool ICHused = false, bool AICHRecover = false);
+	int	SetFirstHash(CPartFile* pOwner);
+	void	SetSinglePartHash(CPartFile* pOwner, UINT part, bool ICHused = false, bool AICHRecover = false);
 private:
 	CPartFile*				m_pOwner;
 	bool					m_ICHused;

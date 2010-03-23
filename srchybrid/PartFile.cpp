@@ -52,7 +52,7 @@
 #include "Server.h"
 #include "KnownFileList.h"
 #include "emuledlg.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "TaskbarNotifier.h"
 #include "ClientList.h"
 #include "Statistics.h"
@@ -110,8 +110,11 @@ CPartFile::CPartFile(CSearchFile* searchresult, UINT cat)
 			m_kadNotes.AddTail(entry->Copy());
 	}
 	UpdateFileRatingCommentAvail();
+	
+	m_FileIdentifier.SetMD4Hash(searchresult->GetFileHash());
+	if (searchresult->GetFileIdentifierC().HasAICHHash())
+		m_FileIdentifier.SetAICHHash(searchresult->GetFileIdentifierC().GetAICHHash());
 
-	md4cpy(m_abyFileHash, searchresult->GetFileHash());
 	for (int i = 0; i < searchresult->taglist.GetCount();i++){
 		const CTag* pTag = searchresult->taglist[i];
 		switch (pTag->GetNameID()){
@@ -206,20 +209,25 @@ void CPartFile::InitializeFromLink(CED2KFileLink* fileLink, UINT cat)
 	try{
 		SetFileName(fileLink->GetName(), true, true);
 		SetFileSize(fileLink->GetSize());
-		md4cpy(m_abyFileHash, fileLink->GetHashKey());
-		if (!theApp.downloadqueue->IsFileExisting(m_abyFileHash))
+		m_FileIdentifier.SetMD4Hash(fileLink->GetHashKey());
+		if (fileLink->HasValidAICHHash())
+		{
+			m_FileIdentifier.SetAICHHash(fileLink->GetAICHHash());
+			m_pAICHRecoveryHashSet->SetMasterHash(fileLink->GetAICHHash(), AICH_VERIFIED);
+		}
+		if (!theApp.downloadqueue->IsFileExisting(m_FileIdentifier.GetMD4Hash()))
 		{
 			if (fileLink->m_hashset && fileLink->m_hashset->GetLength() > 0)
 			{
 				try
 				{
-					if (!LoadHashsetFromFile(fileLink->m_hashset, true))
+					if (!m_FileIdentifier.LoadMD4HashsetFromFile(fileLink->m_hashset, true))
 					{
-						ASSERT( hashlist.GetCount() == 0 );
+						ASSERT( m_FileIdentifier.GetRawMD4HashSet().GetCount() == 0 );
 						AddDebugLogLine(false, _T("eD2K link \"%s\" specified with invalid hashset"), fileLink->GetName());
 					}
 					else
-						hashsetneeded = false;
+						m_bMD4HashsetNeeded = false;
 				}
 				catch (CFileException* e)
 				{
@@ -252,6 +260,7 @@ CPartFile::CPartFile(CED2KFileLink* fileLink, UINT cat)
 }
 
 void CPartFile::Init(){
+	m_pAICHRecoveryHashSet = new CAICHRecoveryHashSet(this);
 	newdate = true;
 	m_LastSearchTime = 0;
 	m_LastSearchTimeKad = 0;
@@ -287,7 +296,8 @@ void CPartFile::Init(){
 	*/
 	//Xman end
 	m_uMaxSources = 0;
-	hashsetneeded = true;
+	m_bMD4HashsetNeeded = true;
+	m_bAICHPartHashsetNeeded = true;
 	//Xman
 	/*
 	count = 0;
@@ -335,6 +345,7 @@ void CPartFile::Init(){
 	*/
 	//Xman end
 	m_DeadSourceList.Init(false);
+	m_bPauseOnPreview = false;
 	//Xman
 	// Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 	m_nDownDatarate = 0;
@@ -373,7 +384,7 @@ CPartFile::~CPartFile()
 		}
 
 		if (m_hpartfile.m_hFile != INVALID_HANDLE_VALUE)
-			FlushBuffer(true);
+			FlushBuffer(true, false, true);
 	}
 	catch(CFileException* e){
 		e->Delete();
@@ -402,6 +413,8 @@ CPartFile::~CPartFile()
 		delete[] item->data;
 		delete item;
 	}
+	delete m_pAICHRecoveryHashSet;
+	m_pAICHRecoveryHashSet = NULL;
 	// Maella -Extended clean-up II-
 	theApp.clientlist->CleanUp(this);
 	// Maella end
@@ -430,7 +443,8 @@ void CPartFile::AssertValid() const
 	CHECK_BOOL(m_bRecoveringArchive);
 	CHECK_BOOL(m_bLocalSrcReqQueued);
 	CHECK_BOOL(srcarevisible);
-	CHECK_BOOL(hashsetneeded);
+	CHECK_BOOL(m_bMD4HashsetNeeded);
+	CHECK_BOOL(m_bAICHPartHashsetNeeded);
 	(void)m_iLastPausePurge;
 	//Xman
 	/*
@@ -562,28 +576,17 @@ void CPartFile::CreatePartFile(UINT cat)
 	if (m_dwFileAttributes == INVALID_FILE_ATTRIBUTES)
 		m_dwFileAttributes = 0;
 
-	//Xman
-	// BEGIN SLUGFILLER: SafeHash - setting at the hotspot
-	/*
-	if (GetED2KPartHashCount() == 0)
-		hashsetneeded = false;
-	*/
-	if (hashlist.GetCount() == 0) { //SiRoB: Fix ed2klink with hashset
-		if (GetED2KPartCount() > 1)
-			hashsetneeded = true;
-		else {
-			hashsetneeded = false;
-			uchar* cur_hash = new uchar[16];
-			md4cpy(cur_hash, m_abyFileHash);
-			hashlist.Add(cur_hash);
-		}
-	}
+	if (m_FileIdentifier.GetTheoreticalMD4PartHashCount() == 0)
+		m_bMD4HashsetNeeded = false;
+	if (m_FileIdentifier.GetTheoreticalAICHPartHashCount() == 0)
+		m_bAICHPartHashsetNeeded = false;
 
+	// SLUGFILLER: SafeHash
 	// the important part
 	m_PartsShareable.SetSize(GetPartCount());
 	for (uint32 i = 0; i < GetPartCount();i++)
 		m_PartsShareable[i] = false;
-	// END SLUGFILLER: SafeHash
+	//SLUGFILLER: SafeHash
 
 	m_SrcpartFrequency.SetSize(GetPartCount());
 	for (UINT i = 0; i < GetPartCount();i++)
@@ -709,7 +712,7 @@ EPartFileLoadResult CPartFile::ImportShareazaTempfile(LPCTSTR in_directory,LPCTS
 		ar.Close();
 
 		if(bED2K){
-			md4cpy(m_abyFileHash, pED2K);
+			m_FileIdentifier.SetMD4Hash(pED2K);
 		}else{
 			Log(LOG_ERROR,GetResString(IDS_X_SHAREAZA_IMPORT_NO_HASH),in_filename);
 			sdFile.Close();
@@ -788,7 +791,7 @@ EPartFileLoadResult CPartFile::ImportShareazaTempfile(LPCTSTR in_directory,LPCTS
 		}
 
 		// Try to get the complete hashset
-		if(gotostring(sdFile,m_abyFileHash,16)) // search the hashset
+		if(gotostring(sdFile,m_FileIdentifier.GetMD4Hash(),16)) // search the hashset
 		{
 			sdFile.Seek(sdFile.GetPosition()-16-4,CFile::begin); // - list size - hash length
 			CArchive ar( &sdFile, CArchive::load );
@@ -803,24 +806,19 @@ EPartFileLoadResult CPartFile::ImportShareazaTempfile(LPCTSTR in_directory,LPCTS
 			for (DWORD i = 0; i < nCount; i++){
 				uchar* curhash = new uchar[16];
 				ar.Read( curhash, 16 );
-				hashlist.Add(curhash);
+				m_FileIdentifier.GetRawMD4HashSet().Add(curhash);
 			}
 
-			uchar* checkhash= new uchar[16];
-			if (!hashlist.IsEmpty()){
-				uchar* buffer = new uchar[hashlist.GetCount()*16];
-				for (int i = 0; i < hashlist.GetCount(); i++)
-					md4cpy(buffer+(i*16), hashlist[i]);
-				CreateHash(buffer, hashlist.GetCount()*16, checkhash);
-				delete[] buffer;
+			if (m_FileIdentifier.GetAvailableMD4PartHashCount() > 1)
+			{
+				if (!m_FileIdentifier.CalculateMD4HashByHashSet(true, true))
+					Log(LOG_WARNING,GetResString(IDS_X_SHAREAZA_IMPORT_HASH_SET_CORRUPT),in_filename);
 			}
-			if (md4cmp(pMD4, checkhash)){
-				for (int i = 0; i < hashlist.GetSize(); i++)
-					delete[] hashlist[i];
-				hashlist.RemoveAll();
+			else if (m_FileIdentifier.GetTheoreticalMD4PartHashCount() != m_FileIdentifier.GetAvailableMD4PartHashCount())
+			{
 				Log(LOG_WARNING,GetResString(IDS_X_SHAREAZA_IMPORT_HASH_SET_CORRUPT),in_filename);
+				m_FileIdentifier.DeleteMD4Hashset();
 			}
-			delete[] checkhash;
 
 			ar.Close();
 		}
@@ -863,9 +861,7 @@ EPartFileLoadResult CPartFile::ImportShareazaTempfile(LPCTSTR in_directory,LPCTS
 	if(!SavePartFile())
 		return PLR_FAILED_OTHER;
 
-	for (int i = 0; i < hashlist.GetSize(); i++)
-		delete[] hashlist[i];
-	hashlist.RemoveAll();
+	m_FileIdentifier.DeleteMD4Hashset();
 	while (gaplist.GetCount()>0 ) {
 		delete gaplist.GetAt(gaplist.GetHeadPosition());
 		gaplist.RemoveAt(gaplist.GetHeadPosition());
@@ -937,26 +933,22 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 			metFile.Read(&temp,4);
 
 			if (temp == 0) {	// 0.48 partmets - different again
-				LoadHashsetFromFile(&metFile, false);
+				m_FileIdentifier.LoadMD4HashsetFromFile(&metFile, false);
 			}
 			else {
 				uchar gethash[16];
 				metFile.Seek(2, CFile::begin);
 				LoadDateFromFile(&metFile);
-				//Xman
-				/*
 				metFile.Read(gethash, 16);
-				*/
-				metFile.Read(&gethash, 16);
-				//Xman end
-				md4cpy(m_abyFileHash, gethash);
+				m_FileIdentifier.SetMD4Hash(gethash);
 			}
 		}
 		else {
 			LoadDateFromFile(&metFile);
-			LoadHashsetFromFile(&metFile, false);
+			m_FileIdentifier.LoadMD4HashsetFromFile(&metFile, false);
 		}
 
+		bool bHadAICHHashSetTag = false;
 		UINT tagcount = metFile.ReadUInt32();
 		for (UINT j = 0; j < tagcount; j++){
 			CTag* newtag = new CTag(&metFile, false);
@@ -1102,11 +1094,8 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 				    }
                     case FT_DL_PREVIEW:{
                         ASSERT( newtag->IsInt() );
-                        if(newtag->GetInt() == 1) {
-                            SetPreviewPrio(true);
-                        } else {
-                            SetPreviewPrio(false);
-                        }
+						SetPreviewPrio(((newtag->GetInt() >>  0) & 0x01) == 1);
+						SetPauseOnPreview(((newtag->GetInt() >>  1) & 0x01) == 1);
                         delete newtag;
                         break;
                     }
@@ -1115,7 +1104,7 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 					case FT_ATTRANSFERRED:{
 						ASSERT( newtag->IsInt() );
 						if (newtag->IsInt())
-							statistic.alltimetransferred = newtag->GetInt();
+							statistic.SetAllTimeTransferred(newtag->GetInt());
 						delete newtag;
 						break;
 					}
@@ -1124,12 +1113,12 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 						if (newtag->IsInt())
 						{
 							uint32 hi,low;
-							low = (UINT)statistic.alltimetransferred;
+							low = (UINT)statistic.GetAllTimeTransferred();
 							hi = newtag->GetInt();
 							uint64 hi2;
 							hi2=hi;
 							hi2=hi2<<32;
-							statistic.alltimetransferred=low+hi2;
+							statistic.SetAllTimeTransferred(low+hi2);
 						}
 						delete newtag;
 						break;
@@ -1137,14 +1126,14 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 					case FT_ATREQUESTED:{
 						ASSERT( newtag->IsInt() );
 						if (newtag->IsInt())
-							statistic.alltimerequested = newtag->GetInt();
+							statistic.SetAllTimeRequests(newtag->GetInt());
 						delete newtag;
 						break;
 					}
  					case FT_ATACCEPTED:{
 						ASSERT( newtag->IsInt() );
 						if (newtag->IsInt())
-							statistic.alltimeaccepted = newtag->GetInt();
+							statistic.SetAllTimeAccepts(newtag->GetInt());
 						delete newtag;
 						break;
 					}
@@ -1189,12 +1178,27 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 						ASSERT( newtag->IsStr() );
 						CAICHHash hash;
 						if (DecodeBase32(newtag->GetStr(), hash) == (UINT)CAICHHash::GetHashSize())
-							m_pAICHHashSet->SetMasterHash(hash, AICH_VERIFIED);
+						{
+							m_FileIdentifier.SetAICHHash(hash);
+							m_pAICHRecoveryHashSet->SetMasterHash(hash, AICH_VERIFIED);
+						}
 						else
 							ASSERT( false );
 						delete newtag;
 						break;
 					}
+					case FT_AICHHASHSET:
+						if (newtag->IsBlob())
+						{
+							CSafeMemFile aichHashSetFile(newtag->GetBlob(), newtag->GetBlobSize());
+							m_FileIdentifier.LoadAICHHashsetFromFile(&aichHashSetFile, false);
+							aichHashSetFile.Detach();
+							bHadAICHHashSetTag = true;
+						}
+						else
+							ASSERT( false );
+						delete newtag;
+						break;
 
 					//Xman advanced upload-priority
 					case FT_NOTCOUNTEDTRANSFERREDLOW:
@@ -1254,6 +1258,18 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 				delete newtag;
 		}
 
+		//m_bAICHPartHashsetNeeded = m_FileIdentifier.GetTheoreticalAICHPartHashCount() > 0;
+		if (bHadAICHHashSetTag)
+		{
+			if (!m_FileIdentifier.VerifyAICHHashSet())
+				DebugLogError(_T("Failed to load AICH Part HashSet for part file %s"), GetFileName());
+			else
+			{
+			//	DebugLog(_T("Succeeded to load AICH Part HashSet for file %s"), GetFileName());
+				m_bAICHPartHashsetNeeded = false;
+			}
+		}
+
 		// load the hashsets from the hybridstylepartmet
 		if (isnewstyle && pOutCheckFileFormat == NULL && (metFile.GetPosition()<metFile.GetLength()) ) {
 			uint8 temp;
@@ -1264,27 +1280,9 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 			for (UINT i = 0; i < parts && (metFile.GetPosition() + 16 < metFile.GetLength()); i++){
 				uchar* cur_hash = new uchar[16];
 				metFile.Read(cur_hash, 16);
-				hashlist.Add(cur_hash);
+				m_FileIdentifier.GetRawMD4HashSet().Add(cur_hash);
 			}
-
-			uchar* checkhash= new uchar[16];
-			if (!hashlist.IsEmpty()){
-				uchar* buffer = new uchar[hashlist.GetCount()*16];
-				for (int i = 0; i < hashlist.GetCount(); i++)
-					md4cpy(buffer+(i*16), hashlist[i]);
-				CreateHash(buffer, hashlist.GetCount()*16, checkhash);
-				delete[] buffer;
-			}
-			bool flag = false;
-			if (!md4cmp(m_abyFileHash, checkhash))
-				flag = true;
-			else{
-				for (int i = 0; i < hashlist.GetSize(); i++)
-					delete[] hashlist[i];
-				hashlist.RemoveAll();
-				flag = false;
-			}
-			delete[] checkhash;
+			m_FileIdentifier.CalculateMD4HashByHashSet(true, true);
 		}
 
 		metFile.Close();
@@ -1403,16 +1401,7 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 		// SLUGFILLER: SafeHash
 
 		//Xman
-		// BEGIN SLUGFILLER: SafeHash - ignore loaded hash for 1-chunk files
-		if (GetED2KPartCount() <= 1) {
-			for (UINT i = 0; i < (UINT)hashlist.GetSize(); i++)
-				delete[] hashlist[i];
-			hashlist.RemoveAll();
-			uchar* cur_hash = new uchar[16];
-			md4cpy(cur_hash, m_abyFileHash);
-			hashlist.Add(cur_hash);
-		}
-
+		// BEGIN SLUGFILLER: SafeHash
 		// the important part
 		m_PartsShareable.SetSize(GetPartCount());
 		for (UINT i = 0; i < GetPartCount();i++)
@@ -1424,20 +1413,14 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 			m_SrcpartFrequency[i] = 0;
 		SetStatus(PS_EMPTY);
 		// check hashcount, filesatus etc
-		//Xman
-		// SLUGFILLER: SafeHash - use GetED2KPartCount
-		/*
-		if (GetHashCount() != GetED2KPartHashCount()){
-		*/
-		if (GetHashCount() != GetED2KPartCount()){
-		//Xman end
-			ASSERT( hashlist.GetSize() == 0 );
-			hashsetneeded = true;
+		if (!m_FileIdentifier.HasExpectedMD4HashCount()){
+			ASSERT( m_FileIdentifier.GetRawMD4HashSet().GetSize() == 0 );
+			m_bMD4HashsetNeeded = true;
 			return PLR_LOADSUCCESS;
 		}
 		else {
-			hashsetneeded = false;
-			for (UINT i = 0; i < (UINT)hashlist.GetSize(); i++){
+			m_bMD4HashsetNeeded = false;
+			for (UINT i = 0; i < (UINT)m_FileIdentifier.GetAvailableMD4PartHashCount(); i++){
 				if (i < GetPartCount() && IsComplete((uint64)i*PARTSIZE, (uint64)(i + 1)*PARTSIZE - 1, true)){
 					SetStatus(PS_READY);
 					break;
@@ -1493,7 +1476,7 @@ EPartFileLoadResult CPartFile::LoadPartFile(LPCTSTR in_directory,LPCTSTR in_file
 				*/
 				SetStatus(PS_EMPTY);	// no need to wait for hashes with the new system
 				CPartHashThread* parthashthread = (CPartHashThread*) AfxBeginThread(RUNTIME_CLASS(CPartHashThread), THREAD_PRIORITY_BELOW_NORMAL,0, CREATE_SUSPENDED);
-				m_PartsHashing = m_PartsHashing + parthashthread->SetFirstHash(this);	// Only hashes completed parts, why hash gaps?
+				m_PartsHashing += parthashthread->SetFirstHash(this);	// Only hashes completed parts, why hash gaps?
 				parthashthread->ResumeThread();
 				// END SLUGFILLER: SafeHash
 			}
@@ -1576,24 +1559,24 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 		AdjustNTFSDaylightFileTime(m_tUtcLastModified, ff.GetFilePath());
 	*/
 	if (!m_PartsHashing){
-		// get filedate
-		CTime lwtime;
-		try{
-			ff.GetLastWriteTime(lwtime);
-		}
-		catch(CException* ex){
-			ex->Delete();
-		}
-		m_tLastModified = (UINT)lwtime.GetTime();
-		if (m_tLastModified == 0)
-			m_tLastModified = (UINT)-1;
-		m_tUtcLastModified = m_tLastModified;
-		if (m_tUtcLastModified == -1){
-			if (thePrefs.GetVerbose())
-				AddDebugLogLine(false, _T("Failed to get file date of \"%s\" (%s)"), m_partmetfilename, GetFileName());
-		}
-		else
-			AdjustNTFSDaylightFileTime(m_tUtcLastModified, ff.GetFilePath());
+	  // get filedate
+	  CTime lwtime;
+	try{
+		ff.GetLastWriteTime(lwtime);
+	}
+	catch(CException* ex){
+		ex->Delete();
+	  }
+	m_tLastModified = (UINT)lwtime.GetTime();
+	if (m_tLastModified == 0)
+		m_tLastModified = (UINT)-1;
+	  m_tUtcLastModified = m_tLastModified;
+	  if (m_tUtcLastModified == -1){
+		  if (thePrefs.GetVerbose())
+			AddDebugLogLine(false, _T("Failed to get file date of \"%s\" (%s)"), m_partmetfilename, GetFileName());
+	  }
+	  else
+		  AdjustNTFSDaylightFileTime(m_tUtcLastModified, ff.GetFilePath());
 	}
 	// END SLUGFILLER: SafeHash
 	ff.Close();
@@ -1626,20 +1609,7 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 		file.WriteUInt32(m_tUtcLastModified);
 
 		//hash
-		file.WriteHash16(m_abyFileHash);
-		UINT parts = hashlist.GetCount();
-		//Xman SafeHash compatibility fix
-		//with this patch we write the same format as official
-		if(parts > 1){
-		//Xman end
-			file.WriteUInt16((uint16)parts);
-			for (UINT x = 0; x < parts; x++)
-				file.WriteHash16(hashlist[x]);
-		//Xman SafeHash compatibility fix
-		//with this patch we write the same format as official
-		}else
-			file.WriteUInt16(0);
-		//Xman end
+		m_FileIdentifier.WriteMD4HashsetToFile(&file);
 
 		UINT uTagCount = 0;
 		ULONG uTagCountFilePos = (ULONG)file.GetPosition();
@@ -1713,8 +1683,9 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 			uTagCount++;
 		}
 
-        if (GetPreviewPrio()){
-            CTag tagDlPreview(FT_DL_PREVIEW, GetPreviewPrio() ? 1 : 0);
+        if (GetPreviewPrio() || IsPausingOnPreview()){
+			UINT uTagValue = ((IsPausingOnPreview() ? 1 : 0) <<  1) | ((GetPreviewPrio() ? 1 : 0) <<  0);
+            CTag tagDlPreview(FT_DL_PREVIEW, uTagValue);
 			tagDlPreview.WriteTagToFile(&file);
 			uTagCount++;
 		}
@@ -1767,11 +1738,41 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 		}
 
 		//AICH Filehash
-		if (m_pAICHHashSet->HasValidMasterHash() && (m_pAICHHashSet->GetStatus() == AICH_VERIFIED)){
-			CTag aichtag(FT_AICH_HASH, m_pAICHHashSet->GetMasterHash().GetString() );
+		if (m_FileIdentifier.HasAICHHash()){
+			CTag aichtag(FT_AICH_HASH, m_FileIdentifier.GetAICHHash().GetString() );
 			aichtag.WriteTagToFile(&file);
 			uTagCount++;
+
+			// AICH Part HashSet
+			// no point in permanently storing the AICH part hashset if we need to rehash the file anyway to fetch the full recovery hashset
+			// the tag will make the known.met incompatible with emule version prior 0.44a - but that one is nearly 6 years old 
+			if (m_FileIdentifier.HasExpectedAICHHashCount())
+			{
+				uint32 nAICHHashSetSize = (CAICHHash::GetHashSize() * (m_FileIdentifier.GetAvailableAICHPartHashCount() + 1)) + 2;
+				BYTE* pHashBuffer = new BYTE[nAICHHashSetSize];
+				CSafeMemFile hashSetFile(pHashBuffer, nAICHHashSetSize);
+				bool bWriteHashSet = true;
+				try
+				{
+					m_FileIdentifier.WriteAICHHashsetToFile(&hashSetFile);
+				}
+				catch (CFileException* pError)
+				{
+					ASSERT( false );
+					DebugLogError(_T("Memfile Error while storing AICH Part HashSet"));
+					bWriteHashSet = false;
+					delete[] hashSetFile.Detach();
+					pError->Delete();
+				}
+				if (bWriteHashSet)
+				{
+					CTag tagAICHHashSet(FT_AICHHASHSET, hashSetFile.Detach(), nAICHHashSetSize);
+					tagAICHHashSet.WriteTagToFile(&file);
+					uTagCount++;
+				}
+			}
 		}
+
 		for (int j = 0; j < taglist.GetCount(); j++){
 			if (taglist[j]->IsStr() || taglist[j]->IsInt()){
 				taglist[j]->WriteTagToFile(&file, utf8strOptBOM);
@@ -1801,6 +1802,44 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 			
 			i_pos++;
 		}
+		// Add buffered data as gap too - at the time of writing this file, this data does not exists on
+		// the disk, so not addding it as gaps leads to inconsistencies which causes problems in case of
+		// failing to write the buffered data (for example on disk full errors)
+		// don't bother with best merging too much, we do this on the next loading
+		uint32 dbgMerged = 0;
+		for (POSITION pos = m_BufferedData_list.GetHeadPosition(); pos != 0; )
+		{
+			PartFileBufferedData* gap = m_BufferedData_list.GetNext(pos);
+			const uint64 nStart = gap->start;
+			uint64 nEnd = gap->end;
+			while (pos != 0) // merge if obvious
+			{
+				gap = m_BufferedData_list.GetAt(pos);
+				if (gap->start == (nEnd + 1))
+				{
+					dbgMerged++;
+					nEnd = gap->end;
+					m_BufferedData_list.GetNext(pos);
+				}
+				else
+					break;
+			}
+
+			_itoa(i_pos, number, 10);
+			namebuffer[0] = FT_GAPSTART;
+			CTag gapstarttag(namebuffer,nStart, IsLargeFile());
+			gapstarttag.WriteTagToFile(&file);
+			uTagCount++;
+
+			// gap start = first missing byte but gap ends = first non-missing byte in edonkey
+			// but I think its easier to user the real limits
+			namebuffer[0] = FT_GAPEND;
+			CTag gapendtag(namebuffer,nEnd+1, IsLargeFile());
+			gapendtag.WriteTagToFile(&file);
+			uTagCount++;
+			i_pos++;
+		}
+		//DEBUG_ONLY( DebugLog(_T("Wrote %u buffered gaps (%u merged) for file %s"), m_BufferedData_list.GetCount(), dbgMerged, GetFileName()) );
 
 		//Xman advanced upload-priority
 		if (statistic.m_unotcountedtransferred)
@@ -1911,75 +1950,87 @@ bool CPartFile::SavePartFile(bool bDontOverrideBak)
 }
 
 void CPartFile::PartFileHashFinished(CKnownFile* result){
+	ASSERT( result->GetFileIdentifier().GetTheoreticalMD4PartHashCount() == m_FileIdentifier.GetTheoreticalMD4PartHashCount() );
+	ASSERT( result->GetFileIdentifier().GetTheoreticalAICHPartHashCount() == m_FileIdentifier.GetTheoreticalAICHPartHashCount() );
 	newdate = true;
 	bool errorfound = false;
-	//zz_fly :: redundant code :: start
-	/*
-	//Xman
-	// BEGIN SLUGFILLER: SafeHash - one check for all
-	for (UINT i = 0; i < (UINT)hashlist.GetSize(); i++){
-		ASSERT( IsComplete((uint64)i*PARTSIZE, (uint64)(i + 1)*PARTSIZE - 1, true) == IsComplete((uint64)i*PARTSIZE, (uint64)(i + 1)*PARTSIZE - 1, false) );
-		if (i < GetPartCount() && IsComplete((uint64)i*PARTSIZE, (uint64)(i + 1)*PARTSIZE - 1, false)){
-			if (!(result->GetPartHash(i) && !md4cmp(result->GetPartHash(i), GetPartHash(i)))){
-				LogWarning(GetResString(IDS_ERR_FOUNDCORRUPTION), i+1, GetFileName());
-				AddGap((uint64)i*PARTSIZE, ((uint64)((uint64)(i + 1)*PARTSIZE - 1) >= m_nFileSize) ? ((uint64)m_nFileSize - 1) : ((uint64)(i + 1)*PARTSIZE - 1) );
+	// check each part
+	for (uint16 nPart = 0; nPart < GetPartCount(); nPart++)
+	{
+		const uint64 nPartStartPos = (uint64)nPart *  PARTSIZE;
+		const uint64 nPartEndPos = min(((uint64)(nPart + 1) *  PARTSIZE) - 1, GetFileSize() - (uint64)1);
+		ASSERT( IsComplete(nPartStartPos, nPartEndPos, true) == IsComplete(nPartStartPos, nPartEndPos, false) );
+		if (IsComplete(nPartStartPos, nPartEndPos, false))
+		{
+			bool bMD4Error = false;
+			bool bMD4Checked = false; 
+			bool bAICHError = false;
+			bool bAICHChecked = false;
+			// MD4
+			if (nPart == 0 && m_FileIdentifier.GetTheoreticalMD4PartHashCount() == 0)
+			{
+				bMD4Checked = true;
+				bMD4Error = md4cmp(result->GetFileIdentifier().GetMD4Hash(), GetFileIdentifier().GetMD4Hash()) != 0;
+			}
+			else if (m_FileIdentifier.HasExpectedMD4HashCount())
+			{
+				bMD4Checked = true;
+				if (result->GetFileIdentifier().GetMD4PartHash(nPart) && GetFileIdentifier().GetMD4PartHash(nPart))
+					bMD4Error = md4cmp(result->GetFileIdentifier().GetMD4PartHash(nPart), m_FileIdentifier.GetMD4PartHash(nPart)) != 0;
+				else
+					ASSERT( false );
+			}
+			// AICH
+			if (GetFileIdentifier().HasAICHHash())
+			{
+				if (nPart == 0 && m_FileIdentifier.GetTheoreticalAICHPartHashCount() == 0)
+				{
+					bAICHChecked = true;
+					bAICHError = result->GetFileIdentifier().GetAICHHash() != GetFileIdentifier().GetAICHHash();
+				}
+				else if (m_FileIdentifier.HasExpectedAICHHashCount())
+				{
+					bAICHChecked = true;
+					if (result->GetFileIdentifier().GetAvailableAICHPartHashCount() > nPart && GetFileIdentifier().GetAvailableAICHPartHashCount() > nPart)
+						bAICHError = result->GetFileIdentifier().GetRawAICHHashSet()[nPart] != GetFileIdentifier().GetRawAICHHashSet()[nPart];
+					else
+						ASSERT( false );
+				}
+			}
+			if (bMD4Error || bAICHError)
+			{
 				errorfound = true;
+				LogWarning(GetResString(IDS_ERR_FOUNDCORRUPTION), nPart + 1, GetFileName());
+				AddGap(nPartStartPos, nPartEndPos);
+				if (bMD4Checked && bAICHChecked && bMD4Error != bAICHError)
+					DebugLogError(_T("AICH and MD4 HashSet disagree on verifying part %u for file %s. MD4: %s - AICH: %s"), nPart
+					, GetFileName(), bMD4Error ? _T("Corrupt") : _T("OK"), bAICHError ? _T("Corrupt") : _T("OK"));
 			}
 		}
 	}
-	// END SLUGFILLER: SafeHash
-	*/
-	//zz_fly :: redundant code :: end
+	// missing md4 hashset?
+	if (!m_FileIdentifier.HasExpectedMD4HashCount())
+	{
+		DebugLogError(_T("Final hashing/rehashing without valid MD4 HashSet for file %s"), GetFileName());
+		// if finished we can copy over the hashset from our hashresult
+		if (IsComplete(0, m_nFileSize - (uint64)1, false) &&  md4cmp(result->GetFileIdentifier().GetMD4Hash(), GetFileIdentifier().GetMD4Hash()) == 0)
+		{
+			if (m_FileIdentifier.SetMD4HashSet(result->GetFileIdentifier().GetRawMD4HashSet()))
+				m_bMD4HashsetNeeded = false;
+		}
+	}
 
-	// SLUGFILLER: SafeHash - use GetED2KPartCount
-	/*
-	if (GetED2KPartHashCount()==0 || GetHashCount()==0){
-	*/
-	if (GetED2KPartCount()==0 || GetHashCount()==0){
-	//Xman end
-		ASSERT( IsComplete(0, m_nFileSize - (uint64)1, true) == IsComplete(0, m_nFileSize - (uint64)1, false) );
-		if (IsComplete(0, m_nFileSize - (uint64)1, false)){
-			if (md4cmp(result->GetFileHash(), GetFileHash())){
-				LogWarning(GetResString(IDS_ERR_FOUNDCORRUPTION), 1, GetFileName());
-				AddGap(0, m_nFileSize - (uint64)1);
-				errorfound = true;
-			}
-			else{
-				//Xman
-				// SLUGFILLER: SafeHash - use GetED2KPartCount
-				/*
-				if (GetED2KPartHashCount() != GetHashCount()){
-					ASSERT( result->GetED2KPartHashCount() == GetED2KPartHashCount() );
-				*/
-				if (GetED2KPartCount() != GetHashCount()){
-					ASSERT( result->GetED2KPartCount() == GetED2KPartCount() );
-				//Xman end
-					if (SetHashset(result->GetHashset()))
-						hashsetneeded = false;
-				}
-			}
+	if (!errorfound && status == PS_COMPLETING)
+	{
+		if (!result->GetFileIdentifier().HasAICHHash())
+			AddDebugLogLine(false, _T("Failed to store new AICH Recovery and Part Hashset for completed file %s"), GetFileName());
+		else
+		{
+			m_FileIdentifier.SetAICHHash(result->GetFileIdentifier().GetAICHHash());
+			m_FileIdentifier.SetAICHHashSet(result->GetFileIdentifier());
+			SetAICHRecoverHashSetAvailable(true);
 		}
-	}
-	else{
-		for (UINT i = 0; i < (UINT)hashlist.GetSize(); i++){
-			ASSERT( IsComplete((uint64)i*PARTSIZE, (uint64)(i + 1)*PARTSIZE - 1, true) == IsComplete((uint64)i*PARTSIZE, (uint64)(i + 1)*PARTSIZE - 1, false) );
-			if (i < GetPartCount() && IsComplete((uint64)i*PARTSIZE, (uint64)(i + 1)*PARTSIZE - 1, false)){
-				if (!(result->GetPartHash(i) && !md4cmp(result->GetPartHash(i), GetPartHash(i)))){
-					LogWarning(GetResString(IDS_ERR_FOUNDCORRUPTION), i+1, GetFileName());
-					AddGap((uint64)i*PARTSIZE, ((uint64)((uint64)(i + 1)*PARTSIZE - 1) >= m_nFileSize) ? ((uint64)m_nFileSize - 1) : ((uint64)(i + 1)*PARTSIZE - 1) );
-					errorfound = true;
-				}
-			}
-		}
-	}
-	if (!errorfound && result->GetAICHHashset()->GetStatus() == AICH_HASHSETCOMPLETE && status == PS_COMPLETING){
-		delete m_pAICHHashSet;
-		m_pAICHHashSet = result->GetAICHHashset();
-		result->SetAICHHashset(NULL);
-		m_pAICHHashSet->SetOwner(this);
-	}
-	else if (status == PS_COMPLETING){
-		AddDebugLogLine(false, _T("Failed to store new AICH Hashset for completed file %s"), GetFileName());
+		m_pAICHRecoveryHashSet->FreeHashSet();
 	}
 
 	delete result;
@@ -2863,7 +2914,7 @@ void CPartFile::AddDownloadingSource(CUpDownClient* client){
 	POSITION pos = m_downloadingSourceList.Find(client); // to be sure
 	if(pos == NULL){
 		m_downloadingSourceList.AddTail(client);
-		theApp.emuledlg->transferwnd->downloadclientsctrl.AddClient(client);
+		theApp.emuledlg->transferwnd->GetDownloadClientsList()->AddClient(client);
 		//Xman
 		// Maella -New bandwidth control-
 		// We need to detect a change in the source list
@@ -2873,7 +2924,7 @@ void CPartFile::AddDownloadingSource(CUpDownClient* client){
 	}
 	//zz_fly :: delayed deletion of downloading source :: Enig123 :: Start
 	else if(pos2)	//the source had been deleted, but still in m_downloadingSourceList (delayed deletion).
-		theApp.emuledlg->transferwnd->downloadclientsctrl.AddClient(client); //only need to add it to downloadclientsctrl
+		theApp.emuledlg->transferwnd->GetDownloadClientsList()->AddClient(client); //only need to add it to downloadclientsctrl
 	//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
 }
 
@@ -2891,7 +2942,7 @@ void CPartFile::RemoveDownloadingSource(CUpDownClient* client){
 		*/
 		m_downloadingDeleteList.AddTail(client);
 		//zz_fly :: delayed deletion of downloading source :: Enig123 :: End
-		theApp.emuledlg->transferwnd->downloadclientsctrl.RemoveClient(client);
+		theApp.emuledlg->transferwnd->GetDownloadClientsList()->RemoveClient(client);
 		//Xman
 		// Maella -New bandwidth control-
 		// We need to detect a change in the source list
@@ -3567,8 +3618,8 @@ uint32 CPartFile::Process(uint32 maxammount, bool isLimited, bool fullProcess)
 		//Xman end
 
 	if ( GetSrcStatisticsValue(DS_DOWNLOADING) != nOldTransSourceCount ){
-		if (theApp.emuledlg->transferwnd->downloadlistctrl.curTab == 0)
-			theApp.emuledlg->transferwnd->downloadlistctrl.ChangeCategory(0); 
+		if (theApp.emuledlg->transferwnd->GetDownloadList()->curTab == 0)
+			theApp.emuledlg->transferwnd->GetDownloadList()->ChangeCategory(0); 
 		//Xman
 		/*
 		else
@@ -4026,7 +4077,7 @@ void CPartFile::CompleteFile(bool bIsHashingDone)
 		Kademlia::CSearchManager::StopSearch(GetKadFileSearchID(), false);
 
 	if (srcarevisible)
-		theApp.emuledlg->transferwnd->downloadlistctrl.HideSources(this);
+		theApp.emuledlg->transferwnd->GetDownloadList()->HideSources(this);
 	
 	if (!bIsHashingDone){
 		//Xman
@@ -4074,7 +4125,7 @@ void CPartFile::CompleteFile(bool bIsHashingDone)
 			return;
 		}
 	}
-	theApp.emuledlg->transferwnd->downloadlistctrl.ShowFilesCount();
+	theApp.emuledlg->transferwnd->GetDownloadList()->ShowFilesCount();
 	if (thePrefs.ShowCatTabInfos())
 		theApp.emuledlg->transferwnd->UpdateCatTabTitles();
 	UpdateDisplayedInfo(true);
@@ -4146,7 +4197,7 @@ public:
 };
 #endif //__IZoneIdentifier_INTERFACE_DEFINED__
 
-#ifdef HAVE_VISTA_SDK
+#ifdef CLSID_PersistentZoneIdentifier
 EXTERN_C const IID CLSID_PersistentZoneIdentifier;
 #else
 const GUID CLSID_PersistentZoneIdentifier = { 0x0968E258, 0x16C7, 0x4DBA, { 0xAA, 0x86, 0x46, 0x2D, 0xD6, 0x1E, 0x31, 0xA3 } };
@@ -4410,11 +4461,11 @@ void CPartFile::PerformFileCompleteEnd(DWORD dwResult)
 		theApp.downloadqueue->RemoveFile(this);
 		theApp.mmserver->AddFinishedFile(this);
 		if (thePrefs.GetRemoveFinishedDownloads())
-			theApp.emuledlg->transferwnd->downloadlistctrl.RemoveFile(this);
+			theApp.emuledlg->transferwnd->GetDownloadList()->RemoveFile(this);
 		else
 			UpdateDisplayedInfo(true);
 
-		theApp.emuledlg->transferwnd->downloadlistctrl.ShowFilesCount();
+		theApp.emuledlg->transferwnd->GetDownloadList()->ShowFilesCount();
 
 		thePrefs.Add2DownCompletedFiles();
 		thePrefs.Add2DownSessionCompletedFiles();
@@ -4506,14 +4557,14 @@ void  CPartFile::RemoveAllSources(bool bTryToSwap){
 			if(pos3)
 			{ 
 				A4AFsrclist.GetAt(pos2)->m_OtherRequests_list.RemoveAt(pos3);
-				theApp.emuledlg->transferwnd->downloadlistctrl.RemoveSource(this->A4AFsrclist.GetAt(pos2),this);
+				theApp.emuledlg->transferwnd->GetDownloadList()->RemoveSource(this->A4AFsrclist.GetAt(pos2),this);
 			}
 			else{
 				pos3 = A4AFsrclist.GetAt(pos2)->m_OtherNoNeeded_list.Find(this); 
 				if(pos3)
 				{ 
 					A4AFsrclist.GetAt(pos2)->m_OtherNoNeeded_list.RemoveAt(pos3);
-					theApp.emuledlg->transferwnd->downloadlistctrl.RemoveSource(A4AFsrclist.GetAt(pos2),this);
+					theApp.emuledlg->transferwnd->GetDownloadList()->RemoveSource(A4AFsrclist.GetAt(pos2),this);
 				}
 			}
 		}
@@ -4536,9 +4587,9 @@ void CPartFile::DeleteFile(){
 		return;
 	}
 
-	theApp.sharedfiles->RemoveFile(this);
+	theApp.sharedfiles->RemoveFile(this, true);
 	theApp.downloadqueue->RemoveFile(this);
-	theApp.emuledlg->transferwnd->downloadlistctrl.RemoveFile(this);
+	theApp.emuledlg->transferwnd->GetDownloadList()->RemoveFile(this);
 	theApp.knownfiles->AddCancelledFileID(GetFileHash());
 
 	if (m_hpartfile.m_hFile != INVALID_HANDLE_VALUE)
@@ -4571,16 +4622,21 @@ void CPartFile::DeleteFile(){
 	delete this;
 }
 
-bool CPartFile::HashSinglePart(UINT partnumber)
+bool CPartFile::HashSinglePart(UINT partnumber, bool* pbAICHReportedOK)
 {
-	if ((GetHashCount() <= partnumber) && (GetPartCount() > 1)){
+	// Right now we demand that AICH (if we have one) and MD4 agree on a parthash, no matter what
+	// This is the most secure way in order to make sure eMule will never deliver a corrupt file,
+	// even if one of the hashalgorithms is completely or both somewhat broken
+	// This however doesn't means that eMule is guaranteed to be able to finish a file in case
+	// one of the algorithms is completely broken, but we will bother about that if it becomes an
+	// issue, with the current implementation at least nothing can go horribly wrong (from a security PoV)
+	if (pbAICHReportedOK != NULL)
+		*pbAICHReportedOK = false;
+	if (!m_FileIdentifier.HasExpectedMD4HashCount() && !(m_FileIdentifier.HasAICHHash() && m_FileIdentifier.HasExpectedAICHHashCount()))
+	{
 		LogError(LOG_STATUSBAR, GetResString(IDS_ERR_HASHERRORWARNING), GetFileName());
-		hashsetneeded = true;
-		return true;
-	}
-	else if (!GetPartHash(partnumber) && GetPartCount() != 1){
-		LogError(LOG_STATUSBAR, GetResString(IDS_ERR_INCOMPLETEHASH), GetFileName());
-		hashsetneeded = true;
+		m_bMD4HashsetNeeded = true;
+		m_bAICHPartHashsetNeeded = true;
 		return true;		
 	}
 	else{
@@ -4591,20 +4647,78 @@ bool CPartFile::HashSinglePart(UINT partnumber)
 			length = (UINT)(m_hpartfile.GetLength() - ((ULONGLONG)PARTSIZE*(uint64)partnumber));
 			ASSERT( length <= PARTSIZE );
 		}
-		CreateHash(&m_hpartfile, length, hashresult, NULL);
+		
+		CAICHHashTree* phtAICHPartHash = NULL;
+		if (m_FileIdentifier.HasAICHHash() && m_FileIdentifier.HasExpectedAICHHashCount())
+		{
+			const CAICHHashTree* pPartTree = m_pAICHRecoveryHashSet->FindPartHash((uint16)partnumber);
+			if (pPartTree != NULL)
+			{
+				// use a new part tree, so we don't overwrite any existing recovery data which we might still need lateron
+				phtAICHPartHash = new CAICHHashTree(pPartTree->m_nDataSize,pPartTree->m_bIsLeftBranch, pPartTree->GetBaseSize());	
+			}
+			else
+				ASSERT( false );
+		}
+		CreateHash(&m_hpartfile, length, hashresult, phtAICHPartHash);
 
-		if (GetPartCount()>1 || GetFileSize()== (uint64)PARTSIZE){
-			if (md4cmp(hashresult,GetPartHash(partnumber)))
-				return false;
+		bool bMD4Error = false;
+		bool bMD4Checked = false;
+		bool bAICHError = false;
+		bool bAICHChecked = false;
+
+		if (m_FileIdentifier.HasExpectedMD4HashCount())
+		{
+			bMD4Checked = true;
+			if (GetPartCount() > 1 || GetFileSize()== (uint64)PARTSIZE)
+			{
+				if (m_FileIdentifier.GetAvailableMD4PartHashCount() > partnumber)
+					bMD4Error = md4cmp(hashresult, m_FileIdentifier.GetMD4PartHash(partnumber)) != 0;
+				else
+				{
+					ASSERT( false );
+					m_bMD4HashsetNeeded = true;
+				}
+			}
 			else
-				return true;
+				bMD4Error = md4cmp(hashresult, m_FileIdentifier.GetMD4Hash()) != 0;
 		}
-		else{
-			if (md4cmp(hashresult,m_abyFileHash))
-				return false;
+		else
+		{
+			DebugLogError(_T("MD4 HashSet not present while veryfing part %u for file %s"), partnumber, GetFileName());
+			m_bMD4HashsetNeeded = true;
+		}
+
+		if (m_FileIdentifier.HasAICHHash() && m_FileIdentifier.HasExpectedAICHHashCount() && phtAICHPartHash != NULL)
+		{
+			ASSERT( phtAICHPartHash->m_bHashValid );
+			bAICHChecked = true;
+			if (GetPartCount() > 1)
+			{
+				if (m_FileIdentifier.GetAvailableAICHPartHashCount() > partnumber)
+					bAICHError = m_FileIdentifier.GetRawAICHHashSet()[partnumber] != phtAICHPartHash->m_Hash;
+				else
+					ASSERT( false );
+			}
 			else
-				return true;
+				bAICHError = m_FileIdentifier.GetAICHHash() != phtAICHPartHash->m_Hash;
 		}
+		else
+			DebugLogWarning(_T("AICH HashSet not present while verifying part %u for file %s"), partnumber, GetFileName());
+
+		delete phtAICHPartHash;
+		phtAICHPartHash = NULL;
+		if (pbAICHReportedOK != NULL && bAICHChecked)
+			*pbAICHReportedOK = !bAICHError;
+		if (bMD4Checked && bAICHChecked && bMD4Error != bAICHError)
+			DebugLogError(_T("AICH and MD4 HashSet disagree on verifying part %u for file %s. MD4: %s - AICH: %s"), partnumber
+			, GetFileName(), bMD4Error ? _T("Corrupt") : _T("OK"), bAICHError ? _T("Corrupt") : _T("OK"));
+#ifdef _DEBUG
+		else
+			DebugLog(_T("Verifying part %u for file %s. MD4: %s - AICH: %s"), partnumber , GetFileName()
+			, bMD4Checked ? (bMD4Error ? _T("Corrupt") : _T("OK")) : _T("Unavailable"), bAICHChecked ? (bAICHError ? _T("Corrupt") : _T("OK")) : _T("Unavailable"));	
+#endif
+		return !bMD4Error && !bAICHError;
 	}
 }
 
@@ -5215,7 +5329,7 @@ Packet* CPartFile::CreateSrcInfoPacket(const CUpDownClient* forClient, uint8 byR
 	}
 
 	UINT nCount = 0;
-	data.WriteHash16(m_abyFileHash);
+	data.WriteHash16(m_FileIdentifier.GetMD4Hash());
 	data.WriteUInt16((uint16)nCount);
 	
 	//Xman Code Improvement
@@ -5980,7 +6094,8 @@ void CPartFile::FlushBuffer(bool forcewait, bool bForceICH, bool /*bNoAICH*/)
 			if (IsComplete(PARTSIZE * (uint64)uPartNumber, (PARTSIZE * (uint64)(uPartNumber + 1)) - 1, false))
 			{
 				// Is part corrupt
-				if (!HashSinglePart(uPartNumber))
+				bool bAICHAgreed = false;
+				if (!HashSinglePart(uPartNumber, &bAICHAgreed))
 				{
 					LogWarning(LOG_STATUSBAR, GetResString(IDS_ERR_PARTCORRUPT), uPartNumber, GetFileName());
 					AddGap(PARTSIZE*(uint64)uPartNumber, PARTSIZE*(uint64)uPartNumber + partRange);
@@ -5989,8 +6104,8 @@ void CPartFile::FlushBuffer(bool forcewait, bool bForceICH, bool /*bNoAICH*/)
 					if (!IsCorruptedPart(uPartNumber))
 						corrupted_list.AddTail((uint16)uPartNumber);
 
-					// request AICH recovery data
-					if (!bNoAICH)
+					// request AICH recovery data, except if AICH already agreed anyway or we explict dont want to
+					if (!bNoAICH && !bAICHAgreed)
 						RequestAICHRecovery((uint16)uPartNumber);
 
 					// update stats
@@ -5999,7 +6114,7 @@ void CPartFile::FlushBuffer(bool forcewait, bool bForceICH, bool /*bNoAICH*/)
 				}
 				else
 				{
-					if (!hashsetneeded){
+					if (!m_bMD4HashsetNeeded){
 						if (thePrefs.GetVerbose())
 							AddDebugLogLine(DLP_VERYLOW, false, _T("Finished part %u of \"%s\""), uPartNumber, GetFileName());
 					}
@@ -6016,7 +6131,7 @@ void CPartFile::FlushBuffer(bool forcewait, bool bForceICH, bool /*bNoAICH*/)
 					{
 						if (theApp.emuledlg->IsRunning()) // may be called during shutdown!
 						{
-							if (GetHashCount() == GetED2KPartHashCount() && !hashsetneeded)
+							if (m_FileIdentifier.HasExpectedMD4HashCount() && !m_bMD4HashsetNeeded)
 							{
 								// Successfully completed part, make it available for sharing
 								SetStatus(PS_READY);
@@ -6063,7 +6178,7 @@ void CPartFile::FlushBuffer(bool forcewait, bool bForceICH, bool /*bNoAICH*/)
 					{
 						if (theApp.emuledlg->IsRunning()) // may be called during shutdown!
 						{
-							if (GetHashCount() == GetED2KPartHashCount() && !hashsetneeded)
+							if (m_FileIdentifier.HasExpectedMD4HashCount() && !m_bMD4HashsetNeeded)
 							{
 								// Successfully recovered part, make it available for sharing
 								SetStatus(PS_READY);
@@ -6133,7 +6248,7 @@ void CPartFile::FlushDone()
 
 	// Check each part of the file
 	// Only if hashlist is available
-	if (hashlist.GetCount() == GetED2KPartCount()){
+	if (m_FileIdentifier.HasExpectedMD4HashCount()){
 		UINT partCount = GetPartCount();
 		// Check each part of the file
 		for (int iPartNumber = partCount-1; iPartNumber >= 0; iPartNumber--)
@@ -6142,9 +6257,9 @@ void CPartFile::FlushDone()
 			if (!m_FlushSetting->changedPart[uPartNumber])
 				continue;
 			// Any parts other than last must be full size
-			if (!GetPartHash(uPartNumber)) {
+			if (!GetFileIdentifier().GetMD4PartHash(uPartNumber)) {
 				LogError(LOG_STATUSBAR, GetResString(IDS_ERR_INCOMPLETEHASH), GetFileName());
-				hashsetneeded = true;
+				m_bMD4HashsetNeeded = true;
 				ASSERT(FALSE);	// If this fails, something was seriously wrong with the hashset loading or the check above
 			}
 
@@ -6168,10 +6283,11 @@ void CPartFile::FlushDone()
 				else
 				{
 					//mono threaded at shutting down
-					if (!HashSinglePart(uPartNumber))
-						PartHashFinished(uPartNumber, true);
+					bool bAICHAgreed = false;
+					if (!HashSinglePart(uPartNumber, &bAICHAgreed))
+						PartHashFinished(uPartNumber, bAICHAgreed, true);
 					else
-						PartHashFinished(uPartNumber, false);
+						PartHashFinished(uPartNumber, bAICHAgreed, false);
 				}
 				//Xman end
 			}
@@ -6199,7 +6315,7 @@ void CPartFile::FlushDone()
 	else {
 		ASSERT(GetED2KPartCount() > 1);	// Files with only 1 chunk should have a forced hashset
 		LogError(LOG_STATUSBAR, GetResString(IDS_ERR_HASHERRORWARNING), GetFileName());
-		hashsetneeded = true;
+		m_bMD4HashsetNeeded = true;
 	}
 	// SLUGFILLER: SafeHash
 	// END SiRoB: Flush Thread
@@ -6674,12 +6790,12 @@ void CPartFile::UpdateDisplayedInfo(bool force)
 		//Xman new improvement:
 		/*
         if(force || curTick-m_lastRefreshedDLDisplay > MINWAIT_BEFORE_DLDISPLAY_WINDOWUPDATE+m_random_update_wait) {
-			theApp.emuledlg->transferwnd->downloadlistctrl.UpdateItem(this);
+			theApp.emuledlg->transferwnd->GetDownloadList()->UpdateItem(this);
 			m_lastRefreshedDLDisplay = curTick;
 		}
 		*/
 		if(force || curTick-m_lastRefreshedDLDisplay > 550){ // MINWAIT_BEFORE_DLDISPLAY_WINDOWUPDATE+m_random_update_wait) {
-			theApp.emuledlg->transferwnd->downloadlistctrl.UpdateItem(this);
+			theApp.emuledlg->transferwnd->GetDownloadList()->UpdateItem(this);
 			m_lastRefreshedDLDisplay = curTick;
 		}
 		//Xman end
@@ -6717,6 +6833,11 @@ UINT CPartFile::GetCategory() /*const*/
 	if (m_category > (UINT)(thePrefs.GetCatCount() - 1))
 		m_category = 0;
 	return m_category;
+}
+
+bool CPartFile::HasDefaultCategory() const // extra function for const 
+{
+	return m_category == 0 || m_category > (UINT)(thePrefs.GetCatCount() - 1);
 }
 
 //Xman checkmark to catogory at contextmenu of downloadlist
@@ -6834,7 +6955,7 @@ void CPartFile::SetStatus(EPartFileStatus eStatus)
 void CPartFile::NotifyStatusChange()
 {
 	if (theApp.emuledlg->IsRunning())
-		theApp.emuledlg->transferwnd->downloadlistctrl.UpdateCurrentCategoryView(this);
+		theApp.emuledlg->transferwnd->GetDownloadList()->UpdateCurrentCategoryView(this);
 }
 
 EMFileSize CPartFile::GetRealFileSize() const
@@ -7372,6 +7493,7 @@ bool CPartFile::GetNextRequestedBlock_zz(CUpDownClient* sender,
 }
 // Maella end
 
+
 CString CPartFile::GetInfoSummary() const
 {
 	if (!IsPartFile())
@@ -7538,6 +7660,8 @@ bool CPartFile::CheckShowItemInGivenCat(int inCategory) /*const*/
 	int myfilter=thePrefs.GetCatFilter(inCategory);
 
 	// common cases
+	if (inCategory>=thePrefs.GetCatCount())
+		return false;
 	if (((UINT)inCategory == GetCategory() && myfilter == 0))
 		return true;
 	if (inCategory>0 && GetCategory()!=(UINT)inCategory && !thePrefs.GetCategory(inCategory)->care4all )
@@ -7581,7 +7705,7 @@ void CPartFile::SetFileName(LPCTSTR pszFileName, bool bReplaceInvalidFileSystemC
 	CKnownFile::SetFileName(pszFileName, bReplaceInvalidFileSystemChars, bRemoveControlChars);
 
 	UpdateDisplayedInfo(true);
-	theApp.emuledlg->transferwnd->downloadlistctrl.UpdateCurrentCategoryView(this);
+	theApp.emuledlg->transferwnd->GetDownloadList()->UpdateCurrentCategoryView(this);
 }
 
 void CPartFile::SetActive(bool bActive)
@@ -7686,19 +7810,19 @@ bool CPartFile::RightFileHasHigherPrio(CPartFile* left,CPartFile* right, bool al
 
 void CPartFile::RequestAICHRecovery(UINT nPart)
 {
-	if (!m_pAICHHashSet->HasValidMasterHash() || (m_pAICHHashSet->GetStatus() != AICH_TRUSTED && m_pAICHHashSet->GetStatus() != AICH_VERIFIED)){
+	if (!m_pAICHRecoveryHashSet->HasValidMasterHash() || (m_pAICHRecoveryHashSet->GetStatus() != AICH_TRUSTED && m_pAICHRecoveryHashSet->GetStatus() != AICH_VERIFIED)){
 		AddDebugLogLine(DLP_DEFAULT, false, _T("Unable to request AICH Recoverydata because we have no trusted Masterhash"));
 		return;
 	}
 	if (GetFileSize() <= (uint64)EMBLOCKSIZE || GetFileSize() - PARTSIZE*(uint64)nPart <= (uint64)EMBLOCKSIZE)
 		return;
-	if (CAICHHashSet::IsClientRequestPending(this, (uint16)nPart)){
+	if (CAICHRecoveryHashSet::IsClientRequestPending(this, (uint16)nPart)){
 		AddDebugLogLine(DLP_DEFAULT, false, _T("RequestAICHRecovery: Already a request for this part pending"));
 		return;
 	}
 
 	// first check if we have already the recoverydata, no need to rerequest it then
-	if (m_pAICHHashSet->IsPartDataAvailable((uint64)nPart*PARTSIZE)){
+	if (m_pAICHRecoveryHashSet->IsPartDataAvailable((uint64)nPart*PARTSIZE)){
 		AddDebugLogLine(DLP_DEFAULT, false, _T("Found PartRecoveryData in memory"));
 		AICHRecoveryDataAvailable(nPart);
 		return;
@@ -7712,7 +7836,7 @@ void CPartFile::RequestAICHRecovery(UINT nPart)
 	for (POSITION pos = srclist.GetHeadPosition(); pos != NULL;){
 		CUpDownClient* pCurClient = srclist.GetNext(pos);
 		if (pCurClient->IsSupportingAICH() && pCurClient->GetReqFileAICHHash() != NULL && !pCurClient->IsAICHReqPending()
-			&& (*pCurClient->GetReqFileAICHHash()) == m_pAICHHashSet->GetMasterHash())
+			&& (*pCurClient->GetReqFileAICHHash()) == m_pAICHRecoveryHashSet->GetMasterHash())
 		{
 			if (pCurClient->HasLowID())
 				cAICHLowIDClients++;
@@ -7734,7 +7858,7 @@ void CPartFile::RequestAICHRecovery(UINT nPart)
 	for (POSITION pos = srclist.GetHeadPosition(); pos != NULL;){
 		CUpDownClient* pCurClient = srclist.GetNext(pos);
 		if (pCurClient->IsSupportingAICH() && pCurClient->GetReqFileAICHHash() != NULL && !pCurClient->IsAICHReqPending()
-			&& (*pCurClient->GetReqFileAICHHash()) == m_pAICHHashSet->GetMasterHash())
+			&& (*pCurClient->GetReqFileAICHHash()) == m_pAICHRecoveryHashSet->GetMasterHash())
 		{
 			if (cAICHClients > 0){
 				if (!pCurClient->HasLowID())
@@ -7783,7 +7907,7 @@ void CPartFile::AICHRecoveryDataAvailable(UINT nPart)
 	
 
 
-	CAICHHashTree* pVerifiedHash = m_pAICHHashSet->m_pHashTree.FindHash((uint64)nPart*PARTSIZE, length);
+	CAICHHashTree* pVerifiedHash = m_pAICHRecoveryHashSet->m_pHashTree.FindHash((uint64)nPart*PARTSIZE, length);
 	if (pVerifiedHash == NULL || !pVerifiedHash->m_bHashValid){
 		AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: Unable to get verified hash from hashset (should never happen)"));
 		ASSERT( false );
@@ -7838,26 +7962,28 @@ void CPartFile::AICHRecoveryDataAvailable(UINT nPart)
 	// ok now some sanity checks
 	if (IsComplete((uint64)nPart*PARTSIZE, (((uint64)nPart*PARTSIZE)+length)-1, true)){
 		// this is a bad, but it could probably happen under some rare circumstances
-		// make sure that MD4 agrres to this fact too
+		// make sure that HashSinglePart() (MD4 and possibly AICH again) agrees to this fact too, for Verified Hashes problems are handled within that functions, otherwise:
 		//Xman
 		// BEGIN SLUGFILLER: SafeHash - In another thread
 		/*
-		if (!HashSinglePart(nPart)){
+		if (!HashSinglePart(nPart))
+		{
 			AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering - but MD4 says it corrupt! Setting hashset to error state, deleting part"));
 			// now we are fu... unhappy
-			m_pAICHHashSet->SetStatus(AICH_ERROR);
+			if (!m_FileIdentifier.HasAICHHash())
+				m_pAICHRecoveryHashSet->SetStatus(AICH_ERROR); // set it to error on unverified hashs
 			AddGap(PARTSIZE*(uint64)nPart, (((uint64)nPart*PARTSIZE)+length)-1);
 			ASSERT( false );
 			return;
 		}
 		else{
-			AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering and MD4 agrees"));
+			AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering and HashSinglePart() (MD4) agrees"));
 			// alrighty not so bad
 			POSITION posCorrupted = corrupted_list.Find((uint16)nPart);
 			if (posCorrupted)
 				corrupted_list.RemoveAt(posCorrupted);
 			if (status == PS_EMPTY && theApp.emuledlg->IsRunning()){
-				if (GetHashCount() == GetED2KPartHashCount() && !hashsetneeded){
+				if (m_FileIdentifier.HasExpectedMD4HashCount() && !m_bMD4HashsetNeeded){
 					// Successfully recovered part, make it available for sharing
 					SetStatus(PS_READY);
 					theApp.sharedfiles->SafeAddKFile(this);
@@ -7873,7 +7999,7 @@ void CPartFile::AICHRecoveryDataAvailable(UINT nPart)
 		*/
 		m_PartsHashing++;
 		CPartHashThread* parthashthread = (CPartHashThread*) AfxBeginThread(RUNTIME_CLASS(CPartHashThread), THREAD_PRIORITY_BELOW_NORMAL,0, CREATE_SUSPENDED);
-		parthashthread->SetSinglePartHash(this, (uint16)nPart, false, true);
+		parthashthread->SetSinglePartHash(this, nPart, false, true);
 		parthashthread->ResumeThread();
 		// END SLUGFILLER: SafeHash
 	} // end sanity check
@@ -7961,6 +8087,13 @@ void CPartFile::RefilterFileComments(){
 	}
 	RefilterKadNotes();
 	UpdateFileRatingCommentAvail();
+}
+
+void CPartFile::SetFileSize(EMFileSize nFileSize)
+{
+	ASSERT( m_pAICHRecoveryHashSet != NULL );
+	m_pAICHRecoveryHashSet->SetFileSize(nFileSize);
+	CKnownFile::SetFileSize(nFileSize);
 }
 
 //Xman Dynamic block request
@@ -8378,7 +8511,7 @@ void CPartFile::CompDownloadRate(){
 		}
 		//every second
 		UpdateCompletedInfos(); //Remark: don't update this at drawstatusbar, because we don't draw hidden rects -> the value isn't up to date -> wrong sorting!
-		theApp.emuledlg->transferwnd->downloadlistctrl.UpdateItem(this);
+		theApp.emuledlg->transferwnd->GetDownloadList()->UpdateItem(this);
 		//UpdateCompletedInfos();
 		m_lastRefreshedDLDisplay = ::GetTickCount(); //xman improvement
 	}
@@ -8590,7 +8723,7 @@ void CPartFile::AllocateNeededSpace()
 void CPartFile::PerformFirstHash()
 {
 	CPartHashThread* parthashthread = (CPartHashThread*) AfxBeginThread(RUNTIME_CLASS(CPartHashThread), THREAD_PRIORITY_BELOW_NORMAL,0, CREATE_SUSPENDED);
-	m_PartsHashing = m_PartsHashing + parthashthread->SetFirstHash(this);	// Only hashes completed parts, why hash gaps?
+	m_PartsHashing += parthashthread->SetFirstHash(this);	// Only hashes completed parts, why hash gaps?
 	parthashthread->ResumeThread();
 }
 
@@ -8613,7 +8746,7 @@ bool CPartFile::IsRangeShareable(uint64 start, uint64 end) const
 			return false;
 	return true;
 }
-void CPartFile::PartHashFinished(UINT partnumber, bool corrupt)
+void CPartFile::PartHashFinished(UINT  partnumber, bool bAICHAgreed, bool corrupt)
 {
 	if (partnumber >= GetPartCount())
 		return;
@@ -8624,8 +8757,8 @@ void CPartFile::PartHashFinished(UINT partnumber, bool corrupt)
 		//MORPH START - Changed by SiRoB, SafeHash Fix
 		/*
 		if (partRange > 0) {
-		partRange--;
-		AddGap((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
+			partRange--;
+			AddGap((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
 		}
 		*/
 		if (partRange > 0)
@@ -8637,10 +8770,11 @@ void CPartFile::PartHashFinished(UINT partnumber, bool corrupt)
 
 		// add part to corrupted list, if not already there
 		if (!IsCorruptedPart(partnumber))
-			corrupted_list.AddTail((uint16)partnumber);
+			corrupted_list.AddTail(partnumber);
 
-		// request AICH recovery data
-		RequestAICHRecovery((uint16)partnumber);
+		// request AICH recovery data, except if AICH already agreed anyway
+		if (!bAICHAgreed)
+			RequestAICHRecovery(partnumber);
 
 		// update stats
 		m_uCorruptionLoss += (partRange + 1);
@@ -8655,10 +8789,10 @@ void CPartFile::PartHashFinished(UINT partnumber, bool corrupt)
 		//MORPH START - Changed by SiRoB, SafeHash Fix
 		/*
 		if (partRange > 0) {
-		partRange--;
+			partRange--;
 
-		// tell the blackbox about the verified data
-		m_CorruptionBlackBox.VerifiedData((uint64)PARTSIZE * partnumber, (uint64)PARTSIZE*partnumber + partRange);
+			// tell the blackbox about the verified data
+			m_CorruptionBlackBox.VerifiedData((uint64)PARTSIZE * partnumber, (uint64)PARTSIZE*partnumber + partRange);
 		}
 		*/
 		if (partRange > 0)
@@ -8668,7 +8802,7 @@ void CPartFile::PartHashFinished(UINT partnumber, bool corrupt)
 		m_CorruptionBlackBox.VerifiedData((uint64)PARTSIZE * partnumber, (uint64)PARTSIZE*partnumber + partRange);
 		//MORPH END   - Added by SiRoB, SafeHash -Fix-
 		// if this part was successfully completed (although ICH is active), remove from corrupted list
-		POSITION posCorrupted = corrupted_list.Find((uint16)partnumber);
+		POSITION posCorrupted = corrupted_list.Find(partnumber);
 		if (posCorrupted)
 			corrupted_list.RemoveAt(posCorrupted);
 
@@ -8689,8 +8823,16 @@ void CPartFile::PartHashFinished(UINT partnumber, bool corrupt)
 		if (theApp.emuledlg->IsRunning())	// may be called during shutdown!
 		{
 			// Is this file finished?
-			if (!m_PartsHashing && gaplist.IsEmpty() && !m_nTotalBufferData && !m_FlushThread) //Xman - MORPH - Changed by SiRoB, Flush Thread
-				CompleteFile(false);	// Recheck all hashes, because loaded data is trusted based on file-date
+			if (!m_PartsHashing && !m_nTotalBufferData && !m_FlushSetting) //MORPH - Changed by SiRoB, Flush Thread
+			{
+				if(gaplist.IsEmpty())
+					CompleteFile(false);	// Recheck all hashes, because loaded data is trusted based on file-date
+				else if (m_bPauseOnPreview && IsReadyForPreview())
+				{
+					m_bPauseOnPreview = false;
+					PauseFile();
+				}
+			}
 		}
 	}
 }
@@ -8704,12 +8846,13 @@ void CPartFile::PartHashFinishedAICHRecover(UINT partnumber, bool corrupt)
 		uint64 partRange = (partnumber < (UINT)(GetPartCount()-1))?PARTSIZE:((uint64)m_nFileSize % PARTSIZE);
 		AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering - but MD4 says it corrupt! Setting hashset to error state, deleting part"), partnumber);
 		// now we are fu... unhappy
-		m_pAICHHashSet->SetStatus(AICH_ERROR);
+		if (!m_FileIdentifier.HasAICHHash())
+			m_pAICHRecoveryHashSet->SetStatus(AICH_ERROR); // set it to error on unverified hashs
 		//MORPH START - Changed by SiRoB, SafeHash Fix
 		/*
 		if (partRange > 0) {
-		partRange--;
-		AddGap((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
+			partRange--;
+			AddGap((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
 		}
 		*/
 		if (partRange > 0)
@@ -8726,7 +8869,7 @@ void CPartFile::PartHashFinishedAICHRecover(UINT partnumber, bool corrupt)
 	else{
 		AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering and MD4 agrees"), partnumber);
 		// alrighty not so bad
-		POSITION posCorrupted = corrupted_list.Find((uint16)partnumber);
+		POSITION posCorrupted = corrupted_list.Find(partnumber);
 		if (posCorrupted)
 			corrupted_list.RemoveAt(posCorrupted);
 		// Successfully recovered part, make it available for sharing
@@ -8745,8 +8888,16 @@ void CPartFile::PartHashFinishedAICHRecover(UINT partnumber, bool corrupt)
 
 		if (theApp.emuledlg->IsRunning()){
 			// Is this file finished?
-			if (!m_PartsHashing && gaplist.IsEmpty() && !m_nTotalBufferData  && !m_FlushThread) //Xman - MORPH - Changed by SiRoB, Flush Thread
-				CompleteFile(false);	// Recheck all hashes, because loaded data is trusted based on file-date
+			if (!m_PartsHashing && !m_nTotalBufferData && !m_FlushSetting) //MORPH - Changed by SiRoB, Flush Thread
+			{
+				if(gaplist.IsEmpty())
+					CompleteFile(false);	// Recheck all hashes, because loaded data is trusted based on file-date
+				else if (m_bPauseOnPreview && IsReadyForPreview())
+				{
+					m_bPauseOnPreview = false;
+					PauseFile();
+				}
+			}
 		}
 	}
 }
@@ -8767,9 +8918,9 @@ void CPartFile::ParseICHResult()
 		//MORPH START - Changed by SiRoB, Fix
 		/*
 		if (partRange > 0) {
-		partRange--;
-		FillGap((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
-		RemoveBlockFromList((uint32)PARTSIZE*partnumber, (uint32)PARTSIZE*partnumber + partRange);
+			partRange--;
+			FillGap((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
+			RemoveBlockFromList((uint32)PARTSIZE*partnumber, (uint32)PARTSIZE*partnumber + partRange);
 		}
 		*/
 		if (partRange > 0)
@@ -8779,7 +8930,7 @@ void CPartFile::ParseICHResult()
 		FillGap((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
 		RemoveBlockFromList((uint64)PARTSIZE*partnumber, (uint64)PARTSIZE*partnumber + partRange);
 		//MORPH END   - Changed by SiRoB, Fix
-
+		
 		// tell the blackbox about the verified data
 		m_CorruptionBlackBox.VerifiedData((uint64)PARTSIZE * partnumber, (uint64)PARTSIZE*partnumber + partRange);
 
@@ -8816,14 +8967,22 @@ void CPartFile::ParseICHResult()
 
 	if (theApp.emuledlg->IsRunning()){ // may be called during shutdown!
 		// Is this file finished?
-		if (!m_PartsHashing && gaplist.IsEmpty() && !m_nTotalBufferData && !m_FlushThread) //Xman - MORPH - Changed by SiRoB, Flush Thread
-			CompleteFile(false);	// Recheck all hashes, because loaded data is trusted based on file-date
+		if (!m_PartsHashing && !m_nTotalBufferData && !m_FlushSetting) //MORPH - Changed by SiRoB, Flush Thread
+		{
+			if(gaplist.IsEmpty())
+				CompleteFile(false);	// Recheck all hashes, because loaded data is trusted based on file-date
+			else if (m_bPauseOnPreview && IsReadyForPreview())
+			{
+				m_bPauseOnPreview = false;
+				PauseFile();
+			}
+		}
 	}
 }
 
 IMPLEMENT_DYNCREATE(CPartHashThread, CWinThread)
 
-uint16 CPartHashThread::SetFirstHash(CPartFile* pOwner)
+int CPartHashThread::SetFirstHash(CPartFile* pOwner)
 {
 	m_pOwner = pOwner;
 	m_ICHused = false;
@@ -8840,17 +8999,16 @@ uint16 CPartHashThread::SetFirstHash(CPartFile* pOwner)
 		if (pOwner->IsComplete((uint64)i*PARTSIZE,(uint64)(i+1)*PARTSIZE-1, false)){
 		*/
 		if (pOwner->IsComplete((uint64)i*PARTSIZE,(uint64)(i+1)*PARTSIZE-1, true)){
-
 			uchar* cur_hash = new uchar[16];
-			md4cpy(cur_hash, pOwner->GetPartHash(i));
+			md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(i));
 
 			m_PartsToHash.Add(i);
 			m_DesiredHashes.Add(cur_hash);
 		}
-	return (uint16)m_PartsToHash.GetSize();
+	return m_PartsToHash.GetSize();
 }
 
-void CPartHashThread::SetSinglePartHash(CPartFile* pOwner, uint16 part, bool ICHused, bool AICHRecover)
+void CPartHashThread::SetSinglePartHash(CPartFile* pOwner, UINT part, bool ICHused, bool AICHRecover)
 {
 	m_pOwner = pOwner;
 	m_ICHused = ICHused;
@@ -8870,7 +9028,7 @@ void CPartHashThread::SetSinglePartHash(CPartFile* pOwner, uint16 part, bool ICH
 	}
 
 	uchar* cur_hash = new uchar[16];
-	md4cpy(cur_hash, pOwner->GetPartHash(part));
+	md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(part));
 
 	m_PartsToHash.Add(part);
 	m_DesiredHashes.Add(cur_hash);

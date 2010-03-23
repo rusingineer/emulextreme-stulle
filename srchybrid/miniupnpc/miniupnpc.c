@@ -1,21 +1,40 @@
-/* $Id: miniupnpc.c,v 1.52 2008/02/18 13:28:33 nanard Exp $ */
+/* $Id: miniupnpc.c,v 1.66 2009/10/10 19:15:34 nanard Exp $ */
 /* Project : miniupnp
  * Author : Thomas BERNARD
- * copyright (c) 2005-2007 Thomas Bernard
+ * copyright (c) 2005-2009 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENCE file. */
-#include <stdio.h>
+#define __EXTENSIONS__ 1
+#if !defined(MACOSX) && !defined(__sun)
+#if !defined(_XOPEN_SOURCE) && !defined(__OpenBSD__) && !defined(__NetBSD__)
+#ifndef __cplusplus
+#define _XOPEN_SOURCE 600
+#endif
+#endif
+#ifndef __BSD_VISIBLE
+#define __BSD_VISIBLE 1
+#endif
+#endif
+
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #ifdef WIN32
+/* Win32 Specific includes and defines */
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 #include <io.h>
 #define snprintf _snprintf
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
 #define strncasecmp _memicmp
+#else
+#define strncasecmp memicmp
+#endif
 #define MAXHOSTNAMELEN 64
 #else
+/* Standard POSIX includes */
 #include <unistd.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/param.h>
@@ -23,7 +42,13 @@
 #include <arpa/inet.h>
 #include <poll.h>
 #include <netdb.h>
+#include <strings.h>
+#include <errno.h>
 #define closesocket close
+#define MINIUPNPC_IGNORE_EINTR
+#endif
+#ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
+#include <sys/time.h>
 #endif
 #include "miniupnpc.h"
 #include "miniwget.h"
@@ -31,20 +56,18 @@
 #include "minixml.h"
 #include "upnpcommands.h"
 
-/* Uncomment the following to transmit the msearch from the same port
- * as the UPnP multicast port. With WinXP this seems to result in the
- * responses to the msearch being lost, thus if things dont work then
- * comment this out. */
-/* #define TX_FROM_UPNP_PORT */
-
 #ifdef WIN32
 #define PRINT_SOCKET_ERROR(x)    printf("Socket error: %s, %d\n", x, WSAGetLastError());
 #else
 #define PRINT_SOCKET_ERROR(x) perror(x)
 #endif
 
+#define SOAPPREFIX "s"
+#define SERVICEPREFIX "u"
+#define SERVICEPREFIX2 'u'
+
 /* root description parsing */
-void parserootdesc(const char * buffer, int bufsize, struct IGDdatas * data)
+LIBSPEC void parserootdesc(const char * buffer, int bufsize, struct IGDdatas * data)
 {
 	struct xmlparser parser;
 	/* xmlparser object */
@@ -56,7 +79,7 @@ void parserootdesc(const char * buffer, int bufsize, struct IGDdatas * data)
 	parser.datafunc = IGDdata;
 	parser.attfunc = 0;
 	parsexml(&parser);
-#ifndef NDEBUG
+#ifdef DEBUG
 	printIGD(data);
 #endif
 }
@@ -140,45 +163,39 @@ int simpleUPnPcommand(int s, const char * url, const char * service,
 	char * path;
 	char soapact[128];
 	char soapbody[2048];
-	int soapbodylen;
 	char * buf;
 	int buffree;
     int n;
 	int contentlen, headerlen;	/* for the response */
+#ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
+	struct timeval timeout;
+#endif
 	snprintf(soapact, sizeof(soapact), "%s#%s", service, action);
 	if(args==NULL)
 	{
-		/*soapbodylen = snprintf(soapbody, sizeof(soapbody),
+		/*soapbodylen = */snprintf(soapbody, sizeof(soapbody),
 						"<?xml version=\"1.0\"?>\r\n"
-	    	              "<SOAP-ENV:Envelope "
-						  "xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-						  "SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-						  "<SOAP-ENV:Body>"
-						  "<m:%s xmlns:m=\"%s\"/>"
-						  "</SOAP-ENV:Body></SOAP-ENV:Envelope>"
-					 	  "\r\n", action, service);*/
-		soapbodylen = snprintf(soapbody, sizeof(soapbody),
-						"<?xml version=\"1.0\"?>\r\n"
-	    	              "<s:Envelope "
-						  "xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-						  "s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-						  "<s:Body>"
-						  "<m:%s xmlns:m=\"%s\">"
-						  "</m:%s>"
-						  "</s:Body></s:Envelope>"
+	    	              "<" SOAPPREFIX ":Envelope "
+						  "xmlns:" SOAPPREFIX "=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+						  SOAPPREFIX ":encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+						  "<" SOAPPREFIX ":Body>"
+						  "<" SERVICEPREFIX ":%s xmlns:" SERVICEPREFIX "=\"%s\">"
+						  "</" SERVICEPREFIX ":%s>"
+						  "</" SOAPPREFIX ":Body></" SOAPPREFIX ":Envelope>"
 					 	  "\r\n", action, service, action);
 	}
 	else
 	{
 		char * p;
 		const char * pe, * pv;
+		int soapbodylen;
 		soapbodylen = snprintf(soapbody, sizeof(soapbody),
 						"<?xml version=\"1.0\"?>\r\n"
-	    	            "<SOAP-ENV:Envelope "
-						"xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-						"SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-						"<SOAP-ENV:Body>"
-						"<m:%s xmlns:m=\"%s\">",
+	    	            "<" SOAPPREFIX ":Envelope "
+						"xmlns:" SOAPPREFIX "=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+						SOAPPREFIX ":encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+						"<" SOAPPREFIX ":Body>"
+						"<" SERVICEPREFIX ":%s xmlns:" SERVICEPREFIX "=\"%s\">",
 						action, service);
 		p = soapbody + soapbodylen;
 		while(args->elt)
@@ -210,12 +227,12 @@ int simpleUPnPcommand(int s, const char * url, const char * service,
 		}
 		*(p++) = '<';
 		*(p++) = '/';
-		*(p++) = 'm';
+		*(p++) = SERVICEPREFIX2;
 		*(p++) = ':';
 		pe = action;
 		while(*pe)
 			*(p++) = *(pe++);
-		strncpy(p, "></SOAP-ENV:Body></SOAP-ENV:Envelope>\r\n",
+		strncpy(p, "></" SOAPPREFIX ":Body></" SOAPPREFIX ":Envelope>\r\n",
 		        soapbody + sizeof(soapbody) - p);
 	}
 	if(!parseURL(url, hostname, &port, &path)) return -1;
@@ -228,11 +245,53 @@ int simpleUPnPcommand(int s, const char * url, const char * service,
 			*bufsize = 0;
 			return -1;
 		}
+#ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
+		/* setting a 3 seconds timeout for the connect() call */
+		timeout.tv_sec = 3;
+		timeout.tv_usec = 0;
+		if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
+		{
+			PRINT_SOCKET_ERROR("setsockopt");
+		}
+		timeout.tv_sec = 3;
+		timeout.tv_usec = 0;
+		if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(struct timeval)) < 0)
+		{
+			PRINT_SOCKET_ERROR("setsockopt");
+		}
+#endif
 		dest.sin_family = AF_INET;
 		dest.sin_port = htons(port);
 		dest.sin_addr.s_addr = inet_addr(hostname);
-		if(connect(s, (struct sockaddr *)&dest, sizeof(struct sockaddr))<0)
+        n = connect(s, (struct sockaddr *)&dest, sizeof(struct sockaddr));
+#ifdef MINIUPNPC_IGNORE_EINTR
+        while(n < 0 && errno == EINTR)
 		{
+			socklen_t len;
+			fd_set wset;
+			int err;
+			FD_ZERO(&wset);
+			FD_SET(s, &wset);
+			if((n = select(s + 1, NULL, &wset, NULL, NULL)) == -1 && errno == EINTR)
+				continue;
+			/*len = 0;*/
+			/*n = getpeername(s, NULL, &len);*/
+			len = sizeof(err);
+			if(getsockopt(s, SOL_SOCKET, SO_ERROR, &err, &len) < 0) {
+				PRINT_SOCKET_ERROR("getsockopt");
+				closesocket(s);
+				return -1;
+			}
+			if(err != 0) {
+				errno = err;
+				n = -1;
+			} else {
+				n = 0;
+			}
+		}
+#endif
+		if(n < 0)
+        {
 			PRINT_SOCKET_ERROR("connect");
 			closesocket(s);
 			*bufsize = 0;
@@ -334,7 +393,9 @@ parseMSEARCHReply(const char * reply, int size,
 }
 
 /* port upnp discover : SSDP protocol */
-#define PORT (1900)
+#define PORT 1900
+#define XSTR(s) STR(s)
+#define STR(s) #s
 #define UPNP_MCAST_ADDR "239.255.255.250"
 
 /* upnpDiscover() :
@@ -342,18 +403,18 @@ parseMSEARCHReply(const char * reply, int size,
  * no devices was found.
  * It is up to the caller to free the chained list
  * delay is in millisecond (poll) */
-struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
-                              const char * minissdpdsock)
+LIBSPEC struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
+                              const char * minissdpdsock, int sameport)
 {
 	struct UPNPDev * tmp;
 	struct UPNPDev * devlist = 0;
 	int opt = 1;
 	static const char MSearchMsgFmt[] = 
 	"M-SEARCH * HTTP/1.1\r\n"
-	"HOST: " UPNP_MCAST_ADDR ":" "1900" "\r\n"
+	"HOST: " UPNP_MCAST_ADDR ":" XSTR(PORT) "\r\n"
 	"ST: %s\r\n"
 	"MAN: \"ssdp:discover\"\r\n"
-	"MX: 3\r\n"
+	"MX: %u\r\n"
 	"\r\n";
 	static const char * const deviceList[] = {
 		"urn:schemas-upnp-org:device:InternetGatewayDevice:1",
@@ -367,6 +428,7 @@ struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
 	int sudp;
 	int n;
 	struct sockaddr_in sockudp_r, sockudp_w;
+	unsigned int mx;
 
 #ifndef WIN32
 	/* first try to get infos from minissdpd ! */
@@ -396,9 +458,8 @@ struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
     /* reception */
     memset(&sockudp_r, 0, sizeof(struct sockaddr_in));
     sockudp_r.sin_family = AF_INET;
-#ifdef TX_FROM_UPNP_PORT
-    sockudp_r.sin_port = htons(PORT);
-#endif
+	if(sameport)
+    	sockudp_r.sin_port = htons(PORT);
     sockudp_r.sin_addr.s_addr = INADDR_ANY;
     /* emission */
     memset(&sockudp_w, 0, sizeof(struct sockaddr_in));
@@ -435,6 +496,8 @@ struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
 		return NULL;
     }
 
+	/* Calculating maximum response time in seconds */
+	mx = ((unsigned int)delay) / 1000u;
 	/* receiving SSDP response packet */
 	for(n = 0;;)
 	{
@@ -442,7 +505,7 @@ struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
 	{
 		/* sending the SSDP M-SEARCH packet */
 		n = snprintf(bufr, sizeof(bufr),
-		             MSearchMsgFmt, deviceList[deviceIndex++]);
+		             MSearchMsgFmt, deviceList[deviceIndex++], mx);
 		/*printf("Sending %s", bufr);*/
 		n = sendto(sudp, bufr, n, 0,
 		           (struct sockaddr *)&sockudp_w, sizeof(struct sockaddr_in));
@@ -492,7 +555,7 @@ struct UPNPDev * upnpDiscover(int delay, const char * multicastif,
 
 /* freeUPNPDevlist() should be used to
  * free the chained list returned by upnpDiscover() */
-void freeUPNPDevlist(struct UPNPDev * devlist)
+LIBSPEC void freeUPNPDevlist(struct UPNPDev * devlist)
 {
 	struct UPNPDev * next;
 	while(devlist)
@@ -528,7 +591,7 @@ url_cpy_or_cat(char * dst, const char * src, int n)
 
 /* Prepare the Urls for usage...
  */
-void GetUPNPUrls(struct UPNPUrls * urls, struct IGDdatas * data,
+LIBSPEC void GetUPNPUrls(struct UPNPUrls * urls, struct IGDdatas * data,
                  const char * descURL)
 {
 	char * p;
@@ -571,7 +634,7 @@ void GetUPNPUrls(struct UPNPUrls * urls, struct IGDdatas * data,
 #endif
 }
 
-void
+LIBSPEC void
 FreeUPNPUrls(struct UPNPUrls * urls)
 {
 	if(!urls)
@@ -590,9 +653,15 @@ int ReceiveData(int socket, char * data, int length, int timeout)
     int n;
 #ifndef WIN32
     struct pollfd fds[1]; /* for the poll */
-    fds[0].fd = socket;
-    fds[0].events = POLLIN;
-    n = poll(fds, 1, timeout);
+#ifdef MINIUPNPC_IGNORE_EINTR
+    do {
+#endif
+        fds[0].fd = socket;
+        fds[0].events = POLLIN;
+        n = poll(fds, 1, timeout);
+#ifdef MINIUPNPC_IGNORE_EINTR
+    } while(n < 0 && errno == EINTR);
+#endif
     if(n < 0)
     {
         PRINT_SOCKET_ERROR("poll");
@@ -609,7 +678,6 @@ int ReceiveData(int socket, char * data, int length, int timeout)
     FD_SET(socket, &socketSet);
     timeval.tv_sec = timeout / 1000;
     timeval.tv_usec = (timeout % 1000) * 1000;
-    /*n = select(0, &socketSet, NULL, NULL, &timeval);*/
     n = select(FD_SETSIZE, &socketSet, NULL, NULL, &timeval);
     if(n < 0)
     {
@@ -658,7 +726,7 @@ UPNPIGD_IsConnected(struct UPNPUrls * urls, struct IGDdatas * data)
  * passed as parameters are set. Donc forget to call FreeUPNPUrls(urls) to
  * free allocated memory.
  */
-int
+LIBSPEC int
 UPNP_GetValidIGD(struct UPNPDev * devlist,
                  struct UPNPUrls * urls,
 				 struct IGDdatas * data,

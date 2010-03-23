@@ -52,7 +52,7 @@
 #include "Kademlia/Kademlia/Prefs.h"
 #include "emuledlg.h"
 #include "ServerWnd.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "ChatWnd.h"
 #include "CxImage/xImage.h"
 #include "PreviewDlg.h"
@@ -270,7 +270,8 @@ void CUpDownClient::Init()
 	m_structUserCountry = theApp.ip2country->GetCountryFromIP(m_dwUserIP); 
 	//EastShare End - added by AndCycle, IP to Country
 
-	m_fHashsetRequesting = 0;
+	m_fHashsetRequestingAICH = 0;
+	m_fHashsetRequestingMD4 = 0;
 	m_fSharedDirectories = 0;
 	m_fSentCancelTransfer = 0;
 	m_nClientVersion = 0;
@@ -340,6 +341,7 @@ void CUpDownClient::Init()
 	m_fSupportsCaptcha = 0;
 	m_fDirectUDPCallback = 0;
 	m_cCaptchasSent = 0;
+	m_fSupportsFileIdent = 0;
 
 	//Xman -----------------
 	// Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
@@ -407,7 +409,7 @@ void CUpDownClient::Init()
 CUpDownClient::~CUpDownClient(){
 	if (IsAICHReqPending()){
 		m_fAICHRequested = FALSE;
-		CAICHHashSet::ClientAICHRequestFailed(this);
+		CAICHRecoveryHashSet::ClientAICHRequestFailed(this);
 	}
 
 	if (GetFriend() != NULL)
@@ -431,7 +433,7 @@ CUpDownClient::~CUpDownClient(){
 		m_pPCUpSocket->client = NULL;
 		m_pPCUpSocket->Safe_Delete();
 	}
-
+	
 	free(m_pszUsername);
 
 	if (m_abyPartStatus){ //from MorphXT
@@ -539,6 +541,7 @@ void CUpDownClient::ClearHelloProperties()
 	m_fSupportsSourceEx2 = 0;
 	m_fSupportsCaptcha = 0;
 	m_fDirectUDPCallback = 0;
+	m_fSupportsFileIdent = 0;
 	m_strModVersion.Empty(); //Maella -Support for tag ET_MOD_VERSION 0x55
 }
 
@@ -734,7 +737,7 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 				//  4 Comments
 				//	1 PeerChache supported
 				//	1 No 'View Shared Files' supported
-				//	1 MultiPacket
+				//	1 MultiPacket - deprecated with FileIdentifiers/MultipacketExt2
 				//  1 Preview
 				if (temptag.IsInt()) {
 					m_fSupportsAICH			= (temptag.GetInt() >> 29) & 0x07;
@@ -752,14 +755,14 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 					dwEmuleTags |= 2;
 					if (bDbgInfo) {
 						m_strHelloInfo.AppendFormat(_T("\n  PeerCache=%u  UDPVer=%u  DataComp=%u  SecIdent=%u  SrcExchg=%u")
-							_T("  ExtReq=%u  Commnt=%u  Preview=%u  NoViewFiles=%u  Unicode=%u"), 
-							m_fPeerCache, m_byUDPVer, m_byDataCompVer, m_bySupportSecIdent, m_bySourceExchange1Ver, 
-							m_byExtendedRequestsVer, m_byAcceptCommentVer, m_fSupportsPreview, m_fNoViewSharedFiles, m_bUnicodeSupport);
+													_T("  ExtReq=%u  Commnt=%u  Preview=%u  NoViewFiles=%u  Unicode=%u"), 
+													m_fPeerCache, m_byUDPVer, m_byDataCompVer, m_bySupportSecIdent, m_bySourceExchange1Ver, 
+													m_byExtendedRequestsVer, m_byAcceptCommentVer, m_fSupportsPreview, m_fNoViewSharedFiles, m_bUnicodeSupport);
 //Xman
 #ifdef LOGTAG
 						m_strHelloInfo.AppendFormat(_T("\n m_fSupportsAICH=%u"), m_fSupportsAICH);
 #endif
-//Xman end						
+//Xman end
 					}
 				}
 				else if (bDbgInfo)
@@ -771,7 +774,8 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 				break;
 
 			case CT_EMULE_MISCOPTIONS2:
-				//	19 Reserved
+				//	18 Reserved
+				//   1 Supports new FileIdentifiers/MultipacketExt2
 				//   1 Direct UDP Callback supported and available
 				//	 1 Supports ChatCaptchas
 				//	 1 Supports SourceExachnge2 Packets, ignores SX1 Packet Version
@@ -779,10 +783,11 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 				//	 1 Requests CryptLayer
 				//	 1 Supports CryptLayer
 				//	 1 Reserved (ModBit)
-				//   1 Ext Multipacket (Hash+Size instead of Hash)
+				//   1 Ext Multipacket (Hash+Size instead of Hash) - deprecated with FileIdentifiers/MultipacketExt2
 				//   1 Large Files (includes support for 64bit tags)
 				//   4 Kad Version - will go up to version 15 only (may need to add another field at some point in the future)
 				if (temptag.IsInt()) {
+					m_fSupportsFileIdent	= (temptag.GetInt() >>  13) & 0x01;
 					m_fDirectUDPCallback	= (temptag.GetInt() >>  12) & 0x01;
 					m_fSupportsCaptcha	    = (temptag.GetInt() >>  11) & 0x01;
 					m_fSupportsSourceEx2	= (temptag.GetInt() >>  10) & 0x01;
@@ -947,7 +952,7 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 			AddLeecherLogLine(false, _T("Clients: %s (%s), Banreason: Userhash changed (Found in TrackedClientsList)"), GetUserName(), ipstr(GetConnectIP()));
 		//Xman end
 			Ban();
-		}
+		}	
 		//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
 		else if (GetUploadState()!=US_BANNED){
 			credits = theApp.clientcredits->GetCredit(m_achUserHash);
@@ -991,6 +996,7 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 		credits->SetLastSeen(); //Enig123::refresh is neccessary here to avoid wrong judgement
 	}
 	//zz_fly :: End
+
 
 	if (GetFriend() != NULL && GetFriend()->HasUserhash() && md4cmp(GetFriend()->m_abyUserhash, m_achUserHash) != 0)
 	{
@@ -1340,7 +1346,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_UDPPORT:
 				// Bits 31-16: 0 - reserved
 				// Bits 15- 0: UDP port
@@ -1352,7 +1358,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_UDPVER:
 				// Bits 31- 8: 0 - reserved
 				// Bits  7- 0: UDP protocol version
@@ -1364,7 +1370,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_SOURCEEXCHANGE:
 				// Bits 31- 8: 0 - reserved
 				// Bits  7- 0: source exchange protocol version
@@ -1376,7 +1382,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_COMMENTS:
 				// Bits 31- 8: 0 - reserved
 				// Bits  7- 0: comments version
@@ -1388,7 +1394,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_EXTENDEDREQUEST:
 				// Bits 31- 8: 0 - reserved
 				// Bits  7- 0: extended requests version
@@ -1400,7 +1406,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_COMPATIBLECLIENT:
 				// Bits 31- 8: 0 - reserved
 				// Bits  7- 0: compatible client ID
@@ -1412,7 +1418,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_FEATURES:
 				// Bits 31- 8: 0 - reserved
 				// Bit	    7: Preview
@@ -1426,7 +1432,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 				else if (bDbgInfo)
 					m_strMuleInfo.AppendFormat(_T("\n  ***UnkType=%s"), temptag.GetFullInfo());
 				break;
-
+			
 			case ET_MOD_VERSION:
 				if (temptag.IsStr())
 					m_strModVersion = temptag.GetStr();
@@ -1438,7 +1444,7 @@ void CUpDownClient::ProcessMuleInfoPacket(const uchar* pachPacket, uint32 nSize)
 					m_strMuleInfo.AppendFormat(_T("\n  ModID=%s"), m_strModVersion);
 				CheckForGPLEvilDoer();
 				break;
-
+			
 			//Xman Anti-Leecher
 			case 0x3D: //ICS
 				nonofficialopcodes=true; //Xman Anti-Leecher
@@ -1525,11 +1531,11 @@ void CUpDownClient::SendHelloAnswer(){
 	if (thePrefs.GetDebugClientTCPLevel() > 0)
 		DebugSend("OP__HelloAnswer", this);
 	theStats.AddUpDataOverheadOther(packet->size);
-	
+
 	// Servers send a FIN right in the data packet on check connection, so we need to force the response immediate
 	bool bForceSend = theApp.serverconnect->AwaitingTestFromIP(GetConnectIP());
 	socket->SendPacket(packet, true, true, 0, bForceSend);
-	
+
 	m_bHelloAnswerPending = false;
 }
 
@@ -1642,7 +1648,7 @@ void CUpDownClient::SendHelloTypePacket(CSafeMemFile* data)
 				(uUdpVer				<< 24) |
 				(uDataCompVer			<< 20) |
 				(uSupportSecIdent		<< 16) |
-				(uSourceExchange1Ver		<< 12) |
+				(uSourceExchange1Ver	<< 12) |
 				(uExtendedRequestsVer	<<  8) |
 				(uAcceptCommentVer		<<  4) |
 				(uPeerCache				<<  3) |
@@ -1665,9 +1671,11 @@ void CUpDownClient::SendHelloTypePacket(CSafeMemFile* data)
 	// direct callback is only possible if connected to kad, tcp firewalled and verified UDP open (for example on a full cone NAT)
 	const UINT uDirectUDPCallback	= (Kademlia::CKademlia::IsRunning() && Kademlia::CKademlia::IsFirewalled()
 		&& !Kademlia::CUDPFirewallTester::IsFirewalledUDP(true) && Kademlia::CUDPFirewallTester::IsVerified()) ? 1 : 0;
+	const UINT uFileIdentifiers		= 1;
 
 	CTag tagMisOptions2(CT_EMULE_MISCOPTIONS2, 
 //				(RESERVED				     )
+				(uFileIdentifiers		<< 13) |
 				(uDirectUDPCallback		<< 12) |
 				(uSupportsCaptcha		<< 11) |
 				(uSupportsSourceEx2		<< 10) |
@@ -1780,8 +1788,8 @@ bool CUpDownClient::Disconnected(LPCTSTR pszReason, bool bFromSocket, UpStopReas
 //Xman end
 {
 	ASSERT( theApp.clientlist->IsValidClient(this) );
-
-		// TODO LOGREMOVE
+	
+	// TODO LOGREMOVE
 	if (m_nConnectingState == CCS_DIRECTCALLBACK)
 		DebugLog(_T("Direct Callback failed - %s"), DbgGetClientInfo());
 	
@@ -1857,14 +1865,16 @@ bool CUpDownClient::Disconnected(LPCTSTR pszReason, bool bFromSocket, UpStopReas
 	// we had still an AICH request pending, handle it
 	if (IsAICHReqPending()){
 		m_fAICHRequested = FALSE;
-		CAICHHashSet::ClientAICHRequestFailed(this);
+		CAICHRecoveryHashSet::ClientAICHRequestFailed(this);
 	}
 
 	// The remote client does not have to answer with OP_HASHSETANSWER *immediatly* 
 	// after we've sent OP_HASHSETREQUEST. It may occure that a (buggy) remote client 
 	// is sending use another OP_FILESTATUS which would let us change to DL-state to DS_ONQUEUE.
-	if (((GetDownloadState() == DS_REQHASHSET) || m_fHashsetRequesting) && (reqfile != NULL))
-        reqfile->hashsetneeded = true;
+	if (m_fHashsetRequestingMD4 && (reqfile != NULL))
+        reqfile->m_bMD4HashsetNeeded = true;
+	if (m_fHashsetRequestingAICH && (reqfile != NULL))
+        reqfile->SetAICHHashSetNeeded(true);
 
     if (m_iFileListRequested){
 		LogWarning(LOG_STATUSBAR, GetResString(IDS_SHAREDFILES_FAILED), GetUserName());
@@ -2049,7 +2059,7 @@ bool CUpDownClient::Disconnected(LPCTSTR pszReason, bool bFromSocket, UpStopReas
 
 	//Xman Code Improvement: don't refresh list-item on deletion
 	if(bDelete==false)
-		theApp.emuledlg->transferwnd->clientlistctrl.RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetClientList()->RefreshClient(this);
 
 	// finally, remove the client from the timeouttimer and reset the connecting state
 	m_nConnectingState = CCS_NONE;
@@ -2065,7 +2075,8 @@ bool CUpDownClient::Disconnected(LPCTSTR pszReason, bool bFromSocket, UpStopReas
 	{
 		if (thePrefs.GetDebugClientTCPLevel() > 0)
 			Debug(_T("--- Disconnected client       %s; Reason=%s\n"), DbgGetClientInfo(true), pszReason);
-		m_fHashsetRequesting = 0;
+		m_fHashsetRequestingMD4 = 0;
+		m_fHashsetRequestingAICH = 0;
 		SetSentCancelTransfer(0);
 		m_bHelloAnswerPending = false;
 		m_fQueueRankPending = 0;
@@ -4802,7 +4813,7 @@ void CUpDownClient::ProcessBanMessage()
 	if(m_strBanMessage.IsEmpty()==false)
 	{
 		AddLeecherLogLine(false,m_strBanMessage);
-		theApp.emuledlg->transferwnd->queuelistctrl.RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(this);
 	}
 	m_strBanMessage.Empty();
 }

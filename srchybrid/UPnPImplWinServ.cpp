@@ -147,6 +147,7 @@ bool CUPnPImplWinServ::IsReady()
 		case _WINVER_XP_:
 		case _WINVER_2003_:
 		case _WINVER_VISTA_:
+		case _WINVER_7_:
 			break;
 		default:
 			return false;

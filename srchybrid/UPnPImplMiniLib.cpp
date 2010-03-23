@@ -114,7 +114,7 @@ void CUPnPImplMiniLib::DeletePorts(bool bSkipLock){
 			const char achTCP[] = "TCP";
 			char achPort[10];
 			sprintf(achPort, "%u", m_nOldTCPPort);
-			int nResult = UPNP_DeletePortMapping(m_pURLs->controlURL, m_pIGDData->servicetype, achPort, achTCP);
+			int nResult = UPNP_DeletePortMapping(m_pURLs->controlURL, m_pIGDData->servicetype, achPort, achTCP, NULL);
 			if (nResult == UPNPCOMMAND_SUCCESS){
 				DebugLog(_T("Sucessfully removed mapping for port %u (%s)"), m_nOldTCPPort, _T("TCP"));
 				m_nOldTCPPort = 0;
@@ -132,7 +132,7 @@ void CUPnPImplMiniLib::DeletePorts(bool bSkipLock){
 			const char achTCP[] = "UDP";
 			char achPort[10];
 			sprintf(achPort, "%u", m_nOldUDPPort);
-			int nResult = UPNP_DeletePortMapping(m_pURLs->controlURL, m_pIGDData->servicetype, achPort, achTCP);
+			int nResult = UPNP_DeletePortMapping(m_pURLs->controlURL, m_pIGDData->servicetype, achPort, achTCP, NULL);
 			if (nResult == UPNPCOMMAND_SUCCESS){
 				DebugLog(_T("Sucessfully removed mapping for port %u (%s)"), m_nOldUDPPort, _T("UDP"));
 				m_nOldTCPPort = 0;
@@ -145,7 +145,7 @@ void CUPnPImplMiniLib::DeletePorts(bool bSkipLock){
 			const char achTCP[] = "TCP";
 			char achPort[10];
 			sprintf(achPort, "%u", m_nOldTCPWebPort);
-			int nResult = UPNP_DeletePortMapping(m_pURLs->controlURL, m_pIGDData->servicetype, achPort, achTCP);
+			int nResult = UPNP_DeletePortMapping(m_pURLs->controlURL, m_pIGDData->servicetype, achPort, achTCP, NULL);
 			if (nResult == UPNPCOMMAND_SUCCESS){
 				DebugLog(_T("Sucessfully removed mapping for webinterface port %u (%s)"), m_nOldTCPPort, _T("TCP"));
 				m_nOldTCPWebPort = 0;
@@ -248,7 +248,7 @@ int CUPnPImplMiniLib::CStartDiscoveryThread::Run()
 	{
 		if (!m_pOwner->m_bCheckAndRefresh)
 		{
-			UPNPDev* structDeviceList = upnpDiscover(2000, NULL, NULL);
+			UPNPDev* structDeviceList = upnpDiscover(2000, NULL, NULL, 0);
 			if (structDeviceList == NULL){
 				DebugLog(_T("UPNP: No Internet Gateway Devices found, aborting"));
 				m_pOwner->m_bUPnPPortsForwarded = TRIS_FALSE;
@@ -363,10 +363,10 @@ bool CUPnPImplMiniLib::CStartDiscoveryThread::OpenPort(uint16 nPort, bool bTCP, 
 
 	if (bTCP)
 		nResult = UPNP_AddPortMapping(m_pOwner->m_pURLs->controlURL, m_pOwner->m_pIGDData->servicetype
-		, achPort, achPort, pachLANIP, achDescTCP, achTCP);
+		, achPort, achPort, pachLANIP, achDescTCP, achTCP, NULL);
 	else
 		nResult = UPNP_AddPortMapping(m_pOwner->m_pURLs->controlURL, m_pOwner->m_pIGDData->servicetype
-		, achPort, achPort, pachLANIP, achDescUDP, achUDP);
+		, achPort, achPort, pachLANIP, achDescUDP, achUDP, NULL);
 
 	if (nResult != UPNPCOMMAND_SUCCESS){
 		DebugLog(_T("Adding PortMapping failed, Error Code %u"), nResult);

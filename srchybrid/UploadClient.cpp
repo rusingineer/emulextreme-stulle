@@ -36,7 +36,7 @@
 #include "SafeFile.h"
 #include "DownloadQueue.h"
 #include "emuledlg.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "Log.h"
 #include "Collection.h"
 #include <math.h> //Xman
@@ -226,7 +226,7 @@ void CUpDownClient::SetUploadState(EUploadState eNewState)
 
 		// don't add any final cleanups for US_NONE here
 		m_nUploadState = (_EUploadState)eNewState;
-		theApp.emuledlg->transferwnd->clientlistctrl.RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetClientList()->RefreshClient(this);
 	}
 }
 
@@ -486,10 +486,12 @@ public:
 //Xman Code Improvement
 // BEGIN SiRoB: ReadBlockFromFileThread
 /*
-void CUpDownClient::CreateNextBlockPackage(){
+void CUpDownClient::CreateNextBlockPackage(bool bBigBuffer){
     // See if we can do an early return. There may be no new blocks to load from disk and add to buffer, or buffer may be large enough allready.
+	const uint32 nBufferLimit = bBigBuffer ? (800 * 1024) : (50 * 1024);
     if(m_BlockRequests_queue.IsEmpty() || // There are no new blocks requested
-       m_addedPayloadQueueSession > GetQueueSessionPayloadUp() && m_addedPayloadQueueSession-GetQueueSessionPayloadUp() > 50*1024) { // the buffered data is large enough allready
+       (m_addedPayloadQueueSession > GetQueueSessionPayloadUp() && GetPayloadInBuffer() > nBufferLimit)) 
+	{ // the buffered data is large enough allready
         return;
     }
 
@@ -499,9 +501,9 @@ void CUpDownClient::CreateNextBlockPackage(){
 	bool bFromPF = true; // Statistic to breakdown uploaded data by complete file vs. partfile.
 	CSyncHelper lockFile;
 	try{
-        // Buffer new data if current buffer is less than 100 KBytes
+        // Buffer new data if current buffer is less than nBufferLimit Bytes
         while (!m_BlockRequests_queue.IsEmpty() &&
-               (m_addedPayloadQueueSession <= GetQueueSessionPayloadUp() || m_addedPayloadQueueSession-GetQueueSessionPayloadUp() < 100*1024)) {
+               (m_addedPayloadQueueSession <= GetQueueSessionPayloadUp() || GetPayloadInBuffer() < nBufferLimit)) {
 
 			Requested_Block_Struct* currentblock = m_BlockRequests_queue.GetHead();
 			CKnownFile* srcfile = theApp.sharedfiles->GetFileByID(currentblock->FileID);
@@ -630,8 +632,9 @@ void CUpDownClient::CreateNextBlockPackage(){
 	//Xman end
 
 	// See if we can do an early return. There may be no new blocks to load from disk and add to buffer, or buffer may be large enough allready.
+	const uint32 nBufferLimit = theApp.uploadqueue->UseHighSpeedUpload() ? (800 * 1024) : (160 * 1024); //Xman changed - 160 was 50
 	if(m_BlockRequests_queue.IsEmpty() || // There are no new blocks requested
-		m_addedPayloadQueueSession > GetQueueSessionPayloadUp() && m_addedPayloadQueueSession-GetQueueSessionPayloadUp() > 160*1024) { // the buffered data is large enough allready //Xman changed
+		(m_addedPayloadQueueSession > GetQueueSessionPayloadUp() && GetPayloadInBuffer() > nBufferLimit)) { // the buffered data is large enough allready //Xman changed
 			return;
 	}
 
@@ -883,6 +886,7 @@ bool CUpDownClient::ProcessExtendedInfo(CSafeMemFile* data, CKnownFile* tempreqf
 		if (nCompleteCountLast != nCompleteCountNew)
 			tempreqfile->UpdatePartsInfo();
 	}
+	theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(this);
 
 	//Xman client percentage
 	if(hisfinishedparts>=0)
@@ -891,7 +895,7 @@ bool CUpDownClient::ProcessExtendedInfo(CSafeMemFile* data, CKnownFile* tempreqf
 		hiscompletedparts_percent_up= -1;
 	//Xman end
 
-	theApp.emuledlg->transferwnd->queuelistctrl.RefreshClient(this);
+	theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(this);
 
 	
 	//Xman
@@ -944,7 +948,7 @@ bool CUpDownClient::ProcessExtendedInfo(CSafeMemFile* data, CKnownFile* tempreqf
 		{
 			if (AddRequestForAnotherFile((CPartFile*)tempreqfile))
 			{
-				theApp.emuledlg->transferwnd->downloadlistctrl.AddSource((CPartFile*)tempreqfile,this,true);
+				theApp.emuledlg->transferwnd->GetDownloadList()->AddSource((CPartFile*)tempreqfile,this,true);
 				AddDebugLogLine(false, _T("->found new A4AF source on reask-ping: %s, file: %s"), DbgGetClientInfo(), tempreqfile->GetFileName());
 			}
 		}
@@ -1166,7 +1170,7 @@ void CUpDownClient::SetUploadFileID(CKnownFile* newreqfile)
 		// as well as in the sharedlist (redownloading a unshared file, then resharing it before the first part has been downloaded)
 		// to make sure that in no case a deleted client object is left on the list, we need to doublecheck
 		// TODO: Fix the whole issue properly
-		CKnownFile* pCheck = theApp.knownfiles->FindKnownFileByID(requpfileid);
+		CKnownFile* pCheck = theApp.sharedfiles->GetFileByID(requpfileid);
 		if (pCheck != NULL && pCheck != oldreqfile)
 		{
 			ASSERT( false );
@@ -1357,8 +1361,8 @@ uint32 CUpDownClient::SendBlockData(){
     // Check if it's time to update the display.
     if (curTick-m_lastRefreshedULDisplay > MINWAIT_BEFORE_ULDISPLAY_WINDOWUPDATE+(uint32)(rand()*800/RAND_MAX)) {
         // Update display
-        theApp.emuledlg->transferwnd->uploadlistctrl.RefreshClient(this);
-        theApp.emuledlg->transferwnd->clientlistctrl.RefreshClient(this);
+        theApp.emuledlg->transferwnd->GetUploadList()->RefreshClient(this);
+        theApp.emuledlg->transferwnd->GetClientList()->RefreshClient(this);
         m_lastRefreshedULDisplay = curTick;
     }
 	*/
@@ -1428,24 +1432,55 @@ void CUpDownClient::FlushSendBlocks(){ // call this when you stop upload, or the
 	//Xman end
 }
 
-void CUpDownClient::SendHashsetPacket(const uchar* forfileid)
+void CUpDownClient::SendHashsetPacket(const uchar* pData, uint32 nSize, bool bFileIdentifiers)
 {
-	CKnownFile* file = theApp.sharedfiles->GetFileByID(forfileid);
-	if (!file){
-		CheckFailedFileIdReqs(forfileid);
-		throw GetResString(IDS_ERR_REQ_FNF) + _T(" (SendHashsetPacket)");
+	Packet* packet;
+	CSafeMemFile fileResponse(1024);
+	if (bFileIdentifiers)
+	{
+		CSafeMemFile data(pData, nSize);
+		CFileIdentifierSA fileIdent;
+		if (!fileIdent.ReadIdentifier(&data))
+			throw _T("Bad FileIdentifier (OP_HASHSETREQUEST2)");
+		CKnownFile* file = theApp.sharedfiles->GetFileByIdentifier(fileIdent, false);
+		if (file == NULL)
+		{
+			CheckFailedFileIdReqs(fileIdent.GetMD4Hash());
+			throw GetResString(IDS_ERR_REQ_FNF) + _T(" (SendHashsetPacket2)");
+		}
+		uint8 byOptions = data.ReadUInt8();
+		bool bMD4 = (byOptions & 0x01) > 0;
+		bool bAICH = (byOptions & 0x02) > 0;
+		if (!bMD4 && !bAICH)
+		{
+			DebugLogWarning(_T("Client sent HashSet request with none or unknown HashSet type requested (%u) - file: %s, client %s")
+				, byOptions, file->GetFileName(), DbgGetClientInfo());
+			return;
+		}
+		file->GetFileIdentifier().WriteIdentifier(&fileResponse);
+		// even if we don't happen to have an AICH hashset yet for some reason we send a proper (possible empty) response
+		file->GetFileIdentifier().WriteHashSetsToPacket(&fileResponse, bMD4, bAICH); 
+		if (thePrefs.GetDebugClientTCPLevel() > 0)
+			DebugSend("OP__HashSetAnswer", this, file->GetFileIdentifier().GetMD4Hash());
+		packet = new Packet(&fileResponse, OP_EMULEPROT, OP_HASHSETANSWER2);
 	}
-
-	CSafeMemFile data(1024);
-	data.WriteHash16(file->GetFileHash());
-	UINT parts = file->GetHashCount();
-	data.WriteUInt16((uint16)parts);
-	for (UINT i = 0; i < parts; i++)
-		data.WriteHash16(file->GetPartHash(i));
-	if (thePrefs.GetDebugClientTCPLevel() > 0)
-		DebugSend("OP__HashSetAnswer", this, forfileid);
-	Packet* packet = new Packet(&data);
-	packet->opcode = OP_HASHSETANSWER;
+	else
+	{
+		if (nSize != 16)
+		{
+			ASSERT( false );
+			return;
+		}
+		CKnownFile* file = theApp.sharedfiles->GetFileByID(pData);
+		if (!file){
+			CheckFailedFileIdReqs(pData);
+			throw GetResString(IDS_ERR_REQ_FNF) + _T(" (SendHashsetPacket)");
+		}
+		file->GetFileIdentifier().WriteMD4HashsetToFile(&fileResponse);
+		if (thePrefs.GetDebugClientTCPLevel() > 0)
+			DebugSend("OP__HashSetAnswer", this, pData);
+		packet = new Packet(&fileResponse, OP_EDONKEYPROT, OP_HASHSETANSWER);
+	}
 	theStats.AddUpDataOverheadFileRequest(packet->size);
 	SendPacket(packet, true);
 }
@@ -1598,7 +1633,7 @@ void CUpDownClient::Ban(LPCTSTR pszReason)
 	//Xman end
 	SetUploadState(US_BANNED);
 	theApp.emuledlg->transferwnd->ShowQueueCount(theApp.uploadqueue->GetWaitingUserCount());
-	theApp.emuledlg->transferwnd->queuelistctrl.RefreshClient(this);
+	theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(this);
 	if (socket != NULL && socket->IsConnected())
 		socket->ShutDown(SD_RECEIVE); // let the socket timeout, since we dont want to risk to delete the client right now. This isnt acutally perfect, could be changed later
 }
@@ -1774,10 +1809,10 @@ void CUpDownClient::CompUploadRate(){
 	m_displayUpDatarateCounter++;
 	//Xman Code Improvement: slower refresh for clientlist
 	if(m_displayUpDatarateCounter%DISPLAY_REFRESH == 0 ){
-		theApp.emuledlg->transferwnd->uploadlistctrl.RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetUploadList()->RefreshClient(this);
 	}
 	if(m_displayUpDatarateCounter%DISPLAY_REFRESH_CLIENTLIST == 0 ){
-		theApp.emuledlg->transferwnd->clientlistctrl.RefreshClient(this);
+		theApp.emuledlg->transferwnd->GetClientList()->RefreshClient(this);
 		m_displayUpDatarateCounter = 0;
 	}
 
@@ -1903,7 +1938,7 @@ void CUpDownClient::BanLeecher(LPCTSTR pszReason, uint8 leechercategory){
 	theApp.clientlist->AddBannedClient( GetConnectIP() );
 	SetUploadState(US_BANNED);
 	theApp.emuledlg->transferwnd->ShowQueueCount(theApp.uploadqueue->GetWaitingUserCount());
-	theApp.emuledlg->transferwnd->queuelistctrl.RefreshClient(this);
+	theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(this);
 	if (socket != NULL && socket->IsConnected())
 		socket->ShutDown(SD_RECEIVE); // let the socket timeout, since we dont want to risk to delete the client right now. This isnt acutally perfect, could be changed later
 }

@@ -315,6 +315,9 @@ del $(IntDir)\emule.obj
 				RelativePath="EncryptedStreamSocket.cpp">
 			</File>
 			<File
+				RelativePath="FileIdentifier.cpp">
+			</File>
+			<File
 				RelativePath="FirewallOpener.cpp">
 			</File>
 			<File
@@ -718,6 +721,9 @@ del $(IntDir)\emule.obj
 					RelativePath="kademlia\utils\LittleEndian.cpp">
 				</File>
 				<File
+					RelativePath="kademlia\utils\LookupHistory.cpp">
+				</File>
+				<File
 					RelativePath="kademlia\utils\MiscUtils.cpp">
 				</File>
 				<File
@@ -839,6 +845,9 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="Exceptions.h">
+			</File>
+			<File
+				RelativePath="FileIdentifier.h">
 			</File>
 			<File
 				RelativePath="FirewallOpener.h">
@@ -1108,6 +1117,9 @@ del $(IntDir)\emule.obj
 					RelativePath="kademlia\utils\LittleEndian.h">
 				</File>
 				<File
+					RelativePath="kademlia\routing\LookupHistory.h">
+				</File>
+				<File
 					RelativePath="kademlia\routing\Maps.h">
 				</File>
 				<File
@@ -1273,6 +1285,9 @@ del $(IntDir)\emule.obj
 				RelativePath="FileDetailDialogName.cpp">
 			</File>
 			<File
+				RelativePath="FileDetailDlgStatistics.cpp">
+			</File>
+			<File
 				RelativePath="FileInfoDialog.cpp">
 			</File>
 			<File
@@ -1307,6 +1322,9 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="KademliaWnd.cpp">
+			</File>
+			<File
+				RelativePath="KadLookupGraph.cpp">
 			</File>
 			<File
 				RelativePath="LayeredWindowHelperST.cpp">
@@ -1462,7 +1480,13 @@ del $(IntDir)\emule.obj
 				RelativePath="ToolBarCtrlX.cpp">
 			</File>
 			<File
+				RelativePath="ToolbarWnd.cpp">
+			</File>
+			<File
 				RelativePath="ToolTipCtrlX.cpp">
+			</File>
+			<File
+				RelativePath="TransferDlg.cpp">
 			</File>
 			<File
 				RelativePath="TransferWnd.cpp">
@@ -1490,6 +1514,9 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="Wizard.cpp">
+			</File>
+			<File
+				RelativePath="XMessageBox.cpp">
 			</File>
 			<Filter
 				Name="Lists"
@@ -1688,6 +1715,9 @@ del $(IntDir)\emule.obj
 				RelativePath="FileDetailDialogName.h">
 			</File>
 			<File
+				RelativePath="FileDetailDlgStatistics.h">
+			</File>
+			<File
 				RelativePath="FileInfoDialog.h">
 			</File>
 			<File
@@ -1725,6 +1755,9 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="KademliaWnd.h">
+			</File>
+			<File
+				RelativePath="KadLookupGraph.h">
 			</File>
 			<File
 				RelativePath="LayeredWindowHelperST.h">
@@ -1898,7 +1931,13 @@ del $(IntDir)\emule.obj
 				RelativePath="ToolBarCtrlX.h">
 			</File>
 			<File
+				RelativePath="ToolbarWnd.h">
+			</File>
+			<File
 				RelativePath="ToolTipCtrlX.h">
+			</File>
+			<File
+				RelativePath="TransferDlg.h">
 			</File>
 			<File
 				RelativePath="TransferWnd.h">
@@ -1929,6 +1968,9 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="Wizard.h">
+			</File>
+			<File
+				RelativePath="XMessageBox.h">
 			</File>
 			<Filter
 				Name="Lists"

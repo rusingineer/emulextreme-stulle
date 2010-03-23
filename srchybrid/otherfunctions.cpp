@@ -49,6 +49,7 @@
 #include "Kademlia/Kademlia/kademlia.h"
 #include "kademlia/kademlia/UDPFirewallTester.h"
 #include "Log.h"
+#include "CxImage/xImage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -117,7 +118,12 @@ CString CastItoXBytes(double count, bool isK, bool isPerSec, uint32 decimal){
 	if( count <= 0.0 )
 	{
 		if(isPerSec)
-			return _T("0 ") + GetResString(IDS_BYTESPERSEC);
+		{
+			if (thePrefs.GetForceSpeedsToKB())
+				return _T("0 ") + GetResString(IDS_KBYTESPERSEC);
+			else
+				return _T("0 ") + GetResString(IDS_BYTESPERSEC);
+		}
 		else
 			return _T("0 ") + GetResString(IDS_BYTES);
 	}
@@ -144,7 +150,9 @@ CString CastItoXBytes(double count, bool isK, bool isPerSec, uint32 decimal){
 		}
 		else
 		{
-			if (count < 1024.0)
+			if (thePrefs.GetForceSpeedsToKB())
+				buffer.Format(_T("%.*f %s"), decimal, count/1024.0, GetResString(IDS_KBYTESPERSEC));
+			else if (count < 1024.0)
 				buffer.Format(_T("%.0f %s"), count, GetResString(IDS_BYTESPERSEC));
 			else if (count < 1024000.0)
 				buffer.Format(_T("%.*f %s"), decimal, count/1024.0, GetResString(IDS_KBYTESPERSEC));
@@ -618,23 +626,6 @@ bool Ask4RegFix(bool checkOnly, bool dontAsk, bool bAutoTakeCollections)
 	return false;
 }
 
-bool DoRegFixElevated()
-{
-	TCHAR tchFile[MAX_PATH];
-	DWORD dwModPathLen = ::GetModuleFileName(NULL, tchFile, _countof(tchFile));
-	if (dwModPathLen == 0 || dwModPathLen == _countof(tchFile))
-		return false;
-	SHELLEXECUTEINFO shex;
-	memset( &shex, 0, sizeof( shex) );
-	shex.cbSize = sizeof( SHELLEXECUTEINFO );
-	shex.fMask = 0;
-	shex.lpVerb = _T("runas");
-	shex.lpFile = tchFile;
-	shex.lpParameters = _T("/handleed2klinks");
-	shex.nShow = SW_NORMAL;
-	return ::ShellExecuteEx(&shex) == TRUE;
-}
-
 void BackupReg(void)
 {
 	// TODO: This function needs to be changed in at least 2 regards
@@ -782,7 +773,9 @@ WORD DetectWinVersion()
 				return _WINVER_2003_;
 			if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 0)
 				return _WINVER_VISTA_;
-			return _WINVER_VISTA_; // never return Win95 if we get the info about a NT system
+			if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 1)
+				return _WINVER_7_;
+			return _WINVER_7_; // never return Win95 if we get the info about a NT system
 
 		case VER_PLATFORM_WIN32_WINDOWS:
 			if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 0)
@@ -2253,6 +2246,11 @@ int CompareDirectories(const CString& rstrDir1, const CString& rstrDir2)
 	strDir1.ReleaseBuffer();
 	PathRemoveBackslash(strDir2.GetBuffer());	// remove any available backslash
 	strDir2.ReleaseBuffer();
+	// remove backslash from root drives like "C:\" - PathRemoveBackslash wonn't do this
+	if (strDir1.GetLength() == 3 && strDir1.GetAt(2) == '\\')
+		strDir1.Truncate(2);
+	if (strDir2.GetLength() == 3 && strDir2.GetAt(2) == '\\')
+		strDir2.Truncate(2);
 	return strDir1.CompareNoCase(strDir2);		// compare again
 }
 
@@ -2865,7 +2863,7 @@ time_t safe_mktime(struct tm* ptm)
 	return mktime(ptm);
 }
 
-CString StripInvalidFilenameChars(const CString& strText, bool bKeepSpaces)
+CString StripInvalidFilenameChars(const CString& strText)
 {
 	LPCTSTR pszSource = strText;
 	CString strDest;
@@ -2878,15 +2876,12 @@ CString StripInvalidFilenameChars(const CString& strText, bool bKeepSpaces)
 			*pszSource == _T('?')  || *pszSource == _T('|') || *pszSource == _T('\\') || *pszSource == _T('/') || 
 			*pszSource == _T(':')) )
 		{
-			if (!bKeepSpaces && *pszSource == _T(' '))
-				strDest += _T("%20");
-			else
-				strDest += *pszSource;
+			strDest += *pszSource;
 		}
 		pszSource++;
 	}
 
-	const LPCTSTR apszReservedFilenames[] = {
+	static const LPCTSTR apszReservedFilenames[] = {
 		_T("NUL"), _T("CON"), _T("PRN"), _T("AUX"), _T("CLOCK$"),
 		_T("COM1"),_T("COM2"),_T("COM3"),_T("COM4"),_T("COM5"),_T("COM6"),_T("COM7"),_T("COM8"),_T("COM9"),
 		_T("LPT1"),_T("LPT2"),_T("LPT3"),_T("LPT4"),_T("LPT5"),_T("LPT6"),_T("LPT7"),_T("LPT8"),_T("LPT9")
@@ -2920,7 +2915,7 @@ CString CreateED2kLink(const CAbstractFile* pFile, bool bEscapeLink)
 {
 	CString strLink;
 	strLink.Format(_T("ed2k://|file|%s|%I64u|%s|"),
-		EncodeUrlUtf8(StripInvalidFilenameChars(pFile->GetFileName(), false)),
+		EncodeUrlUtf8(StripInvalidFilenameChars(pFile->GetFileName())),
 		pFile->GetFileSize(),
 		EncodeBase16(pFile->GetFileHash(),16));
 	if (bEscapeLink)
@@ -2930,7 +2925,7 @@ CString CreateED2kLink(const CAbstractFile* pFile, bool bEscapeLink)
 
 CString CreateHTMLED2kLink(const CAbstractFile* f)
 {
-	CString strCode = _T("<a href=\"") + CreateED2kLink(f) + _T("\">") + StripInvalidFilenameChars(f->GetFileName(), true) + _T("</a>");
+	CString strCode = _T("<a href=\"") + CreateED2kLink(f) + _T("\">") + StripInvalidFilenameChars(f->GetFileName()) + _T("</a>");
 	return strCode;
 }
 
@@ -3718,7 +3713,7 @@ bool DoCollectionRegFix(bool checkOnly)
 	return false;
 }
 
-bool gotostring(CFile &file, uchar *find, LONGLONG plen)
+bool gotostring(CFile &file, const uchar *find, LONGLONG plen)
 {
 	bool found = false;
 	LONGLONG i=0;
@@ -3974,7 +3969,7 @@ EFileType GetFileTypeEx(CShareableFile* kfile, bool checkextention, bool checkfi
 
 	// rar multivolume old naming
 	if (   extLC.GetLength() == 3
-		&& extLC.GetAt(0) == _T('r')
+		&& extLC.GetAt(0) == _T('R')
 		&& _istdigit((_TUCHAR)extLC.GetAt(1))
 		&& _istdigit((_TUCHAR)extLC.GetAt(2)) )
 		return ARCHIVE_RAR;
@@ -4098,4 +4093,24 @@ uint8 GetMyConnectOptions(bool bEncryption, bool bCallback){
 	
 	const uint8 byCryptOptions = (uDirectUDPCallback << 3) | (uRequiresCryptLayer << 2) | (uRequestsCryptLayer << 1) | (uSupportsCryptLayer << 0);
 	return byCryptOptions;
+}
+
+bool AddIconGrayscaledToImageList(CImageList& rList, HICON hIcon)
+{
+	// Use to create grayscaled alpha using icons on WinXP and lower
+	// Only works with edited CxImage lib, not 6.0 standard
+	bool bResult = false;
+	ICONINFO iinfo;
+	if (GetIconInfo(hIcon, &iinfo))
+	{
+		CxImage cxGray;
+		if (cxGray.CreateFromHBITMAP(iinfo.hbmColor))
+		{
+			cxGray.GrayScale();
+			bResult = rList.Add(CBitmap::FromHandle(cxGray.MakeBitmap(NULL, true)), CBitmap::FromHandle(iinfo.hbmMask)) != (-1);
+		}
+		DeleteObject(iinfo.hbmColor);
+		DeleteObject(iinfo.hbmMask);
+	}
+	return bResult;
 }

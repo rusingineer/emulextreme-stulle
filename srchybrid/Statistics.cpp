@@ -110,6 +110,10 @@ uint32	CStatistics::m_sumavgUDRO;
 */
 //Xman end
 
+float	CStatistics::m_fGlobalDone;
+float	CStatistics::m_fGlobalSize;
+DWORD	CStatistics::m_dwOverallStatus;
+
 uint64	CStatistics::sessionReceivedBytes;
 uint64	CStatistics::sessionSentBytes;
 uint64	CStatistics::sessionSentBytesToFriend;
@@ -174,6 +178,9 @@ CStatistics::CStatistics()
 	starttime=0;
 	
 
+	m_fGlobalDone =								0;
+	m_fGlobalSize =								0;
+	m_dwOverallStatus  =						0;
 	// Xman Maella TPT 
 	/*
 	m_nDownDataRateMSOverhead = 0;

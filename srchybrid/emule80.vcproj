@@ -59,7 +59,7 @@
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include;WMSDK\include;WMSDK\lib"
+				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;ID3LIB_LINKOPTION=1;_RELEASE;SUPPORT_LARGE_FILES;_WIN32;MINIUPNP_STATICLIB"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -169,7 +169,7 @@
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include;WMSDK\include;WMSDK\lib"
+				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;ID3LIB_LINKOPTION=1;_BETA;SUPPORT_LARGE_FILES;PRINT_STATISTIC;_WIN32;MINIUPNP_STATICLIB"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -274,7 +274,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include;WMSDK\include;WMSDK\lib"
+				AdditionalIncludeDirectories="..\site_config;.;..;..\id3lib\include;DirectX\Include;DirectX\Extras\DirectShow\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;ID3LIB_LINKOPTION=1;SUPPORT_LARGE_FILES;_WIN32;PNG_DEBUG=1;PNG_USE_PNGVCRD;PNG_LIBPNG_SPECIALBUILD;MINIUPNP_STATICLIB"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -440,6 +440,10 @@
 			</File>
 			<File
 				RelativePath="EncryptedStreamSocket.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FileIdentifier.cpp"
 				>
 			</File>
 			<File
@@ -954,6 +958,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\kademlia\utils\LookupHistory.cpp"
+					>
+				</File>
+				<File
 					RelativePath="kademlia\utils\MiscUtils.cpp"
 					>
 				</File>
@@ -1117,6 +1125,10 @@
 			</File>
 			<File
 				RelativePath="Exceptions.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FileIdentifier.h"
 				>
 			</File>
 			<File
@@ -1471,6 +1483,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\kademlia\utils\LookupHistory.h"
+					>
+				</File>
+				<File
 					RelativePath="kademlia\routing\Maps.h"
 					>
 				</File>
@@ -1692,6 +1708,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FileDetailDlgStatistics.cpp"
+				>
+			</File>
+			<File
 				RelativePath="FileInfoDialog.cpp"
 				>
 			</File>
@@ -1737,6 +1757,10 @@
 			</File>
 			<File
 				RelativePath="KademliaWnd.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\KadLookupGraph.cpp"
 				>
 			</File>
 			<File
@@ -1944,7 +1968,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ToolbarWnd.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ToolTipCtrlX.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TransferDlg.cpp"
 				>
 			</File>
 			<File
@@ -1981,6 +2013,10 @@
 			</File>
 			<File
 				RelativePath="Wizard.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\XMessageBox.cpp"
 				>
 			</File>
 			<Filter
@@ -2240,6 +2276,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FileDetailDlgStatistics.h"
+				>
+			</File>
+			<File
 				RelativePath="FileInfoDialog.h"
 				>
 			</File>
@@ -2289,6 +2329,10 @@
 			</File>
 			<File
 				RelativePath="KademliaWnd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\KadLookupGraph.h"
 				>
 			</File>
 			<File
@@ -2516,7 +2560,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ToolbarWnd.h"
+				>
+			</File>
+			<File
 				RelativePath="ToolTipCtrlX.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TransferDlg.h"
 				>
 			</File>
 			<File
@@ -2557,6 +2609,10 @@
 			</File>
 			<File
 				RelativePath="Wizard.h"
+				>
+			</File>
+			<File
+				RelativePath=".\XMessageBox.h"
 				>
 			</File>
 			<Filter

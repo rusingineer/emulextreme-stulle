@@ -24,7 +24,7 @@
 #include "ClientList.h"
 #include "emuledlg.h"
 #include "FriendList.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "MemDC.h"
 #include "UpDownClient.h"
 #include "ClientCredits.h"
@@ -562,7 +562,7 @@ int CClientListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 	/*
 	//call secondary sortorder, if this one results in equal
 	int dwNextSort;
-	if (iResult == 0 && (dwNextSort = theApp.emuledlg->transferwnd->clientlistctrl.GetNextSortOrder(lParamSort)) != -1)
+	if (iResult == 0 && (dwNextSort = theApp.emuledlg->transferwnd->GetClientList()->GetNextSortOrder(lParamSort)) != -1)
 		iResult = SortProc(lParam1, lParam2, dwNextSort);
 	*/
 	// SLUGFILLER: multiSort remove - handled in parent class
@@ -606,7 +606,7 @@ void CClientListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	ClientMenu.AppendMenu(MF_STRING | ((client && client->IsEd2kClient()) ? MF_ENABLED : MF_GRAYED), MP_MESSAGE, GetResString(IDS_SEND_MSG), _T("SENDMESSAGE"));
 	ClientMenu.AppendMenu(MF_STRING | ((client && client->IsEd2kClient() && client->GetViewSharedFilesSupport()) ? MF_ENABLED : MF_GRAYED), MP_SHOWLIST, GetResString(IDS_VIEWFILES), _T("VIEWFILES"));
 	if (Kademlia::CKademlia::IsRunning() && !Kademlia::CKademlia::IsConnected())
-		ClientMenu.AppendMenu(MF_STRING | ((client && client->IsEd2kClient() && client->GetKadPort()!=0) ? MF_ENABLED : MF_GRAYED), MP_BOOT, GetResString(IDS_BOOTSTRAP));
+		ClientMenu.AppendMenu(MF_STRING | ((client && client->IsEd2kClient() && client->GetKadPort()!=0 && client->GetKadVersion() > 1) ? MF_ENABLED : MF_GRAYED), MP_BOOT, GetResString(IDS_BOOTSTRAP));
 	ClientMenu.AppendMenu(MF_STRING | (GetItemCount() > 0 ? MF_ENABLED : MF_GRAYED), MP_FIND, GetResString(IDS_FIND), _T("Search"));
 
 	// - show requested files (sivka/Xman)
@@ -678,8 +678,8 @@ BOOL CClientListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 				break;
 			}
 			case MP_BOOT:
-				if (client->GetKadPort())
-					Kademlia::CKademlia::Bootstrap(ntohl(client->GetIP()), client->GetKadPort(), (client->GetKadVersion() > 1));
+				if (client->GetKadPort() && client->GetKadVersion() > 1)
+					Kademlia::CKademlia::Bootstrap(ntohl(client->GetIP()), client->GetKadPort());
 				break;
 			// - show requested files (sivka/Xman)
 			case MP_LIST_REQUESTED_FILES: 
@@ -705,7 +705,7 @@ void CClientListCtrl::AddClient(const CUpDownClient *client)
 
 	int iItemCount = GetItemCount();
 	InsertItem(LVIF_TEXT | LVIF_PARAM, iItemCount, LPSTR_TEXTCALLBACK, 0, 0, 0, (LPARAM)client);
-	theApp.emuledlg->transferwnd->UpdateListCount(CTransferWnd::wnd2Clients, iItemCount + 1);
+	theApp.emuledlg->transferwnd->UpdateListCount(CTransferDlg::wnd2Clients, iItemCount + 1);
 }
 
 void CClientListCtrl::RemoveClient(const CUpDownClient *client)
@@ -719,7 +719,7 @@ void CClientListCtrl::RemoveClient(const CUpDownClient *client)
 	int result = FindItem(&find);
 	if (result != -1) {
 		DeleteItem(result);
-		theApp.emuledlg->transferwnd->UpdateListCount(CTransferWnd::wnd2Clients);
+		theApp.emuledlg->transferwnd->UpdateListCount(CTransferDlg::wnd2Clients);
 	}
 }
 
@@ -728,7 +728,7 @@ void CClientListCtrl::RefreshClient(const CUpDownClient *client)
 	if (!theApp.emuledlg->IsRunning())
 		return;
 
-	if (theApp.emuledlg->activewnd != theApp.emuledlg->transferwnd || !theApp.emuledlg->transferwnd->clientlistctrl.IsWindowVisible())
+	if (theApp.emuledlg->activewnd != theApp.emuledlg->transferwnd || !theApp.emuledlg->transferwnd->GetClientList()->IsWindowVisible())
 		return;
 
 	LVFINDINFO find;
@@ -770,7 +770,7 @@ void CClientListCtrl::ShowKnownClients()
 		Update(iItem);
 		iItemCount++;
 	}
-	theApp.emuledlg->transferwnd->UpdateListCount(CTransferWnd::wnd2Clients, iItemCount);
+	theApp.emuledlg->transferwnd->UpdateListCount(CTransferDlg::wnd2Clients, iItemCount);
 }
 
 //Xman SortingFix for Morph-Code-Improvement Don't Refresh item if not needed

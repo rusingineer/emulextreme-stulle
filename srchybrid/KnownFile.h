@@ -25,8 +25,9 @@ class CUpDownClient;
 class Packet;
 class CFileDataIO;
 class CAICHHashTree;
-class CAICHHashSet;
+class CAICHRecoveryHashSet;
 class CCollection;
+class CAICHHashAlgo;
 class CSafeMemFile;		//Xman PowerRelease
 
 typedef CTypedPtrList<CPtrList, CUpDownClient*> CUpDownClientPtrList;
@@ -62,20 +63,6 @@ public:
 
 	virtual void	SetFileSize(EMFileSize nFileSize);
 
-	// local available part hashs
-	UINT	GetHashCount() const { return hashlist.GetCount(); }
-	uchar*	GetPartHash(UINT part) const;
-	const CArray<uchar*, uchar*>& GetHashset() const					{ return hashlist; }
-	bool	SetHashset(const CArray<uchar*, uchar*>& aHashset);
-
-	//Xman
-	// SLUGFILLER: SafeHash remove - removed unnececery hash counter
-	/*
-	// nr. of part hashs according the file size wrt ED2K protocol
-	uint16	GetED2KPartHashCount() const								{ return m_iED2KPartHashCount; }
-	*/
-	//Xman end
-
 	// nr. of 9MB parts (file data)
 	__inline uint16 GetPartCount() const								{ return m_iPartCount; }
 
@@ -98,8 +85,6 @@ public:
 	uint32	GetQueuedCount() { return m_ClientUploadList.GetCount();}
 	*/
 	//Xman end
-
-	bool	LoadHashsetFromFile(CFileDataIO* file, bool checkhash);
 
 	void	AddUploadingClient(CUpDownClient* client);
 	void	RemoveUploadingClient(CUpDownClient* client);
@@ -164,13 +149,20 @@ public:
 	virtual bool GrabImage(uint8 nFramesToGrab, double dStartTime, bool bReduceColor, uint16 nMaxWidth, void* pSender);
 	virtual void GrabbingFinished(CxImage** imgResults, uint8 nFramesGrabbed, void* pSender);
 
-	// aich
-	CAICHHashSet*	GetAICHHashset() const							{return m_pAICHHashSet;}
-	void			SetAICHHashset(CAICHHashSet* val)				{m_pAICHHashSet = val;}
-
 	// Display / Info / Strings
 	virtual CString	GetInfoSummary() const;
 	CString			GetUpPriorityDisplayString() const;
+
+	//aich
+	void	SetAICHRecoverHashSetAvailable(bool bVal)			{ m_bAICHRecoverHashSetAvailable = bVal; }
+	bool	IsAICHRecoverHashSetAvailable() const				{ return m_bAICHRecoverHashSetAvailable; }						
+
+	//Xman Nice Hash
+	/*
+	static bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL);
+	*/
+	static bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false);
+	//Xman end
 
 
 
@@ -200,7 +192,6 @@ public:
 
 	//MORPH START - Added by SiRoB, Import Parts [SR13]
 	bool	SR13_ImportParts();
-	bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false) const; //Xman Nice Hash //moved from protected area
 	//MORPH END   - Added by SiRoB, Import Parts [SR13]
 
 protected:
@@ -210,24 +201,15 @@ protected:
 	bool	LoadDateFromFile(CFileDataIO* file);
 	//Xman Nice Hash
 	/*
-	void	CreateHash(CFile* pFile, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL) const;
-	bool	CreateHash(FILE* fp, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL) const;
-	bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL) const;
+	static void	CreateHash(CFile* pFile, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL);
+	static bool	CreateHash(FILE* fp, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL);
 	*/
-	void	CreateHash(CFile* pFile, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false) const;
-	bool	CreateHash(FILE* fp, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false) const;
-	//MORPH - Removed by SiRoB, moved up in public area, Import Parts [SR13]
-	/*
-	bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false) const;
-	*/
-	//MOPRH END
+	static void	CreateHash(CFile* pFile, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false);
+	static bool	CreateHash(FILE* fp, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false);
 	//Xman end
 	virtual void	UpdateFileRatingCommentAvail(bool bForceUpdate = false);
 
 	uint32	*CalcPartSpread();	//Xman PowerRelease
-
-	CArray<uchar*, uchar*>	hashlist;
-	CAICHHashSet*			m_pAICHHashSet;
 
 // Maella -One-queue-per-file- (idea bloodymad)
 public:
@@ -245,7 +227,6 @@ private:
 	static CBarShader s_ShareStatusBar;
 	uint16	m_iPartCount;
 	uint16	m_iED2KPartCount;
-	uint16	m_iED2KPartHashCount;
 	uint8	m_iUpPriority;
 	bool	m_bAutoUpPriority;
 	bool	m_PublishedED2K;
@@ -256,4 +237,5 @@ private:
 	Kademlia::WordList wordlist;
 	UINT	m_uMetaDataVer;
 	time_t	m_timeLastSeen; // we only "see" files when they are in a shared directory
+	bool	m_bAICHRecoverHashSetAvailable;
 };

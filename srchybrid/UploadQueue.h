@@ -66,7 +66,9 @@ public:
 	void	CompUploadRate();
 	//Xman end
 
-
+	uint32	GetWaitingUserForFileCount(const CSimpleArray<CObject*>& raFiles, bool bOnlyIfChanged);
+	uint32	GetDatarateForFile(const CSimpleArray<CObject*>& raFiles) const;
+	
 	POSITION GetFirstFromUploadList()				{return uploadinglist.GetHeadPosition();}
 	CUpDownClient* GetNextFromUploadList(POSITION &curpos)	{return uploadinglist.GetNext(curpos);}
 	CUpDownClient* GetQueueClientAt(POSITION &curpos)	{return uploadinglist.GetAt(curpos);}
@@ -98,6 +100,7 @@ public:
 	bool		AcceptNewClient(bool addOnNextConnect = false); //Xman 4.8.2 must be punlic because of access in ClientUDPSocket
 
 	void	UploadTimer(); //Xman process timer code via messages (Xanatos)
+	bool	UseHighSpeedUpload()					{return m_bUseHighSpeedUpload;} //Xman for SiRoB: ReadBlockFromFileThread
 	bool		AddUpNextClient(LPCTSTR pszReason, CUpDownClient* directadd = 0);
 
 protected:
@@ -109,14 +112,23 @@ protected:
 	*/
 	//Xman end
 	bool		ForceNewClient(bool allowEmptyWaitingQueue = false);
-
 	//Xman Xtreme Upload
 	/*
 	bool		AddUpNextClient(LPCTSTR pszReason, CUpDownClient* directadd = 0);
 	*/
 	//Xman end
+	//Xman for SiRoB: ReadBlockFromFileThread
+	/*
+	void		UseHighSpeedUploadTimer(bool bEnable);
+	*/
+	//Xman end
 	
 	static VOID CALLBACK UploadTimer(HWND hWnd, UINT nMsg, UINT nId, DWORD dwTime);
+	//Xman for SiRoB: ReadBlockFromFileThread
+	/*
+	static VOID CALLBACK HSUploadTimer(HWND hWnd, UINT nMsg, UINT nId, DWORD dwTime);
+	*/
+	//Xman end
 
 private:
 	void	UpdateMaxClientScore();
@@ -160,6 +172,12 @@ private:
 	//Xman end
 
 	UINT_PTR h_timer;
+	//Xman for SiRoB: ReadBlockFromFileThread
+	/*
+	UINT_PTR m_hHighSpeedUploadTimer;
+	*/
+	bool	m_bUseHighSpeedUpload;
+	//Xman end
 	uint32	successfullupcount;
 	uint32	failedupcount;
 	uint32	totaluploadtime;
@@ -182,4 +200,5 @@ private:
 	//Xman end
 
     DWORD   m_dwLastResortedUploadSlots;
+	bool	m_bStatisticsWaitingListDirty;
 };

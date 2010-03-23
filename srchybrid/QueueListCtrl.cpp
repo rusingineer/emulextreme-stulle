@@ -26,7 +26,7 @@
 #include "FriendList.h"
 #include "UploadQueue.h"
 #include "UpDownClient.h"
-#include "TransferWnd.h"
+#include "TransferDlg.h"
 #include "MemDC.h"
 #include "SharedFileList.h"
 #include "ClientCredits.h"
@@ -758,7 +758,7 @@ int CQueueListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 	/*
 	//call secondary sortorder, if this one results in equal
 	int dwNextSort;
-	if (iResult == 0 && (dwNextSort = theApp.emuledlg->transferwnd->queuelistctrl.GetNextSortOrder(lParamSort)) != -1)
+	if (iResult == 0 && (dwNextSort = theApp.emuledlg->transferwnd->GetQueueList()->GetNextSortOrder(lParamSort)) != -1)
 		iResult = SortProc(lParam1, lParam2, dwNextSort);
 	*/
 	// SLUGFILLER: multiSort remove - handled in parent class
@@ -805,7 +805,7 @@ void CQueueListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	if (thePrefs.IsExtControlsEnabled())
 		ClientMenu.AppendMenu(MF_STRING | ((client && client->IsEd2kClient() && client->IsBanned()) ? MF_ENABLED : MF_GRAYED), MP_UNBAN, GetResString(IDS_UNBAN));
 	if (Kademlia::CKademlia::IsRunning() && !Kademlia::CKademlia::IsConnected())
-		ClientMenu.AppendMenu(MF_STRING | ((client && client->IsEd2kClient() && client->GetKadPort()!=0) ? MF_ENABLED : MF_GRAYED), MP_BOOT, GetResString(IDS_BOOTSTRAP));
+		ClientMenu.AppendMenu(MF_STRING | ((client && client->IsEd2kClient() && client->GetKadPort()!=0 && client->GetKadVersion() > 1) ? MF_ENABLED : MF_GRAYED), MP_BOOT, GetResString(IDS_BOOTSTRAP));
 	ClientMenu.AppendMenu(MF_STRING | (GetItemCount() > 0 ? MF_ENABLED : MF_GRAYED), MP_FIND, GetResString(IDS_FIND), _T("Search"));
 	// - show requested files (sivka/Xman)
 	ClientMenu.AppendMenu(MF_SEPARATOR); 
@@ -877,8 +877,8 @@ BOOL CQueueListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 				break;
 			}
 			case MP_BOOT:
-				if (client->GetKadPort())
-					Kademlia::CKademlia::Bootstrap(ntohl(client->GetIP()), client->GetKadPort(), (client->GetKadVersion() > 1));
+				if (client->GetKadPort() && client->GetKadVersion() > 1)
+					Kademlia::CKademlia::Bootstrap(ntohl(client->GetIP()), client->GetKadPort());
 				break;
 			// - show requested files (sivka/Xman)
 			case MP_LIST_REQUESTED_FILES: { 
@@ -922,7 +922,7 @@ void CQueueListCtrl::AddClient(/*const*/ CUpDownClient *client, bool resetclient
 	int iItemCount = GetItemCount();
 	int iItem = InsertItem(LVIF_TEXT | LVIF_PARAM, iItemCount, LPSTR_TEXTCALLBACK, 0, 0, 0, (LPARAM)client);
 	Update(iItem);
-	theApp.emuledlg->transferwnd->UpdateListCount(CTransferWnd::wnd2OnQueue, iItemCount + 1);
+	theApp.emuledlg->transferwnd->UpdateListCount(CTransferDlg::wnd2OnQueue, iItemCount + 1);
 }
 
 void CQueueListCtrl::RemoveClient(const CUpDownClient *client)
@@ -936,7 +936,7 @@ void CQueueListCtrl::RemoveClient(const CUpDownClient *client)
 	int result = FindItem(&find);
 	if (result != -1) {
 		DeleteItem(result);
-		theApp.emuledlg->transferwnd->UpdateListCount(CTransferWnd::wnd2OnQueue);
+		theApp.emuledlg->transferwnd->UpdateListCount(CTransferDlg::wnd2OnQueue);
 	}
 }
 
@@ -945,7 +945,7 @@ void CQueueListCtrl::RefreshClient(const CUpDownClient *client)
 	if (!theApp.emuledlg->IsRunning())
 		return;
 
-	if (theApp.emuledlg->activewnd != theApp.emuledlg->transferwnd || !theApp.emuledlg->transferwnd->queuelistctrl.IsWindowVisible())
+	if (theApp.emuledlg->activewnd != theApp.emuledlg->transferwnd || !theApp.emuledlg->transferwnd->GetQueueList()->IsWindowVisible())
 		return;
 
 	LVFINDINFO find;
@@ -1001,7 +1001,7 @@ void CALLBACK CQueueListCtrl::QueueUpdateTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UI
 		if (   !theApp.emuledlg->IsRunning() // Don't do anything if the app is shutting down - can cause unhandled exceptions
 			|| !thePrefs.GetUpdateQueueList()
 			|| theApp.emuledlg->activewnd != theApp.emuledlg->transferwnd
-			|| !theApp.emuledlg->transferwnd->queuelistctrl.IsWindowVisible() )
+			|| !theApp.emuledlg->transferwnd->GetQueueList()->IsWindowVisible() )
 			return;
 
 		//Xman faster Updating of Queuelist
@@ -1009,14 +1009,14 @@ void CALLBACK CQueueListCtrl::QueueUpdateTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UI
 		const CUpDownClient* update = theApp.uploadqueue->GetNextClient(NULL);
 		while( update )
 		{
-			theApp.emuledlg->transferwnd->queuelistctrl.RefreshClient(update);
+			theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(update);
 			update = theApp.uploadqueue->GetNextClient(update);
 		}
 		*/
-		if (theApp.emuledlg->transferwnd->queuelistctrl.GetItemCount()>1)
+		if (theApp.emuledlg->transferwnd->GetQueueList()->GetItemCount()>1)
 		{
 
-			theApp.emuledlg->transferwnd->queuelistctrl.UpdateAll();
+			theApp.emuledlg->transferwnd->GetQueueList()->UpdateAll();
 		}
 		//Xman end
 	}
