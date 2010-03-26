@@ -6256,12 +6256,14 @@ void CPartFile::FlushDone()
 			UINT uPartNumber = iPartNumber; // help VC71...
 			if (!m_FlushSetting->changedPart[uPartNumber])
 				continue;
+			/*
 			// Any parts other than last must be full size
 			if (!GetFileIdentifier().GetMD4PartHash(uPartNumber)) {
 				LogError(LOG_STATUSBAR, GetResString(IDS_ERR_INCOMPLETEHASH), GetFileName());
 				m_bMD4HashsetNeeded = true;
 				ASSERT(FALSE);	// If this fails, something was seriously wrong with the hashset loading or the check above
 			}
+			*/
 
 			// Is this 9MB part complete
 			//MORPH - Changed by SiRoB, As we are using flushed data check asynchronously we need to check if all data have been written into the file buffer
@@ -6316,6 +6318,7 @@ void CPartFile::FlushDone()
 		ASSERT(GetED2KPartCount() > 1);	// Files with only 1 chunk should have a forced hashset
 		LogError(LOG_STATUSBAR, GetResString(IDS_ERR_HASHERRORWARNING), GetFileName());
 		m_bMD4HashsetNeeded = true;
+		m_bAICHPartHashsetNeeded = true;
 	}
 	// SLUGFILLER: SafeHash
 	// END SiRoB: Flush Thread
@@ -9000,7 +9003,19 @@ int CPartHashThread::SetFirstHash(CPartFile* pOwner)
 		*/
 		if (pOwner->IsComplete((uint64)i*PARTSIZE,(uint64)(i+1)*PARTSIZE-1, true)){
 			uchar* cur_hash = new uchar[16];
+			// The following change in code should probably be unnessessary but I'll take the safe part here
+			/*
 			md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(i));
+			*/
+			if (pOwner->GetPartCount() > 1 || pOwner->GetFileSize()== (uint64)PARTSIZE)
+			{
+				if (pOwner->GetFileIdentifier().GetAvailableMD4PartHashCount() > i)
+					md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(i));
+				else
+					ASSERT( false );
+			}
+			else
+				md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4Hash());
 
 			m_PartsToHash.Add(i);
 			m_DesiredHashes.Add(cur_hash);
@@ -9028,7 +9043,15 @@ void CPartHashThread::SetSinglePartHash(CPartFile* pOwner, UINT part, bool ICHus
 	}
 
 	uchar* cur_hash = new uchar[16];
-	md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(part));
+	if (pOwner->GetPartCount() > 1 || pOwner->GetFileSize()== (uint64)PARTSIZE)
+	{
+		if (pOwner->GetFileIdentifier().GetAvailableMD4PartHashCount() > part)
+			md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(part));
+		else
+			ASSERT( false );
+	}
+	else
+		md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4Hash());
 
 	m_PartsToHash.Add(part);
 	m_DesiredHashes.Add(cur_hash);
@@ -9049,6 +9072,7 @@ int CPartHashThread::Run()
 	CSingleLock sLock(&(m_pOwner->ICH_mut)); // ICH locks the file
 	if (m_ICHused)
 		sLock.Lock();
+	
 	if (file.Open(directory+_T("\\")+filename,CFile::modeRead|CFile::osSequentialScan|CFile::shareDenyNone)){
 		for (UINT i = 0; i < (UINT)m_PartsToHash.GetSize(); i++){
 			uint16 partnumber = m_PartsToHash[i];
