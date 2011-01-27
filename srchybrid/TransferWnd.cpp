@@ -91,6 +91,7 @@ BEGIN_MESSAGE_MAP(CTransferWnd, CResizableFormView)
 	ON_WM_SETTINGCHANGE()
 	ON_WM_SYSCOLORCHANGE()
 	ON_WM_PAINT()
+	ON_WM_SYSCOMMAND()
 END_MESSAGE_MAP()
 
 CTransferWnd::CTransferWnd(CWnd* /*pParent =NULL*/)
@@ -1696,8 +1697,8 @@ void CTransferWnd::ShowSplitWindow(bool bReDraw)
 	LONG splitpos = (thePrefs.GetSplitterbarPosition() * rcWnd.Height()) / 100;
 
 	// do some more magic, don't ask -- just fix it..
-	//if (bReDraw || m_dwShowListIDC != 0 && m_dwShowListIDC != IDC_DOWNLOADLIST + IDC_UPLOADLIST)
-	//	splitpos += 10;
+	if (bReDraw || m_dwShowListIDC != 0 && m_dwShowListIDC != IDC_DOWNLOADLIST + IDC_UPLOADLIST)
+		splitpos += 10;
 
 	CRect rcDown;
 	downloadlistctrl.GetWindowRect(rcDown);
@@ -2087,4 +2088,17 @@ void CTransferWnd::OnPaint()
 		m_btnWnd1->SetBtnWidth(IDC_DOWNLOAD_ICO, WND1_BUTTON_WIDTH);
 	if (m_btnWnd2 && m_btnWnd2->m_hWnd && m_btnWnd2->GetBtnWidth(IDC_UPLOAD_ICO) != WND2_BUTTON_WIDTH)
 		m_btnWnd2->SetBtnWidth(IDC_UPLOAD_ICO, WND2_BUTTON_WIDTH);
+}
+
+void CTransferWnd::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	if (nID == SC_KEYMENU)
+	{
+		if (lParam == EMULE_HOTMENU_ACCEL)
+			theApp.emuledlg->SendMessage(WM_COMMAND, IDC_HOTMENU);
+		else
+			theApp.emuledlg->SendMessage(WM_SYSCOMMAND, nID, lParam);
+		return;
+	}
+	__super::OnSysCommand(nID, lParam);
 }

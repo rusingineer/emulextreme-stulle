@@ -656,6 +656,7 @@
 #define IDS_AUTOTAKEED2KLINKS           733
 #define IDS_ADDNEWFILESPAUSED           734
 #define IDS_DOWNLOADMOVIECHUNKS         735
+#define IDS_OPENPREFINI                 736
 #define IDS_RECOVER_SINGLE              737
 #define IDS_RECOVER_MULTIPLE            738
 #define IDS_ATTEMPTING_RECOVERY         739
@@ -1976,6 +1977,7 @@
 #define IDC_QUEUESIZE_STATIC            2611
 #define IDC_QUEUESIZE                   2612
 #define IDC_CHECKDAYS                   2613
+#define IDC_PREFINI_STATIC              2613
 #define IDC_MSG                         2614
 #define IDC_FILTERLABEL                 2615
 #define IDC_DAP                         2616
@@ -2329,6 +2331,7 @@
 #define IDC_FS_POPLULARITY2_LBL         3010
 #define IDC_FS_POPULARITY2_LBL          3010
 #define IDC_FS_POPULARITY2_VAL          3011
+#define IDC_OPENPREFINI                 3012
 // ==========  Xtreme Mod  ==========
 #define IDS_DROPNONEEDEDSRCS            4000
 #define IDS_DROPQUEUEFULLSRCS           4001
@@ -2614,7 +2617,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3202
 #define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         4101
+#define _APS_NEXT_CONTROL_VALUE         4102
 #define _APS_NEXT_SYMED_VALUE           1505
 #endif
 #endif

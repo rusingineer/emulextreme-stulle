@@ -495,6 +495,7 @@ public:
 	static  bool	m_bShowUpDownIconInTaskbar;
 	static	bool	m_bForceSpeedsToKB;
 	static	bool	m_bAutoShowLookups;
+	static	bool	m_bExtraPreviewWithMenu;
 
 
 	// Web Server [kuchin]
@@ -1528,6 +1529,7 @@ public:
 	static	bool	GetAutoShowLookups()				{return m_bAutoShowLookups;}
 	static	void	SetAutoShowLookups(bool bIn)		{m_bAutoShowLookups = bIn;}
 	static	bool	GetForceSpeedsToKB()				{return m_bForceSpeedsToKB;}
+	static	bool	GetExtraPreviewWithMenu()			{return m_bExtraPreviewWithMenu;}
 
 	//Toolbar
 	static	const CString& GetToolbarSettings()					{return m_sToolbarSettings;}

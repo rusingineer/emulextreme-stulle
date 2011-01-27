@@ -989,16 +989,21 @@ bool CClientReqSocket::ProcessPacket(const BYTE* packet, uint32 size, UINT opcod
 					if (client->GetRequestFile() && !client->GetRequestFile()->IsStopped() && (client->GetRequestFile()->GetStatus()==PS_READY || client->GetRequestFile()->GetStatus()==PS_EMPTY))
 					{
 						client->ProcessBlockPacket(packet, size, false, false);
-						if (client->GetRequestFile()->IsStopped() || client->GetRequestFile()->GetStatus()==PS_PAUSED || client->GetRequestFile()->GetStatus()==PS_ERROR)
+						if (client->GetRequestFile())
 						{
-							client->SendCancelTransfer();
-							// Maella -Download Stop Reason-
-							/*
-							client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE);
-							*/
-							client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE,_T("paused file"), CUpDownClient::DSR_PAUSED);
-							//Xman end
+							if (client->GetRequestFile()->IsStopped() || client->GetRequestFile()->GetStatus()==PS_PAUSED || client->GetRequestFile()->GetStatus()==PS_ERROR)
+							{
+								client->SendCancelTransfer();
+								// Maella -Download Stop Reason-
+								/*
+								client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE);
+								*/
+								client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE,_T("paused file"), CUpDownClient::DSR_PAUSED);
+								//Xman end
+							}
 						}
+						else
+							ASSERT( false );
 					}
 					else
 					{
@@ -2550,16 +2555,21 @@ bool CClientReqSocket::ProcessExtPacket(const BYTE* packet, uint32 size, UINT op
 					if (client->GetRequestFile() && !client->GetRequestFile()->IsStopped() && (client->GetRequestFile()->GetStatus()==PS_READY || client->GetRequestFile()->GetStatus()==PS_EMPTY))
 					{
 						client->ProcessBlockPacket(packet, size, (opcode == OP_COMPRESSEDPART || opcode == OP_COMPRESSEDPART_I64), (opcode == OP_SENDINGPART_I64 || opcode == OP_COMPRESSEDPART_I64) );
-						if (client->GetRequestFile()->IsStopped() || client->GetRequestFile()->GetStatus()==PS_PAUSED || client->GetRequestFile()->GetStatus()==PS_ERROR)
+						if (client->GetRequestFile())
 						{
-							client->SendCancelTransfer();
-							// Maella -Download Stop Reason-
-							/*
-							client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE);
-							*/
-							client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE,_T("paused file"), CUpDownClient::DSR_PAUSED);
-							//Xman end
+							if (client->GetRequestFile()->IsStopped() || client->GetRequestFile()->GetStatus()==PS_PAUSED || client->GetRequestFile()->GetStatus()==PS_ERROR)
+							{
+								client->SendCancelTransfer();
+								// Maella -Download Stop Reason-
+								/*
+								client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE);
+								*/
+								client->SetDownloadState(client->GetRequestFile()->IsStopped() ? DS_NONE : DS_ONQUEUE,_T("paused file"), CUpDownClient::DSR_PAUSED);
+								//Xman end
+							}
 						}
+						else
+							ASSERT( false );
 					}
 					else
 					{

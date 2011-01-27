@@ -2911,24 +2911,6 @@ CString StripInvalidFilenameChars(const CString& strText)
 	return strDest;
 }
 
-CString CreateED2kLink(const CAbstractFile* pFile, bool bEscapeLink)
-{
-	CString strLink;
-	strLink.Format(_T("ed2k://|file|%s|%I64u|%s|"),
-		EncodeUrlUtf8(StripInvalidFilenameChars(pFile->GetFileName())),
-		pFile->GetFileSize(),
-		EncodeBase16(pFile->GetFileHash(),16));
-	if (bEscapeLink)
-		strLink += _T("/");
-	return strLink;
-}
-
-CString CreateHTMLED2kLink(const CAbstractFile* f)
-{
-	CString strCode = _T("<a href=\"") + CreateED2kLink(f) + _T("\">") + StripInvalidFilenameChars(f->GetFileName()) + _T("</a>");
-	return strCode;
-}
-
 bool operator==(const CCKey& k1,const CCKey& k2)
 {
 	return !md4cmp(k1.m_key, k2.m_key);
@@ -4107,7 +4089,9 @@ bool AddIconGrayscaledToImageList(CImageList& rList, HICON hIcon)
 		if (cxGray.CreateFromHBITMAP(iinfo.hbmColor))
 		{
 			cxGray.GrayScale();
-			bResult = rList.Add(CBitmap::FromHandle(cxGray.MakeBitmap(NULL, true)), CBitmap::FromHandle(iinfo.hbmMask)) != (-1);
+			HBITMAP hGrayBmp = cxGray.MakeBitmap(NULL, true);
+			bResult = rList.Add(CBitmap::FromHandle(hGrayBmp), CBitmap::FromHandle(iinfo.hbmMask)) != (-1);
+			DeleteObject(hGrayBmp);
 		}
 		DeleteObject(iinfo.hbmColor);
 		DeleteObject(iinfo.hbmMask);

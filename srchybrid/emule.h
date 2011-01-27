@@ -182,8 +182,6 @@ public:
 	bool		IsEd2kLinkInClipboard(LPCSTR pszLinkType, int iLinkTypeLen);
 	LPCTSTR		GetProfileFile()		{ return m_pszProfileName; }
 
-	CString		CreateED2kSourceLink(const CAbstractFile* f);
-//	CString		CreateED2kHostnameSourceLink(const CAbstractFile* f);
 	CString		CreateKadSourceLink(const CAbstractFile* f);
 
 	// clipboard (text)
@@ -202,7 +200,7 @@ public:
 	void		CreateAllFonts();
 	const CString &GetDefaultFontFaceName();
 	bool		IsPortchangeAllowed();
-	bool		IsConnected();
+	bool		IsConnected(bool bIgnoreEd2k = false, bool bIgnoreKad = false);
 	bool		IsFirewalled();
 	bool		CanDoCallback( CUpDownClient *client );
 	uint32		GetID();

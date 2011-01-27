@@ -878,9 +878,9 @@ BEGIN
     RTEXT           "Codec:",IDC_FD_XI5,7,53,77,8
     EDITTEXT        IDC_VCODEC,85,53,109,12,ES_AUTOHSCROLL | ES_READONLY | 
                     NOT WS_BORDER | NOT WS_TABSTOP
-    RTEXT           "Bitrate:",IDC_FD_XI7,7,64,77,8
+    RTEXT           "Bitrate:",IDC_FD_XI7,7,63,77,8
     CONTROL         "-",IDC_VBITRATE,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX | WS_GROUP,87,65,107,8
+                    SS_NOPREFIX | WS_GROUP,87,63,107,8
     RTEXT           "Width x Height:",IDC_FD_XI9,7,73,77,8
     CONTROL         "-",IDC_VWIDTH,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | 
                     WS_GROUP,87,73,107,8
@@ -894,9 +894,9 @@ BEGIN
     RTEXT           "Codec:",IDC_FD_XI6,210,53,65,8
     EDITTEXT        IDC_ACODEC,277,53,114,12,ES_AUTOHSCROLL | ES_READONLY | 
                     NOT WS_BORDER | NOT WS_TABSTOP
-    RTEXT           "Bitrate:",IDC_FD_XI8,210,64,65,8
+    RTEXT           "Bitrate:",IDC_FD_XI8,210,63,65,8
     CONTROL         "-",IDC_ABITRATE,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX | WS_GROUP,279,67,112,8
+                    SS_NOPREFIX | WS_GROUP,279,63,112,8
     RTEXT           "Channel:",IDC_FD_XI10,210,73,65,8
     CONTROL         "-",IDC_ACHANNEL,"Static",SS_LEFTNOWORDWRAP | 
                     SS_NOPREFIX | WS_GROUP,279,73,112,8
@@ -923,9 +923,11 @@ BEGIN
     LTEXT           "File buffer size",IDC_FILEBUFFERSIZE_STATIC,4,192,213,8
     CONTROL         "",IDC_FILEBUFFERSIZE,"msctls_trackbar32",WS_TABSTOP,9,
                     202,211,11
-    LTEXT           "Queue size",IDC_QUEUESIZE_STATIC,4,215,213,8
+    LTEXT           "Queue size",IDC_QUEUESIZE_STATIC,4,215,103,8
     CONTROL         "",IDC_QUEUESIZE,"msctls_trackbar32",TBS_AUTOTICKS | 
-                    WS_TABSTOP,9,225,211,11
+                    WS_TABSTOP,9,225,107,11
+    PUSHBUTTON      "Open preferences.ini",IDC_OPENPREFINI,125,225,102,14
+    LTEXT           "Extended:",IDC_PREFINI_STATIC,118,215,109,8
 END
 
 IDD_ADDFRIEND DIALOGEX 0, 0, 271, 190
@@ -2309,6 +2311,7 @@ BEGIN
     IDD_PPG_GENERAL, DIALOG
     BEGIN
         VERTGUIDE, 11
+        VERTGUIDE, 169
     END
 
     IDD_PPG_CONNECTION, DIALOG
@@ -2329,6 +2332,11 @@ BEGIN
         VERTGUIDE, 7
         VERTGUIDE, 210
         VERTGUIDE, 398
+    END
+
+    IDD_PPG_TWEAKS, DIALOG
+    BEGIN
+        VERTGUIDE, 227
     END
 
     IDD_ADDFRIEND, DIALOG
@@ -3241,6 +3249,7 @@ END
 
 STRINGTABLE 
 BEGIN
+    IDS_OPENPREFINI         "Open preferences.ini"
     IDS_RECOVER_SINGLE      "Archive recovery: 1 file recovered."
     IDS_RECOVER_MULTIPLE    "Archive recovery: %u files recovered."
     IDS_ATTEMPTING_RECOVERY "Archive recovery: Started"
@@ -4304,7 +4313,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Sharing eMule with other computer users"
     IDS_SHAREEMULEMULTI     "Each user has its own configuration and downloads"
     IDS_SHAREEMULEPUBLIC    "Everyone has the same configuration and downloads"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 

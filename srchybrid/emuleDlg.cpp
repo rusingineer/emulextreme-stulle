@@ -1660,7 +1660,9 @@ void CemuleDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CTrayDialog::OnSize(nType, cx, cy);
 	SetStatusBarPartsSize();
-	transferwnd->VerifyCatTabSize();
+	// we might receive this message during shutdown -> bad
+	if (transferwnd != NULL && IsRunning())
+		transferwnd->VerifyCatTabSize();
 }
 
 void CemuleDlg::ProcessED2KLink(LPCTSTR pszData)
@@ -1727,6 +1729,14 @@ void CemuleDlg::ProcessED2KLink(LPCTSTR pszData)
 					delete pSrv; 
 				else
 					AddLogLine(true,GetResString(IDS_SERVERADDED), pSrv->GetListName());
+			}
+			break;
+		case CED2KLink::kSearch:
+			{
+				CED2KSearchLink* pListLink = pLink->GetSearchLink();
+				_ASSERT( pListLink !=0 ); 
+				SetActiveDialog(searchwnd);
+				searchwnd->ProcessEd2kSearchLinkRequest(pListLink->GetSearchTerm());
 			}
 			break;
 			// MORPH START - Added by Commander, Friendlinks [emulEspaa] - added by zz_fly
@@ -1814,12 +1824,12 @@ LRESULT CemuleDlg::OnWMData(WPARAM /*wParam*/, LPARAM lParam)
 		if (clcommand==_T("connect")) {StartConnection(); return true;}
 		if (clcommand==_T("disconnect")) {theApp.serverconnect->Disconnect(); return true;}
 		if (clcommand==_T("resume")) {theApp.downloadqueue->StartNextFile(); return true;}
-		//Xman do not ask exit from command prompt (leuk_he)
-		/*
-		if (clcommand==_T("exit")) {OnClose(); return true;}
-		*/
-		if (clcommand==_T("exit")) {theApp.m_app_state = APP_STATE_SHUTTINGDOWN;OnClose(); return true;}
-		//Xman end
+		if (clcommand==_T("exit"))
+		{
+			theApp.m_app_state = APP_STATE_SHUTTINGDOWN; // do no ask to close
+			OnClose(); 
+			return true;
+		}
 		if (clcommand==_T("restore")) {RestoreWindow();return true;}
 		if (clcommand==_T("reloadipf")) {theApp.ipfilter->LoadFromDefaultFile(); return true;}
 		if (clcommand.Left(7).MakeLower()==_T("limits=") && clcommand.GetLength()>8) {
@@ -3645,7 +3655,7 @@ LRESULT CemuleDlg::OnVersionCheckResponse(WPARAM /*wParam*/, LPARAM lParam)
 					Log(LOG_SUCCESS|LOG_STATUSBAR,GetResString(IDS_NEWVERSIONAVLBETA));
 					if (AfxMessageBox(GetResString(IDS_NEWVERSIONAVLBETA)+GetResString(IDS_VISITVERSIONCHECK),MB_OK)==IDOK) {
 						CString theUrl;
-						theUrl.Format(_T("/en/download.php?version=%i&language=%i"),theApp.m_uCurVersionCheck,thePrefs.GetLanguageID());
+						theUrl = _T("/beta");
 						theUrl = thePrefs.GetVersionCheckBaseURL()+theUrl;
 						ShellExecute(NULL, NULL, theUrl, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT);
 					}
@@ -4677,6 +4687,8 @@ void CemuleDlg::UpdateThumbBarButtons(bool initialAddToDlg) {
 				{
 					m_thbButtons[i].hIcon   =  theApp.LoadIcon(_T("CONNECT"), 16, 16);
 					tooltip = GetResString(IDS_MAIN_BTN_CONNECT);
+					if (theApp.IsConnected()==true)
+						m_thbButtons[i].dwFlags |= THBF_DISABLED;
 					break;
 				}
 			case TBB_DISCONNECT:
@@ -4749,7 +4761,7 @@ void CemuleDlg::OnTBBPressed(UINT id)
 LRESULT CemuleDlg::OnTaskbarBtnCreated ( WPARAM , LPARAM  )
 {
 	// Sanity check that the OS is Win 7 or later
-	if (thePrefs.GetWindowsVersion() >= _WINVER_7_ )
+	if (thePrefs.GetWindowsVersion() >= _WINVER_7_ && IsRunning())
 	{
 		if (m_pTaskbarList)
 			m_pTaskbarList.Release();

@@ -19,7 +19,7 @@ supported languages:
 german, english, spanish,  french, italian, chinese, turkish, czech
 
 
-based on emule 0.49c
+based on emule 0.50a
 compiled with:
 libpng 1.2.28
 zlib 1.2.3
@@ -35,6 +35,10 @@ MiniUPnP Lib (as of official)
 Xtreme 8.0
 * this version is modded by Stulle
 - updated to 0.50a codebase
+- add: Some more countries to country flags feature (tomchen1989)
+- add: ATL Server code for VS2008 compilation (Stulle)
+partially updated to 8.0 by zz_fly:
+- improved: Reduced CPU usage in CUInt128 (netfinity)
 
 Xtreme 7.2 second source edit
 * this version is modded by Stulle

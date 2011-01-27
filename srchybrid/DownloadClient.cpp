@@ -1523,7 +1523,7 @@ void CUpDownClient::SendBlockRequests()
 					ASSERT( false );
 					SendCancelTransfer();
 					SetDownloadState(DS_ERROR);
-					return; //Xman Bugfix - we may not send the blockrequest
+					return;
 				}
 				break;
 			}

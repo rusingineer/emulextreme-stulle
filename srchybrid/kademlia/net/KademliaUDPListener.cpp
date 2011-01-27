@@ -1,6 +1,6 @@
 /*
 Copyright (C)2003 Barry Dunne (http://www.emule-project.net)
-Copyright (C)2007-2008 Merkur ( strEmail.Format("%s@%s", "devteam", "emule-project.net") / http://www.emule-project.net )
+Copyright (C)2007-2010 Merkur ( strEmail.Format("%s@%s", "devteam", "emule-project.net") / http://www.emule-project.net )
 
 
 This program is free software; you can redistribute it and/or
@@ -1404,7 +1404,7 @@ void CKademliaUDPListener::Process_KADEMLIA2_PUBLISH_SOURCE_REQ (const byte *pby
 	CUInt128 uDistance(CKademlia::GetPrefs()->GetKadID());
 	uDistance.Xor(uFile);
 
-	if( thePrefs.FilterLANIPs() && uDistance.Get32BitChunk(0) > SEARCHTOLERANCE)
+	if(uDistance.Get32BitChunk(0) > SEARCHTOLERANCE && !::IsLANIP(ntohl(uIP)))
 		return;
 
 	bool bDbgInfo = (thePrefs.GetDebugClientKadUDPLevel() > 0);
@@ -1668,7 +1668,7 @@ void CKademliaUDPListener::Process_KADEMLIA2_PUBLISH_NOTES_REQ (const byte *pbyP
 	uDistance.Xor(uTarget);
 
 	// Shouldn't LAN IPs already be filtered?
-	if( thePrefs.FilterLANIPs() && uDistance.Get32BitChunk(0) > SEARCHTOLERANCE)
+	if(uDistance.Get32BitChunk(0) > SEARCHTOLERANCE && !::IsLANIP(ntohl(uIP)))
 		return;
 
 	CUInt128 uSource;

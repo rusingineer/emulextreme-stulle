@@ -113,7 +113,10 @@ CPartFile::CPartFile(CSearchFile* searchresult, UINT cat)
 	
 	m_FileIdentifier.SetMD4Hash(searchresult->GetFileHash());
 	if (searchresult->GetFileIdentifierC().HasAICHHash())
+	{
 		m_FileIdentifier.SetAICHHash(searchresult->GetFileIdentifierC().GetAICHHash());
+		m_pAICHRecoveryHashSet->SetMasterHash(searchresult->GetFileIdentifierC().GetAICHHash(), AICH_VERIFIED);
+	}
 
 	for (int i = 0; i < searchresult->taglist.GetCount();i++){
 		const CTag* pTag = searchresult->taglist[i];
@@ -4703,8 +4706,8 @@ bool CPartFile::HashSinglePart(UINT partnumber, bool* pbAICHReportedOK)
 			else
 				bAICHError = m_FileIdentifier.GetAICHHash() != phtAICHPartHash->m_Hash;
 		}
-		else
-			DebugLogWarning(_T("AICH HashSet not present while verifying part %u for file %s"), partnumber, GetFileName());
+		//else
+		//	DebugLogWarning(_T("AICH HashSet not present while verifying part %u for file %s"), partnumber, GetFileName());
 
 		delete phtAICHPartHash;
 		phtAICHPartHash = NULL;
@@ -6256,14 +6259,12 @@ void CPartFile::FlushDone()
 			UINT uPartNumber = iPartNumber; // help VC71...
 			if (!m_FlushSetting->changedPart[uPartNumber])
 				continue;
-			/*
 			// Any parts other than last must be full size
 			if (!GetFileIdentifier().GetMD4PartHash(uPartNumber)) {
 				LogError(LOG_STATUSBAR, GetResString(IDS_ERR_INCOMPLETEHASH), GetFileName());
 				m_bMD4HashsetNeeded = true;
 				ASSERT(FALSE);	// If this fails, something was seriously wrong with the hashset loading or the check above
 			}
-			*/
 
 			// Is this 9MB part complete
 			//MORPH - Changed by SiRoB, As we are using flushed data check asynchronously we need to check if all data have been written into the file buffer
@@ -6318,7 +6319,6 @@ void CPartFile::FlushDone()
 		ASSERT(GetED2KPartCount() > 1);	// Files with only 1 chunk should have a forced hashset
 		LogError(LOG_STATUSBAR, GetResString(IDS_ERR_HASHERRORWARNING), GetFileName());
 		m_bMD4HashsetNeeded = true;
-		m_bAICHPartHashsetNeeded = true;
 	}
 	// SLUGFILLER: SafeHash
 	// END SiRoB: Flush Thread
@@ -7497,7 +7497,7 @@ bool CPartFile::GetNextRequestedBlock_zz(CUpDownClient* sender,
 // Maella end
 
 
-CString CPartFile::GetInfoSummary() const
+CString CPartFile::GetInfoSummary(bool bNoFormatCommands) const
 {
 	if (!IsPartFile())
 		return CKnownFile::GetInfoSummary();
@@ -7538,10 +7538,11 @@ CString CPartFile::GetInfoSummary() const
 	else 
 		status.Format(_T("%s\n"), getPartfileStatus());
 
+	CString strHeadFormatCommand = bNoFormatCommands ? _T("") : _T("<br_head>");
 	CString info;
 	info.Format(_T("%s\n")
 		+ GetResString(IDS_FD_HASH) + _T(" %s\n")
-		+ GetResString(IDS_FD_SIZE) + _T(" %s  %s\n<br_head>\n")
+		+ GetResString(IDS_FD_SIZE) + _T(" %s  %s\n") + strHeadFormatCommand + _T("\n")
 		+ GetResString(IDS_FD_MET)+ _T(" %s\n")
 		+ GetResString(IDS_STATUS) + _T(": ") + status
 		+ _T("%s")
@@ -7971,7 +7972,7 @@ void CPartFile::AICHRecoveryDataAvailable(UINT nPart)
 		/*
 		if (!HashSinglePart(nPart))
 		{
-			AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering - but MD4 says it corrupt! Setting hashset to error state, deleting part"));
+			AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering - but MD4 says it corrupt! Setting hashset to error state, deleting part"), nPart);
 			// now we are fu... unhappy
 			if (!m_FileIdentifier.HasAICHHash())
 				m_pAICHRecoveryHashSet->SetStatus(AICH_ERROR); // set it to error on unverified hashs
@@ -7980,7 +7981,7 @@ void CPartFile::AICHRecoveryDataAvailable(UINT nPart)
 			return;
 		}
 		else{
-			AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering and HashSinglePart() (MD4) agrees"));
+			AddDebugLogLine(DLP_DEFAULT, false, _T("Processing AICH Recovery data: The part (%u) got completed while recovering and HashSinglePart() (MD4) agrees"), nPart);
 			// alrighty not so bad
 			POSITION posCorrupted = corrupted_list.Find((uint16)nPart);
 			if (posCorrupted)
@@ -9003,19 +9004,7 @@ int CPartHashThread::SetFirstHash(CPartFile* pOwner)
 		*/
 		if (pOwner->IsComplete((uint64)i*PARTSIZE,(uint64)(i+1)*PARTSIZE-1, true)){
 			uchar* cur_hash = new uchar[16];
-			// The following change in code should probably be unnessessary but I'll take the safe part here
-			/*
 			md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(i));
-			*/
-			if (pOwner->GetPartCount() > 1 || pOwner->GetFileSize()== (uint64)PARTSIZE)
-			{
-				if (pOwner->GetFileIdentifier().GetAvailableMD4PartHashCount() > i)
-					md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(i));
-				else
-					ASSERT( false );
-			}
-			else
-				md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4Hash());
 
 			m_PartsToHash.Add(i);
 			m_DesiredHashes.Add(cur_hash);
@@ -9043,15 +9032,7 @@ void CPartHashThread::SetSinglePartHash(CPartFile* pOwner, UINT part, bool ICHus
 	}
 
 	uchar* cur_hash = new uchar[16];
-	if (pOwner->GetPartCount() > 1 || pOwner->GetFileSize()== (uint64)PARTSIZE)
-	{
-		if (pOwner->GetFileIdentifier().GetAvailableMD4PartHashCount() > part)
-			md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(part));
-		else
-			ASSERT( false );
-	}
-	else
-		md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4Hash());
+	md4cpy(cur_hash, pOwner->GetFileIdentifier().GetMD4PartHash(part));
 
 	m_PartsToHash.Add(part);
 	m_DesiredHashes.Add(cur_hash);
@@ -9072,7 +9053,6 @@ int CPartHashThread::Run()
 	CSingleLock sLock(&(m_pOwner->ICH_mut)); // ICH locks the file
 	if (m_ICHused)
 		sLock.Lock();
-	
 	if (file.Open(directory+_T("\\")+filename,CFile::modeRead|CFile::osSequentialScan|CFile::shareDenyNone)){
 		for (UINT i = 0; i < (UINT)m_PartsToHash.GetSize(); i++){
 			uint16 partnumber = m_PartsToHash[i];

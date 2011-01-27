@@ -576,6 +576,7 @@ bool	CPreferences::m_bShowUpDownIconInTaskbar;
 bool	CPreferences::m_bShowWin7TaskbarGoodies;
 bool	CPreferences::m_bForceSpeedsToKB;
 bool	CPreferences::m_bAutoShowLookups;
+bool	CPreferences::m_bExtraPreviewWithMenu;
 
 // ZZ:DownloadManager -->
 //Xman
@@ -1607,8 +1608,8 @@ bool CPreferences::LoadStats(int loadBackUp)
 		CString sINIBackUp;
 		sINIBackUp.Format(L"%sstatbkuptmp.ini", GetMuleDirectory(EMULE_CONFIGDIR));
 		if (findBackUp.FindFile(sINIBackUp)){
-			CFile::Remove(sINI);				// Remove the backup that we just restored from
-			CFile::Rename(sINIBackUp, sINI);	// Rename our temporary backup to the normal statbkup.ini filename.
+			::DeleteFile(sINI);				// Remove the backup that we just restored from
+			::MoveFile(sINIBackUp, sINI);	// Rename our temporary backup to the normal statbkup.ini filename.
 		}
 
 		// Since we know this is a restore, now we should call ShowStatistics to update the data items to the new ones we just loaded.
@@ -1841,7 +1842,7 @@ void CPreferences::SavePreferences()
 	// Maella end
 	ini.WriteInt(L"DeadServerRetry",m_uDeadServerRetries);
 	ini.WriteInt(L"ServerKeepAliveTimeout",m_dwServerKeepAliveTimeout);
-	ini.WriteInt(L"SplitterbarPosition",splitterbarPosition+2);
+	ini.WriteInt(L"SplitterbarPosition",splitterbarPosition);
 	ini.WriteInt(L"SplitterbarPositionServer",splitterbarPositionSvr);
 	ini.WriteInt(L"SplitterbarPositionStat",splitterbarPositionStat+1);
 	//Xman BlueSonicBoy-Stats-Fix
@@ -2709,6 +2710,7 @@ void CPreferences::LoadPreferences()
 	m_bShowUpDownIconInTaskbar = ini.GetBool(L"ShowUpDownIconInTaskbar", false );
 	m_bShowWin7TaskbarGoodies  = ini.GetBool(L"ShowWin7TaskbarGoodies", true);
 	m_bForceSpeedsToKB = ini.GetBool(L"ForceSpeedsToKB", false);
+	m_bExtraPreviewWithMenu = ini.GetBool(L"ExtraPreviewWithMenu", false);
 
 	// read file buffer size (with backward compatibility)
 	m_iFileBufferSize=ini.GetInt(L"FileBufferSizePref",0); // old setting

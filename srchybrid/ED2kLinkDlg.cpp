@@ -19,7 +19,6 @@
 #include "ED2kLinkDlg.h"
 #include "KnownFile.h"
 #include "partfile.h"
-#include "OtherFunctions.h"
 #include "preferences.h"
 #include "shahashset.h"
 #include "UserMsgs.h"
@@ -188,7 +187,7 @@ void CED2kLinkDlg::UpdateLink()
 	CString strBuffer;
 	const bool bHashset = ((CButton*)GetDlgItem(IDC_LD_HASHSETCHE))->GetCheck() == BST_CHECKED;
 	const bool bHTML = ((CButton*)GetDlgItem(IDC_LD_HTMLCHE))->GetCheck() == BST_CHECKED;
-	const bool bSource = ((CButton*)GetDlgItem(IDC_LD_SOURCECHE))->GetCheck() == BST_CHECKED && theApp.IsConnected() && !theApp.IsFirewalled();
+	const bool bSource = ((CButton*)GetDlgItem(IDC_LD_SOURCECHE))->GetCheck() == BST_CHECKED && theApp.IsConnected() && theApp.GetPublicIP() != 0 && !theApp.IsFirewalled();
 	const bool bHostname = ((CButton*)GetDlgItem(IDC_LD_HOSTNAMECHE))->GetCheck() == BST_CHECKED && theApp.IsConnected() && !theApp.IsFirewalled()
 		&& !thePrefs.GetYourHostname().IsEmpty() && thePrefs.GetYourHostname().Find(_T('.')) != -1;
 
@@ -199,43 +198,9 @@ void CED2kLinkDlg::UpdateLink()
 
 		if (!strLinks.IsEmpty())
 			strLinks += _T("\r\n\r\n");
-
-		if (bHTML)
-			strLinks += _T("<a href=\"");
 	
 		CKnownFile* file = STATIC_DOWNCAST(CKnownFile, (*m_paFiles)[i]);
-		strLinks += CreateED2kLink(file, false);
-		
-		if (bHashset && file->GetFileIdentifier().GetAvailableMD4PartHashCount() > 0 && file->GetFileIdentifier().HasExpectedMD4HashCount()){
-			strLinks += _T("p=");
-			for (UINT j = 0; j < file->GetFileIdentifier().GetAvailableMD4PartHashCount(); j++)
-			{
-				if (j > 0)
-					strLinks += _T(':');
-				strLinks += EncodeBase16(file->GetFileIdentifier().GetMD4PartHash(j), 16);
-			}
-			strLinks += _T('|');
-		}
-
-		if (file->GetFileIdentifier().HasAICHHash())
-		{
-			strBuffer.Format(_T("h=%s|"), file->GetFileIdentifier().GetAICHHash().GetString() );
-			strLinks += strBuffer;			
-		}
-
-		strLinks += _T('/');
-		if (bHostname){
-			strBuffer.Format(_T("|sources,%s:%i|/"), thePrefs.GetYourHostname(), thePrefs.GetPort() );
-			strLinks += strBuffer;
-		}
-		else if(bSource){
-			uint32 dwID = theApp.GetID();
-			strBuffer.Format(_T("|sources,%i.%i.%i.%i:%i|/"),(uint8)dwID,(uint8)(dwID>>8),(uint8)(dwID>>16),(uint8)(dwID>>24), thePrefs.GetPort() );
-			strLinks += strBuffer;
-		}
-
-		if (bHTML)
-			strLinks += _T("\">") + StripInvalidFilenameChars(file->GetFileName()) + _T("</a>");
+		strLinks += file->GetED2kLink(bHashset, bHTML, bHostname, bSource, theApp.GetPublicIP());
 	}
 	m_ctrlLinkEdit.SetWindowText(strLinks);
 

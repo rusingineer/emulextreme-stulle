@@ -23,6 +23,7 @@
 #include "Preferences.h"
 #include "opcodes.h"
 #include "Packets.h"
+#include "StringConversion.h"
 #ifdef _DEBUG
 #include "DebugHelpers.h"
 #endif
@@ -486,4 +487,53 @@ void CAbstractFile::RefilterKadNotes(bool bUpdate){
 	}
 	if (bUpdate) // untill updated rating and m_bHasComment might be wrong
 		UpdateFileRatingCommentAvail();
+}
+
+CString CAbstractFile::GetED2kLink(bool bHashset, bool bHTML, bool bHostname, bool bSource, uint32 dwSourceIP) const
+{
+	if (this == NULL)
+	{
+		ASSERT( false );
+		return _T("");
+	}
+	CString strLink, strBuffer;
+	strLink.Format(_T("ed2k://|file|%s|%I64u|%s|"),
+		EncodeUrlUtf8(StripInvalidFilenameChars(GetFileName())),
+		GetFileSize(),
+		EncodeBase16(GetFileHash(),16));
+
+	if (bHTML)
+		strLink = _T("<a href=\"") + strLink;	
+	if (bHashset && GetFileIdentifierC().GetAvailableMD4PartHashCount() > 0 && GetFileIdentifierC().HasExpectedMD4HashCount()){
+		strLink += _T("p=");
+		for (UINT j = 0; j < GetFileIdentifierC().GetAvailableMD4PartHashCount(); j++)
+		{
+			if (j > 0)
+				strLink += _T(':');
+			strLink += EncodeBase16(GetFileIdentifierC().GetMD4PartHash(j), 16);
+		}
+		strLink += _T('|');
+	}
+
+	if (GetFileIdentifierC().HasAICHHash())
+	{
+		strBuffer.Format(_T("h=%s|"), GetFileIdentifierC().GetAICHHash().GetString() );
+		strLink += strBuffer;			
+	}
+
+	strLink += _T('/');
+	if (bHostname && !thePrefs.GetYourHostname().IsEmpty() && thePrefs.GetYourHostname().Find(_T('.')) != -1)
+	{
+		strBuffer.Format(_T("|sources,%s:%i|/"), thePrefs.GetYourHostname(), thePrefs.GetPort() );
+		strLink += strBuffer;
+	}
+	else if(bSource && dwSourceIP != 0)
+	{
+		strBuffer.Format(_T("|sources,%i.%i.%i.%i:%i|/"),(uint8)dwSourceIP,(uint8)(dwSourceIP>>8),(uint8)(dwSourceIP>>16),(uint8)(dwSourceIP>>24), thePrefs.GetPort() );
+		strLink += strBuffer;
+	}
+	if (bHTML)
+		strLink += _T("\">") + StripInvalidFilenameChars(GetFileName()) + _T("</a>");
+	
+	return strLink;
 }

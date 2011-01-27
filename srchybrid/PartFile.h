@@ -348,7 +348,7 @@ public:
 	//Xman end
 
 	CString GetProgressString(uint16 size) const;
-	CString GetInfoSummary() const;
+	CString GetInfoSummary(bool bNoFormatCommands = false) const;
 
 //	int		GetCommonFilePenalty() const;
 	void	UpdateDisplayedInfo(bool force = false);

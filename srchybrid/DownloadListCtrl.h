@@ -29,7 +29,6 @@ class CPartFile;
 class CUpDownClient;
 class CDownloadListCtrl;
 class CToolTipCtrlX;
-class CToolbarWnd;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -118,10 +117,10 @@ public:
 	void	UpdateCurrentCategoryView();
 	void	UpdateCurrentCategoryView(CPartFile* thisfile);
 	CImageList *CreateDragImage(int iItem, LPPOINT lpPoint);
-	void	SetRelatedToolbarWnd(CToolbarWnd* pRelatedToolbar)								{ m_pRelatedToolbar = pRelatedToolbar; }
 	void	FillCatsMenu(CMenu& rCatsMenu, int iFilesInCats = (-1));
 	CTitleMenu* GetPrioMenu();
 	float	GetFinishedSize();
+	bool	ReportAvailableCommands(CList<int>& liAvailableCommands);
 
 	//Xman Xtreme Downloadmanager
 	void    StopSingleClient (CUpDownClient* single);	
@@ -147,8 +146,8 @@ protected:
 	CFont		m_fontNarrowBold;
 	//Xman end
 	CToolTipCtrlX* m_tooltip;
-	CToolbarWnd* m_pRelatedToolbar;
 	uint32		m_dwLastAvailableCommandsCheck;
+	bool		m_availableCommandsDirty;
 
 	void ShowFileDialog(UINT uInvokePage);
 	void ShowClientDialog(CUpDownClient* pClient);
@@ -162,7 +161,6 @@ protected:
 	//Xman end
 	void GetFileItemDisplayText(CPartFile *lpPartFile, int iSubItem, LPTSTR pszText, int cchTextMax);
 	void GetSourceItemDisplayText(const CtrlItem_Struct *pCtrlItem, int iSubItem, LPTSTR pszText, int cchTextMax);
-	void ReportAvailableCommands(bool bForece = false);
 
 	static int CALLBACK SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
     static int Compare(const CPartFile* file1, const CPartFile* file2, LPARAM lParamSort);

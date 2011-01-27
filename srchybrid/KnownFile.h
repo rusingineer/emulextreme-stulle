@@ -150,7 +150,7 @@ public:
 	virtual void GrabbingFinished(CxImage** imgResults, uint8 nFramesGrabbed, void* pSender);
 
 	// Display / Info / Strings
-	virtual CString	GetInfoSummary() const;
+	virtual CString	GetInfoSummary(bool bNoFormatCommands = false) const;
 	CString			GetUpPriorityDisplayString() const;
 
 	//aich

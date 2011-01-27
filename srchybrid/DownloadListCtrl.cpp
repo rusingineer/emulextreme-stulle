@@ -90,8 +90,8 @@ CDownloadListCtrl::CDownloadListCtrl()
 	m_tooltip = new CToolTipCtrlX;
 	SetGeneralPurposeFind(true);
 	SetSkinKey(L"DownloadsLv");
-	m_pRelatedToolbar = NULL;
 	m_dwLastAvailableCommandsCheck = 0;
+	m_availableCommandsDirty = true;
 }
 
 CDownloadListCtrl::~CDownloadListCtrl()
@@ -519,7 +519,7 @@ void CDownloadListCtrl::UpdateItem(void* toupdate)
 			Update(result);
 		}
 	}
-	ReportAvailableCommands();
+	m_availableCommandsDirty = true;
 }
 
 void CDownloadListCtrl::GetFileItemDisplayText(CPartFile *lpPartFile, int iSubItem, LPTSTR pszText, int cchTextMax)
@@ -1447,7 +1447,7 @@ void CDownloadListCtrl::HideSources(CPartFile* toCollapse)
 	for (int i = 0; i < GetItemCount(); i++)
 	{
 		CtrlItem_Struct* item = (CtrlItem_Struct*)GetItemData(i);
-		if (item->owner == toCollapse)
+		if (item != NULL && item->owner == toCollapse)
 		{
 			pre++;
 			item->dwUpdated = 0;
@@ -1468,7 +1468,7 @@ void CDownloadListCtrl::ExpandCollapseItem(int iItem, int iAction, bool bCollaps
 	CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(iItem);
 
 	// to collapse/expand files when one of its source is selected
-	if (bCollapseSource && content->parent != NULL)
+	if (content != NULL && bCollapseSource && content->parent != NULL)
 	{
 		content=content->parent;
 		
@@ -1542,7 +1542,7 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	if (iSel != -1)
 	{
 		const CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(iSel);
-		if (content->type == FILE_TYPE)
+		if (content != NULL && content->type == FILE_TYPE)
 		{
 			// get merged settings
 			bool bFirstItem = true;
@@ -1568,7 +1568,7 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 			while (pos)
 			{
 				const CtrlItem_Struct* pItemData = (CtrlItem_Struct*)GetItemData(GetNextSelectedItem(pos));
-				if (pItemData->type != FILE_TYPE)
+				if (pItemData == NULL || pItemData->type != FILE_TYPE)
 					continue;
 				const CPartFile* pFile = (CPartFile*)pItemData->value;
 				if (bFirstItem)
@@ -1641,8 +1641,10 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 				m_PreviewMenu.EnableMenuItem(MP_PREVIEW, (iSelectedItems == 1 && iFilesToPreview == 1) ? MF_ENABLED : MF_GRAYED);
 				m_PreviewMenu.EnableMenuItem(MP_PAUSEONPREVIEW, iFilesCanPauseOnPreview > 0 ? MF_ENABLED : MF_GRAYED);
 				m_PreviewMenu.CheckMenuItem(MP_PAUSEONPREVIEW, (iSelectedItems > 0 && iFilesDoPauseOnPreview == iSelectedItems) ? MF_CHECKED : MF_UNCHECKED);
-				if (iPreviewMenuEntries)
+				if (iPreviewMenuEntries > 0 && !thePrefs.GetExtraPreviewWithMenu())
 					m_PreviewMenu.InsertMenu(1, MF_POPUP | MF_BYPOSITION | (iSelectedItems == 1 ? MF_ENABLED : MF_GRAYED), (UINT_PTR)PreviewWithMenu.m_hMenu, GetResString(IDS_PREVIEWWITH));
+				else if (iPreviewMenuEntries > 0)
+					m_FileMenu.InsertMenu(MP_METINFO, MF_POPUP | MF_BYCOMMAND | (iSelectedItems == 1 ? MF_ENABLED : MF_GRAYED), (UINT_PTR)PreviewWithMenu.m_hMenu, GetResString(IDS_PREVIEWWITH));
             }
 			else {
 				m_FileMenu.EnableMenuItem(MP_PREVIEW, (iSelectedItems == 1 && iFilesToPreview == 1) ? MF_ENABLED : MF_GRAYED);
@@ -1711,7 +1713,7 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 				CatsMenu.CheckMenuItem(MP_ASSIGNCAT+file1->GetConstCategory(),MF_CHECKED);
 			//Xman end
 
-			bool bToolbarItem = !thePrefs.IsDownloadToolbarEnabled() || (m_pRelatedToolbar != NULL && m_pRelatedToolbar->IsWindowVisible() == FALSE);
+			bool bToolbarItem = !thePrefs.IsDownloadToolbarEnabled();
 			if (bToolbarItem)
 			{
 				m_FileMenu.AppendMenu(MF_SEPARATOR);
@@ -1731,7 +1733,7 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 			if(ispreallomenu)
 				VERIFY( m_FileMenu.RemoveMenu(m_FileMenu.GetMenuItemCount() - 1, MF_BYPOSITION) );
 			//Xman end
-			if (iPreviewMenuEntries && thePrefs.IsExtControlsEnabled())
+			if (iPreviewMenuEntries && thePrefs.IsExtControlsEnabled() && !thePrefs.GetExtraPreviewWithMenu())
 				VERIFY( m_PreviewMenu.RemoveMenu((UINT)PreviewWithMenu.m_hMenu, MF_BYCOMMAND) );
 			else if (iPreviewMenuEntries)
 				VERIFY( m_FileMenu.RemoveMenu((UINT)PreviewWithMenu.m_hMenu, MF_BYCOMMAND) );
@@ -1884,13 +1886,13 @@ void CDownloadListCtrl::FillCatsMenu(CMenu& rCatsMenu, int iFilesInCats)
 		if (iSel != -1)
 		{
 			const CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(iSel);
-			if (content->type == FILE_TYPE)
+			if (content != NULL && content->type == FILE_TYPE)
 			{
 				POSITION pos = GetFirstSelectedItemPosition();
 				while (pos)
 				{
 					const CtrlItem_Struct* pItemData = (CtrlItem_Struct*)GetItemData(GetNextSelectedItem(pos));
-					if (pItemData->type != FILE_TYPE)
+					if (pItemData == NULL || pItemData->type != FILE_TYPE)
 						continue;
 					const CPartFile* pFile = (CPartFile*)pItemData->value;
 					iFilesInCats += (!pFile->HasDefaultCategory()) ? 1 : 0; 
@@ -1921,14 +1923,14 @@ CTitleMenu* CDownloadListCtrl::GetPrioMenu()
 	if (iSel != -1)
 	{
 		const CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(iSel);
-		if (content->type == FILE_TYPE)
+		if (content != NULL && content->type == FILE_TYPE)
 		{
 			bool bFirstItem = true;	
 			POSITION pos = GetFirstSelectedItemPosition();
 			while (pos)
 			{
 				const CtrlItem_Struct* pItemData = (CtrlItem_Struct*)GetItemData(GetNextSelectedItem(pos));
-				if (pItemData->type != FILE_TYPE)
+				if (pItemData == NULL || pItemData->type != FILE_TYPE)
 					continue;
 				const CPartFile* pFile = (CPartFile*)pItemData->value;
 				UINT uCurPrioMenuItem = 0;
@@ -1983,7 +1985,7 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 	if (iSel != -1)
 	{
 		const CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(iSel);
-		if (content->type == FILE_TYPE)
+		if (content != NULL && content->type == FILE_TYPE)
 		{
 			//for multiple selections 
 			UINT selectedCount = 0;
@@ -2367,7 +2369,7 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					while (!selectedList.IsEmpty()){
 						if (!str.IsEmpty())
 							str += _T("\r\n");
-						str += CreateED2kLink(selectedList.GetHead());
+						str += ((CAbstractFile*)selectedList.GetHead())->GetED2kLink();
 						selectedList.RemoveHead();
 					}
 					theApp.CopyTextToClipboard(str);
@@ -2588,7 +2590,7 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 				break;
 		}
 	}
-	ReportAvailableCommands(true);
+	m_availableCommandsDirty = true;
 	return TRUE;
 }
 
@@ -2763,7 +2765,7 @@ void CDownloadListCtrl::OnListModified(NMHDR *pNMHDR, LRESULT * /*pResult*/)
 	BOOL notLast = pNMListView->iItem + 1 != GetItemCount();
 	BOOL notFirst = pNMListView->iItem != 0;
 	RedrawItems(pNMListView->iItem - (int)notFirst, pNMListView->iItem + (int)notLast);
-	ReportAvailableCommands(true);
+	m_availableCommandsDirty = true;
 }
 
 int CDownloadListCtrl::Compare(const CPartFile *file1, const CPartFile *file2, LPARAM lParamSort)
@@ -3172,85 +3174,6 @@ float CDownloadListCtrl::GetFinishedSize()
 	return fsize;
 }
 
-void CDownloadListCtrl::ReportAvailableCommands(bool bForce)
-{
-	if (m_pRelatedToolbar == NULL || (m_dwLastAvailableCommandsCheck > ::GetTickCount() - SEC2MS(3) && !bForce))
-		return;
-	m_dwLastAvailableCommandsCheck = ::GetTickCount();
-
-	CList<int> liAvailableCommands;
-	int iSel = GetNextItem(-1, LVIS_SELECTED);
-	if (iSel != -1)
-	{
-		const CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(iSel);
-		if (content != NULL && content->type == FILE_TYPE)
-		{
-			// get merged settings
-			int iSelectedItems = 0;
-			int iFilesNotDone = 0;
-			int iFilesToPause = 0;
-			int iFilesToStop = 0;
-			int iFilesToResume = 0;
-			int iFilesToOpen = 0;
-            int iFilesGetPreviewParts = 0;
-            int iFilesPreviewType = 0;
-			int iFilesToPreview = 0;
-			int iFilesToCancel = 0;
-			POSITION pos = GetFirstSelectedItemPosition();
-			while (pos)
-			{
-				const CtrlItem_Struct* pItemData = (CtrlItem_Struct*)GetItemData(GetNextSelectedItem(pos));
-				if (pItemData->type != FILE_TYPE)
-					continue;
-				const CPartFile* pFile = (CPartFile*)pItemData->value;
-				iSelectedItems++;
-
-				bool bFileDone = (pFile->GetStatus()==PS_COMPLETE || pFile->GetStatus()==PS_COMPLETING);
-				iFilesToCancel += pFile->GetStatus() != PS_COMPLETING ? 1 : 0;
-				iFilesNotDone += !bFileDone ? 1 : 0;
-				iFilesToStop += pFile->CanStopFile() ? 1 : 0;
-				iFilesToPause += pFile->CanPauseFile() ? 1 : 0;
-				iFilesToResume += pFile->CanResumeFile() ? 1 : 0;
-				iFilesToOpen += pFile->CanOpenFile() ? 1 : 0;
-                iFilesGetPreviewParts += pFile->GetPreviewPrio() ? 1 : 0;
-                iFilesPreviewType += pFile->IsPreviewableFileType() ? 1 : 0;
-				iFilesToPreview += pFile->IsReadyForPreview() ? 1 : 0;
-			}
-
-
-			// enable commands if there is at least one item which can be used for the action
-			if (iFilesToCancel > 0)
-				liAvailableCommands.AddTail(MP_CANCEL);
-			if (iFilesToStop > 0)
-				liAvailableCommands.AddTail(MP_STOP);
-			if (iFilesToPause > 0)
-				liAvailableCommands.AddTail(MP_PAUSE);
-			if (iFilesToResume > 0)
-				liAvailableCommands.AddTail(MP_RESUME);
-			if (iSelectedItems == 1 && iFilesToOpen == 1)
-				liAvailableCommands.AddTail(MP_OPEN);
-			if (iSelectedItems == 1 && iFilesToPreview == 1)
-				liAvailableCommands.AddTail(MP_PREVIEW);
-			if (iSelectedItems > 0)
-			{
-				liAvailableCommands.AddTail(MP_METINFO);
-				liAvailableCommands.AddTail(MP_VIEWFILECOMMENTS);
-				liAvailableCommands.AddTail(MP_SHOWED2KLINK);
-				liAvailableCommands.AddTail(MP_NEWCAT);
-				liAvailableCommands.AddTail(MP_PRIOLOW);
-				if (theApp.emuledlg->searchwnd->CanSearchRelatedFiles())
-					liAvailableCommands.AddTail(MP_SEARCHRELATED);
-			}
-		}
-	}
-	int total;
-	if (GetCompleteDownloads(curTab, total) > 0)
-		liAvailableCommands.AddTail(MP_CLEARCOMPLETED);
-	if (GetItemCount() > 0)
-		liAvailableCommands.AddTail(MP_FIND);
-	m_pRelatedToolbar->OnAvailableCommandsChanged(&liAvailableCommands);
-}
-
 //Xman see all sources
 /* //Xman no need for an additional function
 int CDownloadListCtrl::GetFilesCountInCurCat()
@@ -3309,20 +3232,23 @@ void CDownloadListCtrl::ShowSelectedFileDetails()
 	SetSelectionMark(it);   // display selection mark correctly! 
 
 	CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(GetSelectionMark());
-	if (content->type == FILE_TYPE)
+	if (content != NULL)
 	{
-		CPartFile* file = (CPartFile*)content->value;
-		if (thePrefs.ShowRatingIndicator() 
-			&& (file->HasComment() || file->HasRating() || file->IsKadCommentSearchRunning()) 
-			&& pt.x >= sm_iIconOffset + theApp.GetSmallSytemIconSize().cx 
-			&& pt.x <= sm_iIconOffset + theApp.GetSmallSytemIconSize().cx + RATING_ICON_WIDTH)
-			ShowFileDialog(IDD_COMMENTLST);
+		if (content->type == FILE_TYPE)
+		{
+			CPartFile* file = (CPartFile*)content->value;
+			if (thePrefs.ShowRatingIndicator() 
+				&& (file->HasComment() || file->HasRating() || file->IsKadCommentSearchRunning()) 
+				&& pt.x >= sm_iIconOffset + theApp.GetSmallSytemIconSize().cx 
+				&& pt.x <= sm_iIconOffset + theApp.GetSmallSytemIconSize().cx + RATING_ICON_WIDTH)
+				ShowFileDialog(IDD_COMMENTLST);
+			else
+				ShowFileDialog(0);
+		}
 		else
-			ShowFileDialog(0);
-	}
-	else
-	{
-		ShowClientDialog((CUpDownClient*)content->value);
+		{
+			ShowClientDialog((CUpDownClient*)content->value);
+		}
 	}
 }
 
@@ -3665,7 +3591,7 @@ void CDownloadListCtrl::ShowFileDialog(UINT uInvokePage)
 		if (iItem != -1)
 		{
 			const CtrlItem_Struct* pCtrlItem = (CtrlItem_Struct*)GetItemData(iItem);
-			if (pCtrlItem->type == FILE_TYPE)
+			if (pCtrlItem != NULL && pCtrlItem->type == FILE_TYPE)
 				aFiles.Add((CPartFile*)pCtrlItem->value);
 		}
 	}
@@ -3705,7 +3631,7 @@ CObject* CDownloadListListCtrlItemWalk::GetPrevSelectableItem()
 				iItem--;
 
 				const CtrlItem_Struct* ctrl_item = (CtrlItem_Struct*)m_pDownloadListCtrl->GetItemData(iItem);
-				if (ctrl_item->type == m_eItemType || (m_eItemType != FILE_TYPE && ctrl_item->type != FILE_TYPE))
+				if (ctrl_item != NULL && (ctrl_item->type == m_eItemType || (m_eItemType != FILE_TYPE && ctrl_item->type != FILE_TYPE)))
 				{
 					m_pDownloadListCtrl->SetItemState(iCurSelItem, 0, LVIS_SELECTED | LVIS_FOCUSED);
 					m_pDownloadListCtrl->SetItemState(iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
@@ -3739,7 +3665,7 @@ CObject* CDownloadListListCtrlItemWalk::GetNextSelectableItem()
 				iItem++;
 
 				const CtrlItem_Struct* ctrl_item = (CtrlItem_Struct*)m_pDownloadListCtrl->GetItemData(iItem);
-				if (ctrl_item->type == m_eItemType || (m_eItemType != FILE_TYPE && ctrl_item->type != FILE_TYPE))
+				if (ctrl_item != NULL && (ctrl_item->type == m_eItemType || (m_eItemType != FILE_TYPE && ctrl_item->type != FILE_TYPE)))
 				{
 					m_pDownloadListCtrl->SetItemState(iCurSelItem, 0, LVIS_SELECTED | LVIS_FOCUSED);
 					m_pDownloadListCtrl->SetItemState(iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
@@ -3770,7 +3696,7 @@ CImageList *CDownloadListCtrl::CreateDragImage(int /*iItem*/, LPPOINT lpPoint)
 	{
 		int iItem = GetNextSelectedItem(pos);
 		const CtrlItem_Struct *pCtrlItem = (CtrlItem_Struct *)GetItemData(iItem);
-		if (pCtrlItem && pCtrlItem->type == FILE_TYPE)
+		if (pCtrlItem != NULL && pCtrlItem && pCtrlItem->type == FILE_TYPE)
 		{
 			CRect rcLabel;
 			GetItemRect(iItem, rcLabel, LVIR_LABEL);
@@ -3856,6 +3782,85 @@ CImageList *CDownloadListCtrl::CreateDragImage(int /*iItem*/, LPPOINT lpPoint)
 	}
 
 	return pimlDrag;
+}
+
+bool CDownloadListCtrl::ReportAvailableCommands(CList<int>& liAvailableCommands)
+{
+	if ((m_dwLastAvailableCommandsCheck > ::GetTickCount() - SEC2MS(3) && !m_availableCommandsDirty))
+		return false;
+	m_dwLastAvailableCommandsCheck = ::GetTickCount();
+	m_availableCommandsDirty = false;
+
+	int iSel = GetNextItem(-1, LVIS_SELECTED);
+	if (iSel != -1)
+	{
+		const CtrlItem_Struct* content = (CtrlItem_Struct*)GetItemData(iSel);
+		if (content != NULL && content->type == FILE_TYPE)
+		{
+			// get merged settings
+			int iSelectedItems = 0;
+			int iFilesNotDone = 0;
+			int iFilesToPause = 0;
+			int iFilesToStop = 0;
+			int iFilesToResume = 0;
+			int iFilesToOpen = 0;
+            int iFilesGetPreviewParts = 0;
+            int iFilesPreviewType = 0;
+			int iFilesToPreview = 0;
+			int iFilesToCancel = 0;
+			POSITION pos = GetFirstSelectedItemPosition();
+			while (pos)
+			{
+				const CtrlItem_Struct* pItemData = (CtrlItem_Struct*)GetItemData(GetNextSelectedItem(pos));
+				if (pItemData == NULL || pItemData->type != FILE_TYPE)
+					continue;
+				const CPartFile* pFile = (CPartFile*)pItemData->value;
+				iSelectedItems++;
+
+				bool bFileDone = (pFile->GetStatus()==PS_COMPLETE || pFile->GetStatus()==PS_COMPLETING);
+				iFilesToCancel += pFile->GetStatus() != PS_COMPLETING ? 1 : 0;
+				iFilesNotDone += !bFileDone ? 1 : 0;
+				iFilesToStop += pFile->CanStopFile() ? 1 : 0;
+				iFilesToPause += pFile->CanPauseFile() ? 1 : 0;
+				iFilesToResume += pFile->CanResumeFile() ? 1 : 0;
+				iFilesToOpen += pFile->CanOpenFile() ? 1 : 0;
+                iFilesGetPreviewParts += pFile->GetPreviewPrio() ? 1 : 0;
+                iFilesPreviewType += pFile->IsPreviewableFileType() ? 1 : 0;
+				iFilesToPreview += pFile->IsReadyForPreview() ? 1 : 0;
+			}
+
+
+			// enable commands if there is at least one item which can be used for the action
+			if (iFilesToCancel > 0)
+				liAvailableCommands.AddTail(MP_CANCEL);
+			if (iFilesToStop > 0)
+				liAvailableCommands.AddTail(MP_STOP);
+			if (iFilesToPause > 0)
+				liAvailableCommands.AddTail(MP_PAUSE);
+			if (iFilesToResume > 0)
+				liAvailableCommands.AddTail(MP_RESUME);
+			if (iSelectedItems == 1 && iFilesToOpen == 1)
+				liAvailableCommands.AddTail(MP_OPEN);
+			if (iSelectedItems == 1 && iFilesToPreview == 1)
+				liAvailableCommands.AddTail(MP_PREVIEW);
+			if (iSelectedItems > 0)
+			{
+				liAvailableCommands.AddTail(MP_METINFO);
+				liAvailableCommands.AddTail(MP_VIEWFILECOMMENTS);
+				liAvailableCommands.AddTail(MP_SHOWED2KLINK);
+				liAvailableCommands.AddTail(MP_NEWCAT);
+				liAvailableCommands.AddTail(MP_PRIOLOW);
+				if (theApp.emuledlg->searchwnd->CanSearchRelatedFiles())
+					liAvailableCommands.AddTail(MP_SEARCHRELATED);
+			}
+		}
+	}
+	int total;
+	if (GetCompleteDownloads(curTab, total) > 0)
+		liAvailableCommands.AddTail(MP_CLEARCOMPLETED);
+	if (GetItemCount() > 0)
+		liAvailableCommands.AddTail(MP_FIND);
+	return true;
 }
 
 //Xman Xtreme Downloadmanager

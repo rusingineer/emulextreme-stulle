@@ -2183,7 +2183,7 @@ void CKnownFile::GrabbingFinished(CxImage** imgResults, uint8 nFramesGrabbed, vo
 	delete[] imgResults;
 }
 
-CString CKnownFile::GetInfoSummary() const
+CString CKnownFile::GetInfoSummary(bool bNoFormatCommands) const
 {
 	CString strFolder = GetPath();
 	PathRemoveBackslash(strFolder.GetBuffer());
@@ -2202,11 +2202,12 @@ CString CKnownFile::GetInfoSummary() const
 		, IsAICHRecoverHashSetAvailable() ? _T("Yes") : _T("No"));
 #endif
 
+	CString strHeadFormatCommand = bNoFormatCommands ? _T("") : _T("<br_head>");
 	CString info;
 	info.Format(_T("%s\n")
 		+ CString(_T("eD2K ")) + GetResString(IDS_FD_HASH) + _T(" %s\n")
 		+ GetResString(IDS_AICHHASH) + _T(": %s\n")
-		+ GetResString(IDS_FD_SIZE) + _T(" %s\n<br_head>\n")
+		+ GetResString(IDS_FD_SIZE) + _T(" %s\n") + strHeadFormatCommand + _T("\n")
 		+ GetResString(IDS_TYPE) + _T(": %s\n")
 		+ GetResString(IDS_FOLDER) + _T(": %s\n\n")
 		+ GetResString(IDS_PRIORITY) + _T(": %s\n")

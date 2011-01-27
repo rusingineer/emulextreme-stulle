@@ -979,11 +979,11 @@ void CServerListCtrl::OnNmCustomDraw(NMHDR* /*pNMHDR*/, LRESULT* /*plResult*/)
 		// the server which we are connected to always has a valid numerical IP member assigned,
 		// therefor we do not need to call CServer::IsEqual which would be expensive
 		//if (pConnectedServer && pConnectedServer->IsEqual(pServer))
-		if (pConnectedServer && pConnectedServer->GetIP() == pServer->GetIP() && pConnectedServer->GetPort() == pServer->GetPort())
+		if (pServer && pConnectedServer && pConnectedServer->GetIP() == pServer->GetIP() && pConnectedServer->GetPort() == pServer->GetPort())
 			pnmlvcd->clrText = RGB(32,32,255);
-		else if (pServer->GetFailedCount() >= thePrefs.GetDeadServerRetries())
+		else if (pServer && pServer->GetFailedCount() >= thePrefs.GetDeadServerRetries())
 			pnmlvcd->clrText = RGB(192,192,192);
-		else if (pServer->GetFailedCount() >= 2)
+		else if (pServer && pServer->GetFailedCount() >= 2)
 			pnmlvcd->clrText = RGB(128,128,128);
 	}
 
@@ -1034,6 +1034,7 @@ void CServerListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	CFont fontCustom;
 	if(theApp.serverconnect->IsConnected()
 		&& (cur_srv = theApp.serverconnect->GetCurrentServer()) != NULL
+		&& server != NULL
 		&& cur_srv->GetPort() == server->GetPort()
 		//&& cur_srv->GetConnPort() == server->GetConnPort()//Morph - added by AndCycle, aux Ports, by lugdunummaster
 		&& _tcsicmp(cur_srv->GetAddress(), server->GetAddress()) == 0)
@@ -1047,13 +1048,13 @@ void CServerListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		dc->SetTextColor(RGB(0,0,192));
 	}
 	else //TK4 Mod grey out Filtered servers or Dead servers
-		if(server->GetFailedCount() >= thePrefs.GetDeadServerRetries() || theApp.ipfilter->IsFiltered(server->GetIP()))
+		if(server && server->GetFailedCount() >= thePrefs.GetDeadServerRetries() || theApp.ipfilter->IsFiltered(server->GetIP()))
 		{
 			GetFont()->GetLogFont(&lfFont);
 			fontCustom.CreateFontIndirect(&lfFont);
 			dc.SelectObject(&fontCustom);
 			dc->SetTextColor(RGB(192,192,192));
-		} else if(server->GetFailedCount() >= 2)
+		} else if(server && server->GetFailedCount() >= 2)
 		{ //unreliable servers
 			GetFont()->GetLogFont(&lfFont);
 			fontCustom.CreateFontIndirect(&lfFont);

@@ -67,6 +67,8 @@ public:
 	const uchar* GetFileHash() const					{ return m_FileIdentifier.GetMD4Hash(); }
 	void SetFileHash(const uchar* pucFileHash)			{ m_FileIdentifier.SetMD4Hash(pucFileHash); }
 	bool HasNullHash() const;
+	CString GetED2kLink(bool bHashset = false, bool bHTML = false, bool bHostname = false, bool bSource = false, uint32 dwSourceIP = 0) const;
+
 
 	EMFileSize		GetFileSize() const					{ return m_nFileSize; }
 	virtual void	SetFileSize(EMFileSize nFileSize)	{ m_nFileSize = nFileSize; }
@@ -150,5 +152,4 @@ protected:
 	//Xman Code Improvement for HasCollectionExtention
 	bool m_bhasCollectionExtention;
 	//Xman end
-
 };

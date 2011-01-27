@@ -893,7 +893,7 @@ BOOL CSearchListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					file = selectedList.GetNext(pos);
 					if (!clpbrd.IsEmpty())
 						clpbrd += _T("\r\n");
-					clpbrd += CreateED2kLink(file);
+					clpbrd += file->GetED2kLink();
 				}
 				theApp.CopyTextToClipboard(clpbrd);
 				return TRUE;
@@ -907,7 +907,7 @@ BOOL CSearchListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					file = selectedList.GetNext(pos);
 					if (!clpbrd.IsEmpty())
 						clpbrd += _T("<br />\r\n");
-					clpbrd += CreateHTMLED2kLink(file);
+					clpbrd += file->GetED2kLink(false, true);
 				}
 				theApp.CopyTextToClipboard(clpbrd);
 				return TRUE;
