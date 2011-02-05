@@ -690,7 +690,7 @@ void CSharedFilesCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		//Xman end
 			m_crWindow));
 	dc.SetTextColor((lpDrawItemStruct->itemState & ODS_SELECTED) ? m_crHighlightText : m_crWindowText);
-	dc.SetFont(thePrefs.UseNarrowFont() ? &m_fontNarrow : GetFont()); //Xman narrow font at transferwindow
+	dc.SetFont(GetFont());
 	//zz_fly :: end
 
 	CHeaderCtrl *pHeaderCtrl = GetHeaderCtrl();
