@@ -43,6 +43,7 @@ Xtreme 8.0
 - improved: Made SafeHash ready for new AICH based file identifier (like official) (Stulle)
 - improved: update SafeHash from Morph (Stulle)
 - improved: update Flush Thread and Read Block From File Thread (Morph/Sirob)
+- improved: Don't reset Connection Settings for SysTrayIconMenu (Stulle)
 - changed: only use narrow font in TransferWnd if enabled (like in 6.1) (Stulle)
 - fixed: Reset for BkColor after coloring LowID clients was broken (zz_fly)
 - fixed: Possibly crash fix on ShowComment (WiZaRd)
