@@ -2932,7 +2932,7 @@ int CDownloadListCtrl::Compare(const CUpDownClient *client1, const CUpDownClient
 			*/
 			if (client1->GetClientSoft() == client2->GetClientSoft())
 			{
-				if(client2->GetVersion() == client1->GetVersion() && (client1->GetClientSoft() == SO_EMULE || item1->GetClientSoft() == SO_AMULE))
+				if(client2->GetVersion() == client1->GetVersion() && (client1->GetClientSoft() == SO_EMULE || client1->GetClientSoft() == SO_AMULE))
 					return client2->DbgGetFullClientSoftVer().CompareNoCase( client1->DbgGetFullClientSoftVer());
 				else
 					return client1->GetVersion() - client2->GetVersion();
