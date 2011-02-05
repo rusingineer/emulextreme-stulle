@@ -925,9 +925,6 @@ del $(IntDir)\emule.obj
 				RelativePath="PartFileConvert.h">
 			</File>
 			<File
-				RelativePath="PeerCacheClient.h">
-			</File>
-			<File
 				RelativePath="PeerCacheFinder.h">
 			</File>
 			<File
@@ -965,9 +962,6 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="SearchFile.h">
-			</File>
-			<File
-				RelativePath="SearchFrm.h">
 			</File>
 			<File
 				RelativePath="SearchList.h">
@@ -2163,9 +2157,6 @@ del $(IntDir)\emule.obj
 				RelativePath="res\ClientsOnQueue.ico">
 			</File>
 			<File
-				RelativePath="res\Close.ico">
-			</File>
-			<File
 				RelativePath=".\res\CloseTab.ico">
 			</File>
 			<File
@@ -2176,9 +2167,6 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="res\colour.ico">
-			</File>
-			<File
-				RelativePath="res\Comments.ico">
 			</File>
 			<File
 				RelativePath="res\ConnectDo.ico">
@@ -2277,9 +2265,6 @@ del $(IntDir)\emule.obj
 				RelativePath="res\CopyVisible.ico">
 			</File>
 			<File
-				RelativePath="res\CycleView.ico">
-			</File>
-			<File
 				RelativePath="res\Delete.ico">
 			</File>
 			<File
@@ -2325,9 +2310,6 @@ del $(IntDir)\emule.obj
 				RelativePath="res\emule.rc2">
 			</File>
 			<File
-				RelativePath="res\emuleColl.ico">
-			</File>
-			<File
 				RelativePath="res\emuleCollAdd.ico">
 			</File>
 			<File
@@ -2353,9 +2335,6 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="res\ExportAll.ico">
-			</File>
-			<File
-				RelativePath="res\ExportSelected.ico">
 			</File>
 			<File
 				RelativePath="res\FileComments.ico">
@@ -2427,9 +2406,6 @@ del $(IntDir)\emule.obj
 				RelativePath="res\FileTypeDocument.ico">
 			</File>
 			<File
-				RelativePath="res\FileTypeEmuleCollection.ico">
-			</File>
-			<File
 				RelativePath="res\FileTypePicture.ico">
 			</File>
 			<File
@@ -2437,9 +2413,6 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="res\FileTypeVideo.ico">
-			</File>
-			<File
-				RelativePath="res\FolderOpen.gif">
 			</File>
 			<File
 				RelativePath="res\FolderOpen.ico">
@@ -2620,9 +2593,6 @@ del $(IntDir)\emule.obj
 				RelativePath="res\Preferences.ico">
 			</File>
 			<File
-				RelativePath=".\res\Prefs_Webcache.ico">
-			</File>
-			<File
 				RelativePath="res\Preview.ico">
 			</File>
 			<File
@@ -2642,9 +2612,6 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="res\Proxy.ico">
-			</File>
-			<File
-				RelativePath="res\queue.ico">
 			</File>
 			<File
 				RelativePath="res\Rating.ico">
@@ -2905,15 +2872,6 @@ del $(IntDir)\emule.obj
 				RelativePath="res\UserMessage.ico">
 			</File>
 			<File
-				RelativePath="res\ViewDownload.ico">
-			</File>
-			<File
-				RelativePath="res\ViewUpDown.ico">
-			</File>
-			<File
-				RelativePath="res\ViewUpload.ico">
-			</File>
-			<File
 				RelativePath="res\Web.ico">
 			</File>
 			<File
@@ -2921,9 +2879,6 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath="res\Wizard.ico">
-			</File>
-			<File
-				RelativePath="res\Wizzard.ico">
 			</File>
 		</Filter>
 		<Filter

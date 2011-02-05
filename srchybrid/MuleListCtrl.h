@@ -202,7 +202,12 @@ protected:
 	/*
 	void InitItemMemDC(CMemDC *dc, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL &bCtrlFocused);
 	*/
+	//Xman narrow font at transferwindow
+	/*
 	void InitItemMemDC(CMemoryDC *dc, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL &bCtrlFocused);
+	*/
+	void InitItemMemDC(CMemoryDC *dc, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL &bCtrlFocused, bool bTransferWnd = false);
+	//Xman end
 	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 
 	static __inline bool HaveIntersection(const CRect &rc1, const CRect &rc2) {

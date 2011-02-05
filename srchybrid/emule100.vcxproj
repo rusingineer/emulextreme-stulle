@@ -626,12 +626,10 @@ del $(IntDir)emule.obj
     <None Include="res\ClientShareazaPlus.ico" />
     <None Include="res\ClientsKnown.ico" />
     <None Include="res\ClientsOnQueue.ico" />
-    <None Include="res\Close.ico" />
     <None Include="res\CloseTab.ico" />
     <None Include="res\CloseTabSelected.ico" />
     <None Include="res\Collapse.ico" />
     <None Include="res\colour.ico" />
-    <None Include="res\Comments.ico" />
     <None Include="res\ConnectDo.ico" />
     <None Include="res\ConnectDrop.ico" />
     <None Include="res\Connected.gif" />
@@ -664,7 +662,6 @@ del $(IntDir)emule.obj
     <None Include="res\Copy.ico" />
     <None Include="res\CopySelected.ico" />
     <None Include="res\CopyVisible.ico" />
-    <None Include="res\CycleView.ico" />
     <None Include="res\Delete.ico" />
     <None Include="res\DeleteAll.ico" />
     <None Include="res\DeleteSelected.ico" />
@@ -678,7 +675,6 @@ del $(IntDir)emule.obj
     <None Include="res\eD2kLinkPaste.ico" />
     <None Include="res\Empty.ico" />
     <None Include="res\emule.rc2" />
-    <None Include="res\emuleColl.ico" />
     <None Include="res\emuleCollAdd.ico" />
     <None Include="res\emuleCollectionFileType.ico" />
     <None Include="res\emuleCollEdit.ico" />
@@ -688,7 +684,6 @@ del $(IntDir)emule.obj
     <None Include="res\ExpandAll.ico" />
     <None Include="res\ExpandAll2.ico" />
     <None Include="res\ExportAll.ico" />
-    <None Include="res\ExportSelected.ico" />
     <None Include="res\FileComments.ico" />
     <None Include="res\FileCommentsOvl.ico" />
     <None Include="res\FileDonkey.ico" />
@@ -707,17 +702,14 @@ del $(IntDir)emule.obj
     <None Include="res\FileRequested.ico" />
     <None Include="res\FileSharedKad.ico" />
     <None Include="res\FileSharedServer.ico" />
-    <None Include="res\FileSpreadbar.ico" />
     <None Include="res\FileTypeAny.ico" />
     <None Include="res\FileTypeArchive.ico" />
     <None Include="res\FileTypeAudio.ico" />
     <None Include="res\FileTypeCDImage.ico" />
     <None Include="res\FileTypeDocument.ico" />
-    <None Include="res\FileTypeEmuleCollection.ico" />
     <None Include="res\FileTypePicture.ico" />
     <None Include="res\FileTypeProgram.ico" />
     <None Include="res\FileTypeVideo.ico" />
-    <None Include="res\FolderOpen.gif" />
     <None Include="res\FolderOpen.ico" />
     <None Include="res\Folders.ico" />
     <None Include="res\Friend.ico" />
@@ -779,7 +771,6 @@ del $(IntDir)emule.obj
     <None Include="res\Pause.ico" />
     <None Include="res\Preferences.gif" />
     <None Include="res\Preferences.ico" />
-    <None Include="res\Prefs_Webcache.ico" />
     <None Include="res\Preview.ico" />
     <None Include="res\Priority.ico" />
     <None Include="res\PriorityAuto.ico" />
@@ -787,7 +778,6 @@ del $(IntDir)emule.obj
     <None Include="res\PriorityLow.ico" />
     <None Include="res\PriorityNormal.ico" />
     <None Include="res\Proxy.ico" />
-    <None Include="res\queue.ico" />
     <None Include="res\Rating.ico" />
     <None Include="res\RatingBad.ico" />
     <None Include="res\Records.ico" />
@@ -874,13 +864,9 @@ del $(IntDir)emule.obj
     <None Include="res\UserDetails.ico" />
     <None Include="res\UserFiles.ico" />
     <None Include="res\UserMessage.ico" />
-    <None Include="res\ViewDownload.ico" />
-    <None Include="res\ViewUpDown.ico" />
-    <None Include="res\ViewUpload.ico" />
     <None Include="res\Web.ico" />
     <None Include="res\WideCharLowerMap.bin" />
     <None Include="res\Wizard.ico" />
-    <None Include="res\Wizzard.ico" />
     <None Include="..\setup\eMule Light.tmpl" />
     <None Include="..\setup\eMule.tmpl" />
     <None Include="..\setup\staticservers.dat" />
@@ -945,7 +931,6 @@ del $(IntDir)emule.obj
     <ClInclude Include="Packets.h" />
     <ClInclude Include="PartFile.h" />
     <ClInclude Include="PartFileConvert.h" />
-    <ClInclude Include="PeerCacheClient.h" />
     <ClInclude Include="PeerCacheFinder.h" />
     <ClInclude Include="PeerCacheSocket.h" />
     <ClInclude Include="PerfLog.h" />
@@ -959,7 +944,6 @@ del $(IntDir)emule.obj
     <ClInclude Include="SafeFile.h" />
     <ClInclude Include="Scheduler.h" />
     <ClInclude Include="SearchFile.h" />
-    <ClInclude Include="SearchFrm.h" />
     <ClInclude Include="SearchList.h" />
     <ClInclude Include="SecRunAsUser.h" />
     <ClInclude Include="SendMail.h" />

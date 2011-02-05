@@ -985,9 +985,6 @@
     <None Include="res\ClientsOnQueue.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\Close.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\CloseTab.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -998,9 +995,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\colour.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\Comments.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\ConnectDo.ico">
@@ -1099,9 +1093,6 @@
     <None Include="res\CopyVisible.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\CycleView.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\Delete.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -1141,9 +1132,6 @@
     <None Include="res\emule.rc2">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\emuleColl.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\emuleCollAdd.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -1169,9 +1157,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\ExportAll.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\ExportSelected.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\FileComments.ico">
@@ -1228,9 +1213,6 @@
     <None Include="res\FileSharedServer.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\FileSpreadbar.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\FileTypeAny.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -1246,9 +1228,6 @@
     <None Include="res\FileTypeDocument.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\FileTypeEmuleCollection.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\FileTypePicture.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -1256,9 +1235,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\FileTypeVideo.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\FolderOpen.gif">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\FolderOpen.ico">
@@ -1438,9 +1414,6 @@
     <None Include="res\Preferences.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\Prefs_Webcache.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\Preview.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -1460,9 +1433,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Proxy.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\queue.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Rating.ico">
@@ -1723,15 +1693,6 @@
     <None Include="res\UserMessage.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ViewDownload.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\ViewUpDown.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\ViewUpload.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\Web.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -1739,9 +1700,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Wizard.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\Wizzard.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\setup\eMule Light.tmpl">
@@ -1926,9 +1884,6 @@
     <ClInclude Include="PartFileConvert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PeerCacheClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PeerCacheFinder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1966,9 +1921,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SearchFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SearchFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SearchList.h">

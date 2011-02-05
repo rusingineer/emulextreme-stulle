@@ -207,7 +207,12 @@ void CDownloadClientsCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	CMemoryDC dc(CDC::FromHandle(lpDrawItemStruct->hDC), &lpDrawItemStruct->rcItem);
 	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 	BOOL bCtrlFocused;
+	//Xman narrow font at transferwindow
+	/*
 	InitItemMemDC(dc, lpDrawItemStruct, bCtrlFocused);
+	*/
+	InitItemMemDC(dc, lpDrawItemStruct, bCtrlFocused, true);
+	//Xman end
 	CRect cur_rec(lpDrawItemStruct->rcItem);
 	CRect rcClient;
 	GetClientRect(&rcClient);

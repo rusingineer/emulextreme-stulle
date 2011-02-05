@@ -1340,7 +1340,12 @@ BOOL CMuleListCtrl::OnChildNotify(UINT message, WPARAM wParam, LPARAM lParam, LR
 /*
 void CMuleListCtrl::InitItemMemDC(CMemDC *dc, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL &bCtrlFocused)
 */
+//Xman narrow font at transferwindow
+/*
 void CMuleListCtrl::InitItemMemDC(CMemoryDC *dc, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL &bCtrlFocused)
+*/
+void CMuleListCtrl::InitItemMemDC(CMemoryDC *dc, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL &bCtrlFocused, bool bTransferWnd)
+//Xman end
 // <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 {
 	bCtrlFocused = ((GetFocus() == this) || (GetStyle() & LVS_SHOWSELALWAYS));
@@ -1371,7 +1376,7 @@ void CMuleListCtrl::InitItemMemDC(CMemoryDC *dc, LPDRAWITEMSTRUCT lpDrawItemStru
 	/*
 	dc->SetFont(GetFont());
 	*/
-	dc->SetFont(thePrefs.UseNarrowFont() ? &m_fontNarrow : GetFont());
+	dc->SetFont((thePrefs.UseNarrowFont() && bTransferWnd) ? &m_fontNarrow : GetFont());
 	//Xman end
 }
 
