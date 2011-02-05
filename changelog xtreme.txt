@@ -39,10 +39,12 @@ Xtreme 8.0
 - updated libpng to 1.4.3 (Stulle)
 - updated zlib to 1.2.5 (Stulle)
 - add: Some more countries to country flags feature (tomchen1989)
-- add: ATL Server code for VS2008 compilation (Stulle)
+- add: ATL Server code for VS2008/2010 compilation (Stulle)
+- add: added VS10 solution and project files (Stulle)
 - improved: Made SafeHash ready for new AICH based file identifier (like official) (Stulle)
 - improved: update SafeHash from Morph (Stulle)
 - improved: update Flush Thread and Read Block From File Thread (Morph/Sirob)
+- improved: Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied]
 - improved: Don't reset Connection Settings for SysTrayIconMenu (Stulle)
 - improved: Sort progress bars by percentage (Fafner/Xman)
 - improved: Also include modstring when sorting by software for aMule (Stulle)
