@@ -113,7 +113,12 @@ void CProgressCtrlX::OnPaint()
 
 	
 	// Draw to memory DC
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+	/*
 	CMemDC memDC(&dc);
+	*/
+	CMemoryDC memDC(&dc);
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 	info.pDC = &memDC;
 	
 	// fill background 

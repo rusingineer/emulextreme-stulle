@@ -147,7 +147,12 @@ void CKadLookupGraph::OnPaint()
 	if (rcClnt.IsRectEmpty())
 		return;
 
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+	/*
 	CMemDC dc(&pdc, rcClnt);
+	*/
+	CMemoryDC dc(&pdc, rcClnt);
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 	CPen* pOldPen = dc.SelectObject(&m_penAxis);
 	if (g_xpStyle.IsThemeActive() && g_xpStyle.IsAppThemed())
 	{

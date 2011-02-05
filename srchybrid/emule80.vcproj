@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="emule80"
 	ProjectGUID="{584EA69D-3443-4197-8994-364880FC1B9B}"
 	RootNamespace="emule"
@@ -236,7 +236,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Inserting Vista application icon..."
-				CommandLine="..\ReplaceVistaIcon\release\ReplaceVistaIcon &quot;$(TargetPath)&quot; &quot;$(ProjectDir)res\Mule_Vista.ico&quot; AAAEMULEAPP&#x0D;&#x0A;del $(IntDir)\emule.obj"
+				CommandLine="..\ReplaceVistaIcon\release\ReplaceVistaIcon &quot;$(TargetPath)&quot; &quot;$(ProjectDir)res\Mule_Vista.ico&quot; AAAEMULEAPP&#x0D;&#x0A;del $(IntDir)\emule.obj&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -3998,6 +3998,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NetF.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NetF.h"
+				>
+			</File>
+			<File
 				RelativePath=".\NumEdit.cpp"
 				>
 			</File>
@@ -4051,6 +4059,14 @@
 			</File>
 			<File
 				RelativePath=".\SplashScreenEx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnP_acat.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnP_acat.h"
 				>
 			</File>
 			<File

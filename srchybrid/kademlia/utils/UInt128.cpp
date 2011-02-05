@@ -37,7 +37,9 @@ there client on the eMule forum..
 /*
 #include <crypto51/osrng.h>
 */
+#pragma warning(disable:4189) // local variable is initialized but not referenced
 #include <cryptopp/osrng.h>
+#pragma warning(default:4189) // local variable is initialized but not referenced
 //Xman end
 #pragma warning(default:4702) // unreachable code
 #pragma warning(default:4100) // unreferenced formal parameter

@@ -182,6 +182,13 @@ void CSearchResultsWnd::OnInitialUpdate()
 		GetDlgItem(IDC_STATIC_DLTOof)->SetFont(&theApp.m_fontSymbol);
 		GetDlgItem(IDC_STATIC_DLTOof)->SetWindowText(GetExStyle() & WS_EX_LAYOUTRTL ? _T("3") : _T("4")); // show a right-arrow
 	}
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER>=1600
+	m_ctlOpenParamsWnd.ModifyStyle(0,BS_OWNERDRAW,0);
+	m_Download.ModifyStyle(0,BS_OWNERDRAW,0);
+	m_ClearAll.ModifyStyle(0,BS_OWNERDRAW,0);
+#endif
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 }
 
 void CSearchResultsWnd::DoDataExchange(CDataExchange* pDX)
@@ -193,6 +200,12 @@ void CSearchResultsWnd::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CATTAB2, *m_cattabs);
 	DDX_Control(pDX, IDC_FILTER, m_ctlFilter);
 	DDX_Control(pDX, IDC_OPEN_PARAMS_WND, m_ctlOpenParamsWnd);
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER>=1600
+	DDX_Control(pDX, IDC_SDOWNLOAD, m_Download);
+	DDX_Control(pDX, IDC_CLEARALL, m_ClearAll);
+#endif
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 	DDX_Control(pDX, IDC_SEARCHLST_ICO, *m_btnSearchListMenu);
 }
 

@@ -197,6 +197,12 @@ void CTransferWnd::OnInitialUpdate()
 
 	VerifyCatTabSize();
     Localize();
+
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER>=1600
+	m_Refresh.ModifyStyle(0,BS_OWNERDRAW,0);
+#endif
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 }
 
 void CTransferWnd::ShowQueueCount(uint32 number)
@@ -213,6 +219,11 @@ void CTransferWnd::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_DOWNLOAD_ICO, *m_btnWnd1);
 	DDX_Control(pDX, IDC_UPLOAD_ICO, *m_btnWnd2);
 	DDX_Control(pDX, IDC_DLTAB, m_dlTab);
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER>=1600
+	DDX_Control(pDX, IDC_QUEUE_REFRESH_BUTTON, m_Refresh);
+#endif
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 	DDX_Control(pDX, IDC_UPLOADLIST, uploadlistctrl);
 	DDX_Control(pDX, IDC_DOWNLOADLIST, downloadlistctrl);
 	DDX_Control(pDX, IDC_QUEUELIST, queuelistctrl);

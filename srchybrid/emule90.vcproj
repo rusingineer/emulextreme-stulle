@@ -4023,6 +4023,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NetF.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NetF.h"
+				>
+			</File>
+			<File
 				RelativePath=".\NumEdit.cpp"
 				>
 			</File>
@@ -4076,6 +4084,14 @@
 			</File>
 			<File
 				RelativePath=".\SplashScreenEx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnP_acat.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UPnP_acat.h"
 				>
 			</File>
 			<File

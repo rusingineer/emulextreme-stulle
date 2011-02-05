@@ -23,6 +23,11 @@
 #include "QueueListCtrl.h"
 #include "ClientListCtrl.h"
 #include "DownloadClientsCtrl.h"
+// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER>=1600
+#include "ButtonVE.h"
+#endif
+// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 
 class CDropDownButton;
 class CToolTipCtrlX;
@@ -102,6 +107,11 @@ protected:
 	uint32		m_dwShowListIDC;
 	CToolTipCtrlX* m_tooltipCats;
 	bool		m_bLayoutInited;
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER>=1600
+	CButtonVE	m_Refresh;
+#endif
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 
 	void	ShowWnd2(EWnd2 uList);
 	void	SetWnd2(EWnd2 uWnd2);

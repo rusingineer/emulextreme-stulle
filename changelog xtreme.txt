@@ -1,4 +1,4 @@
-Xtreme 7.2
+Xtreme 8.0
 ----------------
 
 Main Features:
@@ -21,9 +21,9 @@ german, english, spanish,  french, italian, chinese, turkish, czech
 
 based on emule 0.50a
 compiled with:
-libpng 1.2.28
-zlib 1.2.3
-crypto 5.5.2
+libpng 1.4.3
+zlib 1.2.5
+crypto 5.6.0
 CxImage version 6.00
 EditBinX
 ReplaceVistaIcon
@@ -35,6 +35,9 @@ MiniUPnP Lib (as of official)
 Xtreme 8.0
 * this version is modded by Stulle
 - updated to 0.50a codebase
+- updated cryptolib Version to 5.6.0 (3/15/2009) (Stulle)
+- updated libpng to 1.4.3 (Stulle)
+- updated zlib to 1.2.5 (Stulle)
 - add: Some more countries to country flags feature (tomchen1989)
 - add: ATL Server code for VS2008 compilation (Stulle)
 - improved: Made SafeHash ready for new AICH based file identifier (like official) (Stulle)

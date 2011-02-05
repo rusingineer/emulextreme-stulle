@@ -21,6 +21,11 @@
 #include "MenuCmds.h"
 #include "UserMsgs.h"
 #include "VisualStylesXP.h"
+// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER>=1600
+#include "Preferences.h"
+#endif
+// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -549,7 +554,29 @@ HBRUSH CClosableTabCtrl::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 // Vista: Can not be used to workaround the problems with owner drawn tab control
 BOOL CClosableTabCtrl::OnEraseBkgnd(CDC* pDC)
 {
+	// ==> Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
+#if _MSC_VER<1600
 	return CTabCtrl::OnEraseBkgnd(pDC);
+#else
+	if(thePrefs.GetWindowsVersion() >= _WINVER_VISTA_)
+		return CTabCtrl::OnEraseBkgnd(pDC);
+
+	// Set brush to desired background color
+	CBrush backBrush(GetSysColor(COLOR_BTNFACE));
+
+	// Save old brush
+	CBrush* pOldBrush = pDC->SelectObject(&backBrush);
+
+	// So it seems this finally got broken on VS2010 for XP... so when we erase background now we just set it ourself now...
+	CRect rect;
+	pDC->GetClipBox(&rect);     // Erase the area needed
+
+	pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(),
+        PATCOPY);
+	pDC->SelectObject(pOldBrush);
+	return TRUE;
+#endif
+	// <== Visual Studio 2010 Compatibility [Stulle/Avi-3k/ied] - Stulle
 }
 
 BOOL CClosableTabCtrl::DeleteItem(int nItem)

@@ -43,7 +43,7 @@
 				AdditionalDependencies="version.lib winmm.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib Iphlpapi.lib mpr.lib WMSDK\lib9\WMVCORE.lib .\miniupnpc\Debug\miniupnpc.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				IgnoreDefaultLibraryNames=""
+				IgnoreDefaultLibraryNames="msvcrtd.lib"
 				DelayLoadDLLs="oleacc.dll;gdiplus.dll"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
@@ -117,7 +117,7 @@
 				AdditionalOptions="/safeseh"
 				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib crypt32.lib WMSDK\lib9\WMVCORE.lib .\miniupnpc\Release\miniupnpc.lib"
 				LinkIncremental="1"
-				IgnoreDefaultLibraryNames="kernel32.lib;advapi32.lib;user32.lib;gdi32.lib;shell32.lib;comdlg32.lib;version.lib;mpr.lib;rasapi32.lib;winmm.lib;winspool.lib;vfw32.lib;secur32.lib;oleacc.lib;oledlg.lib;sensapi.lib"
+				IgnoreDefaultLibraryNames="kernel32.lib;advapi32.lib;user32.lib;gdi32.lib;shell32.lib;comdlg32.lib;version.lib;mpr.lib;rasapi32.lib;winmm.lib;winspool.lib;vfw32.lib;secur32.lib;oleacc.lib;oledlg.lib;sensapi.lib;msvcrt.lib"
 				DelayLoadDLLs="oleacc.dll;gdiplus.dll"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
@@ -197,7 +197,7 @@ echo Enabling Dynamic Base support...
 				AdditionalOptions="/safeseh"
 				AdditionalDependencies="unicows.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib ws2_32.lib gdiplus.lib ADSIId.lib Mpr.lib crypt32.lib WMSDK\lib9\WMVCORE.lib .\miniupnpc\Release\miniupnpc.lib"
 				LinkIncremental="1"
-				IgnoreDefaultLibraryNames="kernel32.lib;advapi32.lib;user32.lib;gdi32.lib;shell32.lib;comdlg32.lib;version.lib;mpr.lib;rasapi32.lib;winmm.lib;winspool.lib;vfw32.lib;secur32.lib;oleacc.lib;oledlg.lib;sensapi.lib"
+				IgnoreDefaultLibraryNames="kernel32.lib;advapi32.lib;user32.lib;gdi32.lib;shell32.lib;comdlg32.lib;version.lib;mpr.lib;rasapi32.lib;winmm.lib;winspool.lib;vfw32.lib;secur32.lib;oleacc.lib;oledlg.lib;sensapi.lib;msvcrt.lib"
 				DelayLoadDLLs="oleacc.dll;gdiplus.dll"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
@@ -3035,6 +3035,12 @@ del $(IntDir)\emule.obj
 			</File>
 			<File
 				RelativePath=".\SplashScreenEx.h">
+			</File>
+			<File
+				RelativePath=".\UPnP_acat.cpp">
+			</File>
+			<File
+				RelativePath=".\UPnP_acat.h">
 			</File>
 			<File
 				RelativePath=".\WndUtil.h">

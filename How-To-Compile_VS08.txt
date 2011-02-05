@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------
-	How to compile eMule MorphXT using Visual Studio 2008 SP1
+	How to compile eMule Xtreme (Stulle's Build) using Visual Studio 2008 SP1
 -------------------------------------------------------------------------
 
 1. Download Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1 here:
@@ -14,7 +14,7 @@
 
 3. Decide on install folder.
 
-4. Check 'Windows Headers and Libaries'. This is just enough for compiling MorphXT. If you want to install anything else 
+4. Check 'Windows Headers and Libaries'. This is just enough for compiling Xtreme. If you want to install anything else 
    do it but it is not required. Basically, you will only waste space on your hard drive.
 
 5. Wait a quarter of a century for the installation to finish... Actually, it is pretty fast if you do as we suggest.
@@ -24,7 +24,7 @@
 
 7. Start $Source Dir$\srchybrid\emule90.sln and pick build type you want to compile.
 
-8. Be happy with this new fine MorphXT Release.
+8. Be happy with this new fine Xtreme Release.
 
 
 NOTE: The provided sources contain all additionally required Microsoft SDK includes and libs so this is just about ready to compile.
