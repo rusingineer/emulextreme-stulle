@@ -111,7 +111,7 @@
 #include "BandWidthControl.h" // Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 #include "IP2Country.h" //EastShare - added by AndCycle, IP to Country
 #include "DLP.h" //Xman DLP
-
+//Xman End
 #include "TextToSpeech.h"
 #include "Collection.h"
 #include "CollectionViewDialog.h"
@@ -230,7 +230,9 @@ BEGIN_MESSAGE_MAP(CemuleDlg, CTrayDialog)
 	//Xman
 	// BEGIN SLUGFILLER: SafeHash
 	ON_MESSAGE(TM_PARTHASHEDOK, OnPartHashedOK)
+	ON_MESSAGE(TM_PARTHASHEDOKNOAICH, OnPartHashedOKNoAICH)
 	ON_MESSAGE(TM_PARTHASHEDCORRUPT, OnPartHashedCorrupt)
+	ON_MESSAGE(TM_PARTHASHEDCORRUPTNOAICH, OnPartHashedCorruptNoAICH)
 	ON_MESSAGE(TM_PARTHASHEDOKAICHRECOVER, OnPartHashedOKAICHRecover)
 	ON_MESSAGE(TM_PARTHASHEDCORRUPTAICHRECOVER, OnPartHashedCorruptAICHRecover)
 	// END SLUGFILLER: SafeHash
@@ -687,7 +689,11 @@ BOOL CemuleDlg::OnInitDialog()
 	theStats.starttime = GetTickCount();
 
 	// Start UPnP prot forwarding
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if (!thePrefs.m_bUseACATUPnPCurrent && thePrefs.IsUPnPEnabled())
+#else //zz_fly :: dual upnp
 	if (thePrefs.IsUPnPEnabled())
+#endif //zz_fly :: dual upnp
 		StartUPnP();
 
 	if (thePrefs.IsFirstStart())
@@ -708,7 +714,7 @@ BOOL CemuleDlg::OnInitDialog()
 
 	// initalize PeerCache
 	theApp.m_pPeerCache->Init(thePrefs.GetPeerCacheLastSearch(), thePrefs.WasPeerCacheFound(), thePrefs.IsPeerCacheDownloadEnabled(), thePrefs.GetPeerCachePort());
-	
+
 	//Xman
 	// SiRoB: SafeHash fix (see StartupTimer)
 	/*
@@ -750,27 +756,6 @@ void CemuleDlg::DoVersioncheck(bool manual) {
 		AddLogLine(true,GetResString(IDS_NEWVERSIONFAILED));
 	}
 }
-
-//Xman versions check
-void CemuleDlg::DoMVersioncheck(bool manual) {
-	if (!manual && thePrefs.GetLastMVC()!=0) {
-		CTime last(thePrefs.GetLastMVC());
-		struct tm tmTemp;
-		time_t tLast=safe_mktime(last.GetLocalTm(&tmTemp));
-		time_t tNow=safe_mktime(CTime::GetCurrentTime().GetLocalTm(&tmTemp));
-		if ( (difftime(tNow,tLast) / 86400)<thePrefs.GetUpdateDays() )
-			return;
-	}
-	if (WSAAsyncGetHostByName(m_hWnd, UM_MVERSIONCHECK_RESPONSE, "xtreme.dyndns.info", m_acMVCDNSBuffer, sizeof(m_acMVCDNSBuffer)) == 0){
-		AddLogLine(true,GetResString(IDS_NEWVERSIONFAILED));
-	}
-	//Xman DLP //MOD NOTE: if you are using DLP, don't remove/modify this versions-check
-	else if (WSAAsyncGetHostByName(m_hWnd, UM_DLPVERSIONCHECK_RESPONSE, "dlp.dyndns.info", m_acDLPBuffer, sizeof(m_acDLPBuffer)) == 0){
-		AddLogLine(true,_T("DLP version check failed"));
-	}
-	//Xman End
-}
-//Xman end
 
 void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEvent*/, DWORD /*dwTime*/)
 {
@@ -818,7 +803,7 @@ void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEv
 			case 4:{
 				bool bError = false;
 				theApp.emuledlg->status++;
-				theApp.UpdateSplash(_T("initializing  files to download ...")); //Xman new slpash-screen arrangement
+				theApp.UpdateSplash(_T("initializing files to download ...")); //Xman new slpash-screen arrangement
 
 				// NOTE: If we have an unhandled exception in CDownloadQueue::Init, MFC will silently catch it
 				// and the creation of the TCP and the UDP socket will not be done -> client will get a LowID!
@@ -904,8 +889,8 @@ void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEv
 				break;
 			// END SLUGFILLER: SafeHash
 			default:
-			//Xman
-			// BEGIN SLUGFILLER: SafeHash
+				//Xman
+				// BEGIN SLUGFILLER: SafeHash
 				theApp.emuledlg->status = 255;
 				theApp.UpdateSplash(_T("Ready")); //Xman new slpash-screen arrangement
 				//autoconnect only after emule loaded completely
@@ -920,7 +905,7 @@ void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEv
 					//Xman end
 					FirstTimeWizard();
 				}
-			// END SLUGFILLER: SafeHash
+				// END SLUGFILLER: SafeHash
 				theApp.emuledlg->StopTimer();
 		}
 	}
@@ -934,7 +919,6 @@ void CALLBACK CemuleDlg::StartupTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEv
 				AddLogLine(true, _T("Unknown %s exception in "), __FUNCTION__);
 		}
 		// Maella end
-
 }
 
 void CemuleDlg::StopTimer()
@@ -943,12 +927,11 @@ void CemuleDlg::StopTimer()
 		VERIFY( ::KillTimer(NULL, m_hTimer) );
 		m_hTimer = 0;
 	}
-	
+
 	theApp.spashscreenfinished=true; //Xman new slpash-screen arrangement
-	
+
 	if (thePrefs.UpdateNotify())
 		DoVersioncheck(false);
-	
 	//MOD NOTE: if you are using DLP, don't remove/modify this versions-check
 	//Xman versions check
 	if (thePrefs.UpdateNotifyMod())
@@ -959,7 +942,6 @@ void CemuleDlg::StopTimer()
 		OnWMData(NULL, (LPARAM)&theApp.sendstruct);
 		delete theApp.pstrPendingLink;
 	}
-
 }
 
 void CemuleDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -988,13 +970,11 @@ void CemuleDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		case MP_VERSIONCHECK:
 			DoVersioncheck(true);
 			break;
-
-	//Xman versions check
-	case MP_MVERSIONCHECK:
-		DoMVersioncheck(true);
-		break;
-	//Xman end
-
+		//Xman versions check
+		case MP_MVERSIONCHECK:
+			DoMVersioncheck(true);
+			break;
+		//Xman end
 		case MP_CONNECT:
 			StartConnection();
 			break;
@@ -1131,7 +1111,6 @@ void CemuleDlg::AddLogText(UINT uFlags, LPCTSTR pszText)
 	//Xman Anti-Leecher-Log
 	if ((uFlags & LOG_LEECHER) && !thePrefs.GetVerbose())
 		return;
-
 
 	TCHAR temp[1060];
 	int iLen = _sntprintf(temp, _countof(temp), _T("%s: %s\r\n"), CTime::GetCurrentTime().Format(thePrefs.GetDateTimeFormat4Log()), pszText);
@@ -1460,7 +1439,6 @@ void CemuleDlg::ShowTransferRate(bool bForceAll)
 										   eMuleOut, eMuleOutOverall,
 										   notUsed, notUsed);
 
-	
 	m_uDownDatarate = eMuleIn;
 	m_uUpDatarate = eMuleOut;
 	m_uploadOverheadRate=eMuleOutOverall-eMuleOut;
@@ -1507,7 +1485,6 @@ void CemuleDlg::ShowTransferRate(bool bForceAll)
 		transferwnd->GetDownloadList()->ShowFilesCount();
 	}
 	//Xman end
-
 
 	if (IsWindowVisible() || bForceAll)
 	{
@@ -1646,10 +1623,10 @@ void CemuleDlg::SetStatusBarPartsSize()
 	int aiWidths[5] =
 	{ 
 		rect.right - 675 - ussShift,
-			rect.right - 440 - ussShift,
-			rect.right - 235 - ussShift,
-			rect.right -  25 - ussShift,
-			-1
+		rect.right - 440 - ussShift,
+		rect.right - 235 - ussShift,
+		rect.right -  25 - ussShift,
+		-1
 	};
 	//Xman end
 
@@ -1685,7 +1662,8 @@ void CemuleDlg::ProcessED2KLink(LPCTSTR pszData)
 				if(theApp.knownfiles->CheckAlreadyDownloadedFileQuestion(pFileLink->GetHashKey(),pFileLink->GetName()))
 				{
 					theApp.downloadqueue->AddFileLinkToDownload(pFileLink,searchwnd->GetSelectedCat());
-				} //Xman end
+				}
+				//Xman end
 			}
 			break;
 		case CED2KLink::kServerList:
@@ -1739,8 +1717,8 @@ void CemuleDlg::ProcessED2KLink(LPCTSTR pszData)
 				searchwnd->ProcessEd2kSearchLinkRequest(pListLink->GetSearchTerm());
 			}
 			break;
-			// MORPH START - Added by Commander, Friendlinks [emulEspaa] - added by zz_fly
-			case CED2KLink::kFriend:
+		// MORPH START - Added by Commander, Friendlinks [emulEspaa] - added by zz_fly
+		case CED2KLink::kFriend:
 			{
 				// Better with dynamic_cast, but no RTTI enabled in the project
 				CED2KFriendLink* pFriendLink = static_cast<CED2KFriendLink*>(pLink);
@@ -1757,7 +1735,7 @@ void CemuleDlg::ProcessED2KLink(LPCTSTR pszData)
 				}
 			}
 			break;
-			case CED2KLink::kFriendList:
+		case CED2KLink::kFriendList:
 			{
 				// Better with dynamic_cast, but no RTTI enabled in the project
 				CED2KFriendListLink* pFrndLstLink = static_cast<CED2KFriendListLink*>(pLink);
@@ -1766,7 +1744,7 @@ void CemuleDlg::ProcessED2KLink(LPCTSTR pszData)
 					this->chatwnd->UpdateEmfriendsMetFromURL(sAddress);
 			}
 			break;
-			// MORPH END - Added by Commander, Friendlinks [emulEspaa]
+		// MORPH END - Added by Commander, Friendlinks [emulEspaa]
 		default:
 			break;
 		}
@@ -1886,8 +1864,6 @@ LRESULT CemuleDlg::OnWMData(WPARAM /*wParam*/, LPARAM lParam)
 														eMuleIn, notUsed,
 													   eMuleOut, notUsed,
 													   notUsed, notUsed);
-				
-
 				strBuff.Format(GetResString(IDS_UPDOWNSMALL), (float)eMuleOut/1024, (float)eMuleIn/1024);
 				// Maella end
 				_ftprintf(file, _T("%s"), strBuff); // next string (getTextList) is already prefixed with '\n'!
@@ -1956,136 +1932,28 @@ LRESULT CemuleDlg::OnFileOpProgress(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// SLUGFILLER: SafeHash
-LRESULT CemuleDlg::OnHashFailed(WPARAM /*wParam*/, LPARAM lParam)
-{
-	// BEGIN SiRoB: Fix crash at shutdown
-	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN) {
-		UnknownFile_Struct* hashed = (UnknownFile_Struct*)lParam;
-		delete hashed;
-		return FALSE;
-	}
-	// END SiRoB: Fix crash at shutdown
-	theApp.sharedfiles->HashFailed((UnknownFile_Struct*)lParam);
-	return 0;
-}
-// SLUGFILLER: SafeHash
-
-//Xman
-LRESULT CemuleDlg::OnPartHashedOK(WPARAM wParam,LPARAM lParam)
-{
-	//Xman
-	// BEGIN SiRoB: Fix crash at shutdown
-	if (theApp.m_app_state != APP_STATE_RUNNING || theApp.downloadqueue==NULL)
-		return FALSE;
-	// END SiRoB: Fix crash at shutdown
-	CPartFile* pOwner = (CPartFile*)lParam;
-	if (theApp.downloadqueue->IsPartFile(pOwner))	// could have been canceled
-		pOwner->PartHashFinished((UINT)wParam, false, false);
-	return 0;
-}
-
-LRESULT CemuleDlg::OnPartHashedCorrupt(WPARAM wParam,LPARAM lParam)
-{
-	//Xman
-	// BEGIN SiRoB: Fix crash at shutdown
-	if (theApp.m_app_state != APP_STATE_RUNNING || theApp.downloadqueue==NULL)
-		return FALSE;
-	// END SiRoB: Fix crash at shutdown
-	CPartFile* pOwner = (CPartFile*)lParam;
-	if (theApp.downloadqueue->IsPartFile(pOwner))	// could have been canceled
-		pOwner->PartHashFinished((UINT)wParam, false, true);
-	return 0;
-}
-
-LRESULT CemuleDlg::OnPartHashedOKAICHRecover(WPARAM wParam,LPARAM lParam)
-{
-	//Xman
-	// BEGIN SiRoB: Fix crash at shutdown
-	if (theApp.m_app_state != APP_STATE_RUNNING || theApp.downloadqueue==NULL)
-		return FALSE;
-	// END SiRoB: Fix crash at shutdown
-	CPartFile* pOwner = (CPartFile*)lParam;
-	if (theApp.downloadqueue->IsPartFile(pOwner))	// could have been canceled
-		pOwner->PartHashFinishedAICHRecover((UINT)wParam, false);
-	return 0;
-}
-
-LRESULT CemuleDlg::OnPartHashedCorruptAICHRecover(WPARAM wParam,LPARAM lParam)
-{
-	//Xman
-	// BEGIN SiRoB: Fix crash at shutdown
-	if (theApp.m_app_state != APP_STATE_RUNNING || theApp.downloadqueue==NULL)
-		return FALSE;
-	// END SiRoB: Fix crash at shutdown
-	CPartFile* pOwner = (CPartFile*)lParam;
-	if (theApp.downloadqueue->IsPartFile(pOwner))	// could have been canceled
-		pOwner->PartHashFinishedAICHRecover((UINT)wParam, true);
-	return 0;
-}
-// END SLUGFILLER: SafeHash
-
-// BEGIN SiRoB: ReadBlockFromFileThread
-LRESULT CemuleDlg::OnReadBlockFromFileDone(WPARAM wParam,LPARAM lParam)
-{
-	CUpDownClient* client = (CUpDownClient*) lParam;
-	if (theApp.m_app_state == APP_STATE_RUNNING && theApp.uploadqueue->IsDownloading(client))	// could have been canceled
-	{
-		client->SetReadBlockFromFileBuffer((byte*)wParam);
-		client->CreateNextBlockPackage(); //complete the process
-	}
-	else if (wParam != -1 && wParam != -2 && wParam != NULL)
-		delete[] (byte*)wParam;
-	return 0;
-}
-// END SiRoB: ReadBlockFromFileThread
-// BEGIN SiRoB: Flush Thread
-LRESULT CemuleDlg::OnFlushDone(WPARAM /*wParam*/,LPARAM lParam)
-{
-	ASSERT(!(theApp.m_app_state == APP_STATE_RUNNING && theApp.downloadqueue==NULL)); 
-
-	CPartFile* partfile = (CPartFile*) lParam;
-	if (theApp.m_app_state == APP_STATE_RUNNING && theApp.downloadqueue!=NULL && theApp.downloadqueue->IsPartFile(partfile))	// could have been canceled
-		partfile->FlushDone();
-	return 0;
-}
-// END SiRoB: Flush Thread
-//Xman end
-
-//MORPH START - Added by SiRoB, Import Parts - added by zz_fly
-LRESULT CemuleDlg::OnImportPart(WPARAM wParam,LPARAM lParam)
-{
-	CPartFile* partfile = (CPartFile*) lParam;
-	if (theApp.m_app_state != APP_STATE_SHUTTINGDOWN && AfxIsValidAddress(partfile,sizeof(CPartFile)) &&  theApp.downloadqueue->IsPartFile(partfile)) {	// could have been canceled 
-		ImportPart_Struct* importpart = (ImportPart_Struct*)wParam;
-		partfile->WriteToBuffer(importpart->end-importpart->start+1, importpart->data,importpart->start, importpart->end, NULL, NULL);
-	}
-	delete[] ((ImportPart_Struct*)wParam)->data;
-	delete	(ImportPart_Struct*)wParam;
-
-	return 0;
-}
-//MORPH END   - Added by SiRoB, Import Parts
-
 LRESULT CemuleDlg::OnFileAllocExc(WPARAM wParam,LPARAM lParam)
 {
 	//Xman
 	//MORPH START - Added by SiRoB, Fix crash at shutdown
-	
-	ASSERT(!(theApp.m_app_state == APP_STATE_RUNNING && theApp.downloadqueue==NULL)); 
-
 	CFileException* error = (CFileException*)lParam;
-	if (theApp.m_app_state != APP_STATE_RUNNING || theApp.downloadqueue==NULL || !theApp.downloadqueue->IsPartFile((CPartFile*)wParam)) { //MORPH - Changed by SiRoB, Flush Thread
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN || !theApp.downloadqueue->IsPartFile((CPartFile*)wParam)) { //MORPH - Changed by SiRoB, Flush Thread
 		if (error != NULL)
 			error->Delete();
+		//MORPH START - Added by SiRoB, Flush Thread
+		if (theApp.downloadqueue->IsPartFile((CPartFile*)wParam)) {
+			delete[] ((CPartFile*)wParam)->m_FlushSetting->changedPart;
+			delete ((CPartFile*)wParam)->m_FlushSetting;
+			((CPartFile*)wParam)->m_FlushSetting = NULL;
+		}
+		//MORPH END   - Added by SiRoB, Flush Thread
 		return FALSE;
 	}
 	//MORPH END   - Added by SiRoB, Fix crash at shutdown
-
 	if (lParam == 0)
 		((CPartFile*)wParam)->FlushBuffersExceptionHandler();
 	else
-		((CPartFile*)wParam)->FlushBuffersExceptionHandler((CFileException*)lParam);
+		((CPartFile*)wParam)->FlushBuffersExceptionHandler(error);
 	return 0;
 }
 
@@ -2267,10 +2135,20 @@ void CemuleDlg::OnClose()
 	Log(_T("Closing eMule"));
 	CloseTTS();
 	m_pDropTarget->Revoke();
+
+	//zz_fly :: known2 buffer 
+	//write all buffer in to file
+	//if lock fail, there must be another thread saving the hashset, not needed to save it again
+	CSingleLock lockSaveHashSet(&CAICHRecoveryHashSet::m_mutSaveHashSet, false);
+	if (lockSaveHashSet.Lock(3000)){
+		CAICHRecoveryHashSet::SaveHashSetToFile(true); 
+		lockSaveHashSet.Unlock();
+	}
+	//zz_fly :: end
 	theApp.m_app_state = APP_STATE_SHUTTINGDOWN;
 
 	//Xman queued disc-access for read/flushing-threads
-	theApp.ForeAllDiscAccessThreadsToFinish();
+	//theApp.ForeAllDiscAccessThreadsToFinish();
 
 	theApp.serverconnect->Disconnect();
 	theApp.OnlineSig(); // Added By Bouc7 
@@ -2322,7 +2200,7 @@ void CemuleDlg::OnClose()
 	//resuming the disc-access-thread with th above ForeAllDiscAccessThreadsToFinish
 	//doesn't mean the thread start at once... they start later and the main app has the mutex
 	//so the threads wait for ever.. and also the main app for the threads.
-	sLock1.Unlock(); 
+	//sLock1.Unlock(); 
 	//Xman end
 
 	theApp.UpdateSplash(_T("saving settings ...")); //Xman new slpash-screen arrangement
@@ -2356,9 +2234,14 @@ void CemuleDlg::OnClose()
 		theApp.searchlist->StoreSearches();
 	
 	// close uPnP Ports
-	theApp.m_pUPnPFinder->GetImplementation()->StopAsyncFind();
-	if (thePrefs.CloseUPnPOnExit())
-		theApp.m_pUPnPFinder->GetImplementation()->DeletePorts();
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if(!thePrefs.m_bUseACATUPnPCurrent)
+#endif //zz_fly :: dual upnp
+	{
+		theApp.m_pUPnPFinder->GetImplementation()->StopAsyncFind();
+		if (thePrefs.CloseUPnPOnExit())
+			theApp.m_pUPnPFinder->GetImplementation()->DeletePorts();
+	}
 
 	//Xman don't overwrite bak files if last sessions crashed
 	//remark: it would be better to set the flag after all deletions, but this isn't possible, because the prefs need access to the objects when saving
@@ -2434,6 +2317,16 @@ void CemuleDlg::OnClose()
 	/*
 	delete theApp.lastCommonRouteFinder; theApp.lastCommonRouteFinder = NULL;
 	*/
+	//Xman End
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	if(thePrefs.m_bUseACATUPnPCurrent){
+		theApp.m_pUPnPNat->clearNATPortMapping(); //ACAT UPnP
+		delete theApp.m_pUPnPNat;	theApp.m_pUPnPNat = NULL;
+	}
+	else
+#endif //zz_fly :: dual upnp
 	delete theApp.m_pUPnPFinder;	theApp.m_pUPnPFinder = NULL;
 
 	//Xman
@@ -2448,7 +2341,7 @@ void CemuleDlg::OnClose()
 	//EastShare End   - added by AndCycle, IP to Country
 
 	delete theApp.dlp; theApp.dlp=NULL; //Xman DLP
-	
+
 	theApp.UpdateSplash(_T("Shutdown done")); //Xman new slpash-screen arrangement
 
 	thePrefs.Uninit();
@@ -2672,6 +2565,10 @@ void CemuleDlg::StartConnection()
 	if (   (!theApp.serverconnect->IsConnecting() && !theApp.serverconnect->IsConnected())
 		|| !Kademlia::CKademlia::IsRunning())
 	{
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+		//UPnP chooser
+		if (!thePrefs.m_bUseACATUPnPCurrent){
+#endif //zz_fly :: dual upnp
 		// UPnP is still trying to open the ports. In order to not get a LowID by connecting to the servers / kad before
 		// the ports are opened we delay the connection untill UPnP gets a result or the timeout is reached
 		// If the user clicks two times on the button, let him have his will and connect regardless
@@ -2699,6 +2596,21 @@ void CemuleDlg::StartConnection()
 				Kademlia::CKademlia::Start();
 			}
 		}
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+		//UPnP chooser
+		}
+		else{
+			AddLogLine(true, GetResString(IDS_CONNECTING));
+			// ed2k
+			if ((thePrefs.GetNetworkED2K() || m_bEd2kSuspendDisconnect) && !theApp.serverconnect->IsConnecting() && !theApp.serverconnect->IsConnected()) {
+				theApp.serverconnect->ConnectToAnyServer();
+			}
+			// kad
+			if ((thePrefs.GetNetworkKademlia() || m_bKadSuspendDisconnect) && !Kademlia::CKademlia::IsRunning()) {
+				Kademlia::CKademlia::Start();
+			}
+		}
+#endif //zz_fly :: dual upnp
 
 		ShowConnectionState();
 	}
@@ -2973,10 +2885,10 @@ LRESULT CemuleDlg::OnTaskbarNotifierClicked(WPARAM /*wParam*/, LPARAM lParam)
 
 		//Xman versions check
 		case TBN_NEWMVERSION:
-			{
-				ShellExecute(NULL, NULL, MOD_HPLINK, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT);
-				break;
-			}
+		{
+			ShellExecute(NULL, NULL, MOD_HPLINK, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT);
+			break;
+		}
 		//Xman end
 
 	}
@@ -3673,94 +3585,6 @@ LRESULT CemuleDlg::OnVersionCheckResponse(WPARAM /*wParam*/, LPARAM lParam)
 	return 0;
 }
 
-//Xman versions check
-LRESULT CemuleDlg::OnMVersionCheckResponse(WPARAM /*wParam*/, LPARAM lParam)
-{
-	//Xman Info:
-	//IP-samples:
-	//1.5.4.99 --> Xtreme version 4.5 (.0)
-	//2.5.4.99 --> Xtreme version 4.5.1 
-	//1.6.4.99 --> Xtreme version 4.6 (.0) 
-	//1.0.5.99 --> Xtreme version 5.0 (.0) 
-
-	if (WSAGETASYNCERROR(lParam) == 0)
-	{
-		int iBufLen = WSAGETASYNCBUFLEN(lParam);
-		if (iBufLen >= sizeof(HOSTENT))
-		{
-			LPHOSTENT pHost = (LPHOSTENT)m_acMVCDNSBuffer;
-			if (pHost->h_length == 4 && pHost->h_addr_list && pHost->h_addr_list[0])
-			{
-				uint32 dwResult = ((LPIN_ADDR)(pHost->h_addr_list[0]))->s_addr;
-				uint8 abyCurVer[4] = { MOD_BUILD_VER , MOD_MIN_VER, MOD_MAIN_VER, 0};
-				dwResult &= 0x00FFFFFF;
-				thePrefs.UpdateLastMVC();
-				if (dwResult > *(uint32*)abyCurVer){
-					if(theApp.IsSplash()) theApp.DestroySplash(); //Xman new slpash-screen arrangement
-					SetActiveWindow();
-					Log(LOG_SUCCESS|LOG_STATUSBAR,GetResString(IDS_NEWXTREMEVERSION));
-					ShowNotifier(GetResString(IDS_NEWXTREMEVERSION), TBN_NEWMVERSION);
-					m_bCheckwasDone=true;
-					if (AfxMessageBox(GetResString(IDS_NEWXTREMEVERSIONDOWNLOAD),MB_YESNO)==IDYES) {
-						ShellExecute(NULL, NULL, MOD_HPLINK, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT);
-					}
-				}
-				else{
-					AddLogLine(true,_T("No new Xtreme-Version found"));
-				}
-				return 0;
-			}
-		}
-	}
-	LogWarning(LOG_STATUSBAR,GetResString(IDS_NEWVERSIONFAILED));
-	return 0;
-}
-
-//MOD NOTE: if you are using DLP, don't remove/modify this versions-check
-//Xman DLP
-LRESULT CemuleDlg::OnDLPVersionCheckResponse(WPARAM /*wParam*/, LPARAM lParam)
-{
-	//Xman Info:
-	//IP-samples:
-	//5.0.0.99 --> DLP version 5
-	//105.0.0.99 --> DLP version 105
-	//0.1.0.99 --> DLP version 256 not allowed!
-	//1.1.0.99 --> DLP version 257
-
-
-	if (WSAGETASYNCERROR(lParam) == 0)
-	{
-		int iBufLen = WSAGETASYNCBUFLEN(lParam);
-		if (iBufLen >= sizeof(HOSTENT))
-		{
-			LPHOSTENT pHost = (LPHOSTENT)m_acDLPBuffer;
-			if (pHost->h_length == 4 && pHost->h_addr_list && pHost->h_addr_list[0])
-			{
-				uint32 dwResult = ((LPIN_ADDR)(pHost->h_addr_list[0]))->s_addr;
-				dwResult &= 0x00FFFFFF;
-				thePrefs.UpdateLastMVC();
-				if (theApp.dlp->IsDLPavailable() && dwResult > theApp.dlp->GetDLPVersion()){
-					if(theApp.IsSplash()) theApp.DestroySplash(); //Xman new slpash-screen arrangement
-					SetActiveWindow();
-					Log(LOG_SUCCESS|LOG_STATUSBAR,GetResString(IDS_NEWDLP));
-					ShowNotifier(GetResString(IDS_NEWDLP), TBN_NEWMVERSION);
-					if (m_bCheckwasDone==false && AfxMessageBox(GetResString(IDS_NEWDLPDOWNLOAD),MB_YESNO)==IDYES) {
-						ShellExecute(NULL, NULL, MOD_DLPLINK, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT); //zz_fly :: update DLP link
-					}
-					m_bCheckwasDone=false;
-				}
-				else{
-					AddLogLine(true,_T("No new DLP-Version found"));
-				}
-				return 0;
-			}
-		}
-	}
-	LogWarning(LOG_STATUSBAR,GetResString(IDS_NEWVERSIONFAILED));
-	return 0;
-}
-//Xman end (DLP and versionscheck)
-
 //Xman new slpash-screen arrangement
 //moved to emule.cpp
 /*
@@ -3803,7 +3627,6 @@ void CemuleDlg::DestroySplash()
 }
 */
 //Xman end
-
 
 BOOL CemuleApp::IsIdleMessage(MSG *pMsg)
 {
@@ -4480,6 +4303,11 @@ void CemuleDlg::UPnPTimeOutTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UINT /*idEvent*/
 }
 
 LRESULT CemuleDlg::OnUPnPResult(WPARAM wParam, LPARAM lParam){
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if (thePrefs.m_bUseACATUPnPCurrent)
+		return 0;
+#endif //zz_fly :: dual upnp
+
 	bool bWasRefresh = lParam != 0;
 	if (!bWasRefresh && wParam == CUPnPImpl::UPNP_FAILED){		
 		// UPnP failed, check if we can retry it with another implementation
@@ -4520,6 +4348,9 @@ LRESULT  CemuleDlg::OnPowerBroadcast(WPARAM wParam, LPARAM lParam)
 			if (m_bEd2kSuspendDisconnect || m_bKadSuspendDisconnect)
 			{
 				DebugLog(_T("Reconnect after Power state change. wParam=%d lPararm=%ld"),wParam,lParam);
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+				if(!thePrefs.m_bUseACATUPnPCurrent) 
+#endif //zz_fly :: dual upnp
 				RefreshUPnP(true);
 				PostMessage(WM_SYSCOMMAND , MP_CONNECT, 0); // tell to connect.. a sec later...
 			}
@@ -4547,6 +4378,11 @@ LRESULT  CemuleDlg::OnPowerBroadcast(WPARAM wParam, LPARAM lParam)
 }
 
 void CemuleDlg::StartUPnP(bool bReset, uint16 nForceTCPPort, uint16 nForceUDPPort) {
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if(thePrefs.m_bUseACATUPnPCurrent)
+		return;
+#endif //zz_fly :: dual upnp
+
 	if (theApp.m_pUPnPFinder != NULL && (m_hUPnPTimeOutTimer == 0 || !bReset)){
 		if (bReset){
 			theApp.m_pUPnPFinder->Reset();
@@ -4574,6 +4410,11 @@ void CemuleDlg::StartUPnP(bool bReset, uint16 nForceTCPPort, uint16 nForceUDPPor
 
 void CemuleDlg::RefreshUPnP(bool bRequestAnswer)
 {
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if(thePrefs.m_bUseACATUPnPCurrent)
+		return;
+#endif //zz_fly :: dual upnp
+
 	if (!thePrefs.IsUPnPEnabled())
 		return;
 	if (theApp.m_pUPnPFinder != NULL && m_hUPnPTimeOutTimer == 0){
@@ -4934,6 +4775,256 @@ void CemuleDlg::SetTaskbarIconColor()
 	else
 		thePrefs.SetStatsColor(11, RGB(0, 0, 0));
 }
+
+//Xman versions check
+LRESULT CemuleDlg::OnMVersionCheckResponse(WPARAM /*wParam*/, LPARAM lParam)
+{
+	//Xman Info:
+	//IP-samples:
+	//1.5.4.99 --> Xtreme version 4.5 (.0)
+	//2.5.4.99 --> Xtreme version 4.5.1 
+	//1.6.4.99 --> Xtreme version 4.6 (.0) 
+	//1.0.5.99 --> Xtreme version 5.0 (.0) 
+
+	if (WSAGETASYNCERROR(lParam) == 0)
+	{
+		int iBufLen = WSAGETASYNCBUFLEN(lParam);
+		if (iBufLen >= sizeof(HOSTENT))
+		{
+			LPHOSTENT pHost = (LPHOSTENT)m_acMVCDNSBuffer;
+			if (pHost->h_length == 4 && pHost->h_addr_list && pHost->h_addr_list[0])
+			{
+				uint32 dwResult = ((LPIN_ADDR)(pHost->h_addr_list[0]))->s_addr;
+				uint8 abyCurVer[4] = { MOD_BUILD_VER , MOD_MIN_VER, MOD_MAIN_VER, 0};
+				dwResult &= 0x00FFFFFF;
+				thePrefs.UpdateLastMVC();
+				if (dwResult > *(uint32*)abyCurVer){
+					if(theApp.IsSplash()) theApp.DestroySplash(); //Xman new slpash-screen arrangement
+					SetActiveWindow();
+					Log(LOG_SUCCESS|LOG_STATUSBAR,GetResString(IDS_NEWXTREMEVERSION));
+					ShowNotifier(GetResString(IDS_NEWXTREMEVERSION), TBN_NEWMVERSION);
+					m_bCheckwasDone=true;
+					if (AfxMessageBox(GetResString(IDS_NEWXTREMEVERSIONDOWNLOAD),MB_YESNO)==IDYES) {
+						ShellExecute(NULL, NULL, MOD_HPLINK, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT);
+					}
+				}
+				else{
+					AddLogLine(true,_T("No new Xtreme-Version found"));
+				}
+				return 0;
+			}
+		}
+	}
+	LogWarning(LOG_STATUSBAR,GetResString(IDS_NEWVERSIONFAILED));
+	return 0;
+}
+
+//MOD NOTE: if you are using DLP, don't remove/modify this versions-check
+//Xman DLP
+LRESULT CemuleDlg::OnDLPVersionCheckResponse(WPARAM /*wParam*/, LPARAM lParam)
+{
+	//Xman Info:
+	//IP-samples:
+	//5.0.0.99 --> DLP version 5
+	//105.0.0.99 --> DLP version 105
+	//0.1.0.99 --> DLP version 256 not allowed!
+	//1.1.0.99 --> DLP version 257
+
+
+	if (WSAGETASYNCERROR(lParam) == 0)
+	{
+		int iBufLen = WSAGETASYNCBUFLEN(lParam);
+		if (iBufLen >= sizeof(HOSTENT))
+		{
+			LPHOSTENT pHost = (LPHOSTENT)m_acDLPBuffer;
+			if (pHost->h_length == 4 && pHost->h_addr_list && pHost->h_addr_list[0])
+			{
+				uint32 dwResult = ((LPIN_ADDR)(pHost->h_addr_list[0]))->s_addr;
+				dwResult &= 0x00FFFFFF;
+				thePrefs.UpdateLastMVC();
+				if (theApp.dlp->IsDLPavailable() && dwResult > theApp.dlp->GetDLPVersion()){
+					if(theApp.IsSplash()) theApp.DestroySplash(); //Xman new slpash-screen arrangement
+					SetActiveWindow();
+					Log(LOG_SUCCESS|LOG_STATUSBAR,GetResString(IDS_NEWDLP));
+					ShowNotifier(GetResString(IDS_NEWDLP), TBN_NEWMVERSION);
+					if (m_bCheckwasDone==false && AfxMessageBox(GetResString(IDS_NEWDLPDOWNLOAD),MB_YESNO)==IDYES) {
+						//ShellExecute(NULL, NULL, MOD_HPLINK, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT);
+						ShellExecute(NULL, NULL, MOD_DLPLINK, NULL, thePrefs.GetMuleDirectory(EMULE_EXECUTEABLEDIR), SW_SHOWDEFAULT); //zz_fly :: update DLP link
+					}
+					m_bCheckwasDone=false;
+				}
+				else{
+					AddLogLine(true,_T("No new DLP-Version found"));
+				}
+				return 0;
+			}
+		}
+	}
+	LogWarning(LOG_STATUSBAR,GetResString(IDS_NEWVERSIONFAILED));
+	return 0;
+}
+//Xman end (DLP and versionscheck)
+
+//Xman versions check
+void CemuleDlg::DoMVersioncheck(bool manual) {
+	if (!manual && thePrefs.GetLastMVC()!=0) {
+		CTime last(thePrefs.GetLastMVC());
+		struct tm tmTemp;
+		time_t tLast=safe_mktime(last.GetLocalTm(&tmTemp));
+		time_t tNow=safe_mktime(CTime::GetCurrentTime().GetLocalTm(&tmTemp));
+		if ( (difftime(tNow,tLast) / 86400)<thePrefs.GetUpdateDays() )
+			return;
+	}
+	if (WSAAsyncGetHostByName(m_hWnd, UM_MVERSIONCHECK_RESPONSE, "xtreme.dyndns.info", m_acMVCDNSBuffer, sizeof(m_acMVCDNSBuffer)) == 0){
+		AddLogLine(true,GetResString(IDS_NEWVERSIONFAILED));
+	}
+	//Xman DLP //MOD NOTE: if you are using DLP, don't remove/modify this versions-check
+	else if(WSAAsyncGetHostByName(m_hWnd, UM_DLPVERSIONCHECK_RESPONSE, "dlp.dyndns.info", m_acDLPBuffer, sizeof(m_acDLPBuffer)) == 0){
+		AddLogLine(true,_T("DLP version check failed"));
+	}
+	//Xman End
+}
+//Xman end
+
+//Xman
+// BEGIN SLUGFILLER: SafeHash
+LRESULT CemuleDlg::OnHashFailed(WPARAM /*wParam*/, LPARAM lParam)
+{
+	// BEGIN SiRoB: Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN) {
+		UnknownFile_Struct* hashed = (UnknownFile_Struct*)lParam;
+		delete hashed;
+		return FALSE;
+	}
+	// END SiRoB: Fix crash at shutdown
+	theApp.sharedfiles->HashFailed((UnknownFile_Struct*)lParam);
+	return 0;
+}
+
+LRESULT CemuleDlg::OnPartHashedOK(WPARAM wParam,LPARAM lParam)
+{
+	//Xman
+	// BEGIN SiRoB: Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN)
+		return FALSE;
+	// END SiRoB: Fix crash at shutdown
+	CPartFile* pOwner = (CPartFile*)lParam;
+	if (theApp.downloadqueue->IsPartFile(pOwner)){	// could have been canceled
+		pOwner->PartHashFinished((UINT)wParam, true, false);
+		pOwner->UpdateDisplayedInfo()  ; //MORPH Display update (if IsPartFile! )
+	}
+	return 0;
+}
+
+LRESULT CemuleDlg::OnPartHashedOKNoAICH(WPARAM wParam,LPARAM lParam)
+{
+	//MORPH START - Added by SiRoB, Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN)
+		return FALSE;
+	//MORPH END   - Added by SiRoB, Fix crash at shutdown
+	CPartFile* pOwner = (CPartFile*)lParam;
+	if (theApp.downloadqueue->IsPartFile(pOwner)){	// could have been canceled
+		pOwner->PartHashFinished((UINT)wParam, false, false);
+		pOwner->UpdateDisplayedInfo()  ; //MORPH Display update (if IsPartFile! )
+	}
+	return 0;
+}
+
+LRESULT CemuleDlg::OnPartHashedCorrupt(WPARAM wParam,LPARAM lParam)
+{
+	//Xman
+	// BEGIN SiRoB: Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN)
+		return FALSE;
+	// END SiRoB: Fix crash at shutdown
+	CPartFile* pOwner = (CPartFile*)lParam;
+	if (theApp.downloadqueue->IsPartFile(pOwner))	// could have been canceled
+		pOwner->PartHashFinished((UINT)wParam, true, true);
+	return 0;
+}
+
+LRESULT CemuleDlg::OnPartHashedCorruptNoAICH(WPARAM wParam,LPARAM lParam)
+{
+	//MORPH START - Added by SiRoB, Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN)
+		return FALSE;
+	//MORPH END   - Added by SiRoB, Fix crash at shutdown
+	CPartFile* pOwner = (CPartFile*)lParam;
+	if (theApp.downloadqueue->IsPartFile(pOwner))	// could have been canceled
+		pOwner->PartHashFinished((UINT)wParam, false, true);
+	return 0;
+}
+
+LRESULT CemuleDlg::OnPartHashedOKAICHRecover(WPARAM wParam,LPARAM lParam)
+{
+	//Xman
+	// BEGIN SiRoB: Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN)
+		return FALSE;
+	// END SiRoB: Fix crash at shutdown
+	CPartFile* pOwner = (CPartFile*)lParam;
+	if (theApp.downloadqueue->IsPartFile(pOwner)){	// could have been canceled
+		pOwner->PartHashFinishedAICHRecover((UINT)wParam, false);
+		pOwner->UpdateDisplayedInfo()  ; //MORPH Display update  (if IsPartFile! )
+	}
+	return 0;
+}
+
+LRESULT CemuleDlg::OnPartHashedCorruptAICHRecover(WPARAM wParam,LPARAM lParam)
+{
+	//Xman
+	// BEGIN SiRoB: Fix crash at shutdown
+	if (theApp.m_app_state == APP_STATE_SHUTTINGDOWN)
+		return FALSE;
+	// END SiRoB: Fix crash at shutdown
+	CPartFile* pOwner = (CPartFile*)lParam;
+	if (theApp.downloadqueue->IsPartFile(pOwner)) {	// could have been canceled
+		pOwner->PartHashFinishedAICHRecover((UINT)wParam, true);
+		pOwner->UpdateDisplayedInfo()  ; //MORPH Display update  (if IsPartFile! )
+	}
+
+	return 0;
+}
+// END SLUGFILLER: SafeHash
+
+// BEGIN SiRoB: ReadBlockFromFileThread
+LRESULT CemuleDlg::OnReadBlockFromFileDone(WPARAM wParam,LPARAM lParam)
+{
+	CUpDownClient* client = (CUpDownClient*) lParam;
+	if (theApp.m_app_state == APP_STATE_RUNNING && theApp.uploadqueue && theApp.uploadqueue->IsDownloading(client)) {	// could have been canceled
+		client->SetReadBlockFromFileBuffer((byte*)wParam);
+		client->CreateNextBlockPackage(); //Used to not wait uploadqueue timer (110ms) capping upload to 1ReadBlock/110ms~1.6MB/s
+	}
+	else if (wParam != -1 && wParam != -2 && wParam != NULL)
+		delete[] (byte*)wParam;
+	return 0;
+}
+// END SiRoB: ReadBlockFromFileThread
+// BEGIN SiRoB: Flush Thread
+LRESULT CemuleDlg::OnFlushDone(WPARAM /*wParam*/,LPARAM lParam)
+{
+	CPartFile* partfile = (CPartFile*) lParam;
+	if (theApp.m_app_state == APP_STATE_RUNNING && theApp.downloadqueue && theApp.downloadqueue->IsPartFile(partfile))	// could have been canceled
+		partfile->FlushDone();
+	return 0;
+}
+// END SiRoB: Flush Thread
+//Xman end
+
+//MORPH START - Added by SiRoB, Import Parts - added by zz_fly
+LRESULT CemuleDlg::OnImportPart(WPARAM wParam,LPARAM lParam)
+{
+	CPartFile* partfile = (CPartFile*) lParam;
+	if (theApp.m_app_state != APP_STATE_SHUTTINGDOWN && AfxIsValidAddress(partfile,sizeof(CPartFile)) &&  theApp.downloadqueue->IsPartFile(partfile)) {	// could have been canceled 
+		ImportPart_Struct* importpart = (ImportPart_Struct*)wParam;
+		partfile->WriteToBuffer(importpart->end-importpart->start+1, importpart->data,importpart->start, importpart->end, NULL, NULL);
+	}
+	delete[] ((ImportPart_Struct*)wParam)->data;
+	delete	(ImportPart_Struct*)wParam;
+
+	return 0;
+}
+//MORPH END   - Added by SiRoB, Import Parts
 
 //Xman process timer code via messages (Xanatos)
 // Note: the timers does not crash on a exception so I use the messags to call the functions so when an error aprears it will be detected

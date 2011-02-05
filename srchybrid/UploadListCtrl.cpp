@@ -37,7 +37,6 @@
 #include "ToolTipCtrlX.h"
 #include "ThrottledSocket.h" //Xman Xtreme Upload
 #include "UploadBandwidthThrottler.h" //Xman Xtreme Upload
-//#include "EMsocket.h"
 #include "ListenSocket.h" //Xman changed: display the obfuscation icon for all clients which enabled it
 #include "PartFile.h" //Xman PowerRelease
 
@@ -218,8 +217,7 @@ void CUploadListCtrl::SetAllIcons()
 	m_ImageList.Add(CTempIconLoader(_T("ClientFriendSlotOvl"))); //19
 	//Xman end
 
-
-	//Xman end
+	//Xman End
 	m_ImageList.SetOverlayImage(m_ImageList.Add(CTempIconLoader(_T("ClientSecureOvl"))), 1);
 	m_ImageList.SetOverlayImage(m_ImageList.Add(CTempIconLoader(_T("OverlayObfu"))), 2);
 	m_ImageList.SetOverlayImage(m_ImageList.Add(CTempIconLoader(_T("OverlaySecureObfu"))), 3);
@@ -243,10 +241,13 @@ void CUploadListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	CRect rcClient;
 	GetClientRect(&rcClient);
 	const CUpDownClient *client = (CUpDownClient *)lpDrawItemStruct->itemData;
+
+	COLORREF crOldBackColor = dc->GetBkColor(); //Xman PowerRelease
 	//Xman Xtreme Upload 
 	/*
     if (client->GetSlotNumber() > theApp.uploadqueue->GetActiveUploadsCount())
         dc.SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
+    }
 	*/
 	const ThrottledFileSocket* socket=(client->GetFileUploadSocket());
 	if( socket!=NULL)
@@ -397,7 +398,8 @@ void CUploadListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						{
 							cur_rec.left+=20;
 							POINT point2= {cur_rec.left,cur_rec.top+1};
-							theApp.ip2country->GetFlagImageList()->Draw(dc, client->GetCountryFlagIndex(), point2, ILD_NORMAL);
+							//theApp.ip2country->GetFlagImageList()->Draw(dc, client->GetCountryFlagIndex(), point2, ILD_NORMAL);
+							theApp.ip2country->GetFlagImageList()->DrawIndirect(&theApp.ip2country->GetFlagImageDrawParams(dc,client->GetCountryFlagIndex(),point2));
 							cur_rec.left += sm_iLabelOffset;
 						}
 						//EastShare End - added by AndCycle, IP to Country
@@ -418,24 +420,6 @@ void CUploadListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 						break;
 					}
-
-					//Xman PowerRelease
-					case 1:
-					{
-						const CKnownFile *file = theApp.sharedfiles->GetFileByID(client->GetUploadFileID());
-						if(file)
-						{
-							COLORREF crOldTxtColor = dc->GetTextColor();
-							if(file->GetUpPriority()==PR_POWER)
-								dc.SetBkColor(RGB(255,225,225));
-							dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-							dc->SetTextColor(crOldTxtColor);
-						}
-						else
-							dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-						break;
-					}
-					//Xman end
 
 					case 7:
 					{
@@ -478,20 +462,18 @@ void CUploadListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						break;
 					}
 
-					//Xman show LowIDs
-					case 8:
-					{
-						COLORREF crOldTxtColor = dc->GetTextColor();
-						if(client->HasLowID())
-							dc.SetBkColor(RGB(255,250,200));
-						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-						dc->SetTextColor(crOldTxtColor);
-						break;
-					}
-					//Xman end
-
 					default:
+						//Xman PowerRelease //Xman show LowIDs
+						if(iColumn == 1){ 
+							const CKnownFile *file = theApp.sharedfiles->GetFileByID(client->GetUploadFileID());
+							if(file && file->GetUpPriority()==PR_POWER)
+								dc->SetBkColor(RGB(255,225,225));
+						}
+						else if(iColumn == 8 && client->HasLowID())
+							dc->SetBkColor(RGB(255,250,200));
+						//Xman End
 						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
+						dc.SetBkColor(crOldBackColor); //Xman PowerRelease //Xman show LowIDs
 						break;
 				}
 			}
@@ -572,6 +554,7 @@ void CUploadListCtrl::GetItemDisplayText(const CUpDownClient *client, int iSubIt
 		case 7:
 			_tcsncpy(pszText, GetResString(IDS_UPSTATUS), cchTextMax);
 			break;
+
 		//Xman version see clientversion in every window
 		case 8:
 			_tcsncpy(pszText, client->DbgGetFullClientSoftVer(), cchTextMax);
@@ -582,6 +565,8 @@ void CUploadListCtrl::GetItemDisplayText(const CUpDownClient *client, int iSubIt
 		case 9:
 			if(client->Credits())
 				_sntprintf(pszText, cchTextMax, _T("%s/ %s"), CastItoXBytes(client->credits->GetUploadedTotal()), CastItoXBytes(client->credits->GetDownloadedTotal()));
+			else
+				_tcsncpy(pszText, _T("?"), cchTextMax);
 			break;
 		//Xman end
 	}
@@ -785,8 +770,7 @@ int CUploadListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 	if (iResult == 0 && (dwNextSort = theApp.emuledlg->transferwnd->m_pwndTransfer->uploadlistctrl.GetNextSortOrder(lParamSort)) != -1)
 		iResult = SortProc(lParam1, lParam2, dwNextSort);
 	*/
-	//Xman end
-
+	// SLUGFILLER End
 	return iResult;
 }
 

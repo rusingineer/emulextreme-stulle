@@ -143,6 +143,9 @@ public:
 	//Threadsafe Statechange
 	void			SetConnectedState(const uint8 state);
 
+	// netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
+	void		SetMSSFromSocket(SOCKET socket);
+
 #ifdef _DEBUG
 	// Diagnostic Support
 	virtual void AssertValid() const;

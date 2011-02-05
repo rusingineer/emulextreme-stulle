@@ -226,7 +226,7 @@ private:
 		uint32	datalen;
 		DWORD	timestamp;
 	};
-	std::list<TransferredData> uprateHistory; 
+	std::list<TransferredData> uprateHistory;
 	std::list<TransferredData> downrateHistory;
 
 	static uint32	m_nDownDatarateOverhead;

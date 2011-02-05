@@ -804,7 +804,7 @@ void CTransferWnd::OnBnClickedQueueRefreshButton()
 	*/
 	if (queuelistctrl.GetItemCount()>1)
 	{
-		queuelistctrl.UpdateAll();
+		theApp.emuledlg->transferwnd->GetQueueList()->UpdateAll();
 	}
 	//Xman end
 }
@@ -1925,12 +1925,13 @@ void CTransferWnd::ResetTransToolbar(bool bShowToolbar, bool bResetLists)
 		// 'GetMaxSize' does not work properly under:
 		//	- Win98SE with COMCTL32 v5.80
 		//	- Win2000 with COMCTL32 v5.81 
+		//  - WinXP && Win2003 with COMCTL32 v5.82 //zz_fly, DolphinX
 		// The value returned by 'GetMaxSize' is just couple of pixels too small so that the 
 		// last toolbar button is nearly not visible at all.
 		// So, to circumvent such problems, the toolbar control should be created right with
 		// the needed size so that we do not really need to call the 'GetMaxSize' function.
 		// Although it would be better to call it to adapt for system metrics basically.
-		if (theApp.m_ullComCtrlVer > MAKEDLLVERULL(5,81,0,0))
+		if (theApp.m_ullComCtrlVer > MAKEDLLVERULL(5,82,0,0)) //zz_fly :: in the case of disable theme service in xp and 2k3
 		{
 			CSize size;
 			m_btnWnd1->GetMaxSize(&size);
@@ -1987,12 +1988,13 @@ void CTransferWnd::ResetTransToolbar(bool bShowToolbar, bool bResetLists)
 		// 'GetMaxSize' does not work properly under:
 		//	- Win98SE with COMCTL32 v5.80
 		//	- Win2000 with COMCTL32 v5.81 
+		//  - WinXP && Win2003 with COMCTL32 v5.82 //zz_fly, DolphinX
 		// The value returned by 'GetMaxSize' is just couple of pixels too small so that the 
 		// last toolbar button is nearly not visible at all.
 		// So, to circumvent such problems, the toolbar control should be created right with
 		// the needed size so that we do not really need to call the 'GetMaxSize' function.
 		// Although it would be better to call it to adapt for system metrics basically.
-		if (theApp.m_ullComCtrlVer > MAKEDLLVERULL(5,81,0,0))
+		if (theApp.m_ullComCtrlVer > MAKEDLLVERULL(5,82,0,0)) //zz_fly :: in the case of disable theme service in xp and 2k3
 		{
 			CSize size;
 			m_btnWnd2->GetMaxSize(&size);

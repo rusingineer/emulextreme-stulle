@@ -66,6 +66,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CPreferences thePrefs;
+
 //-------------------------------------------------------------------------------
 //Xman Xtreme Mod:
 
@@ -94,6 +95,10 @@ bool CPreferences::m_antileecheruserhash;
 bool CPreferences::m_antileechercommunity_action;
 bool CPreferences::m_antileecherghost_action;
 bool CPreferences::m_antileecherthief_action;
+//X-Ray :: Fincan Hash Detection :: Start
+bool CPreferences::m_antileecherFincan;
+CString CPreferences::m_antileecherFincanURL;
+//X-Ray :: Fincan Hash Detection :: End
 //Xman end
 
 //Xman narrow font at transferwindow
@@ -151,13 +156,14 @@ uint8	CPreferences::zoomFactor;                   // -Graph: display zoom-
 
 uint16	CPreferences::MTU;                          // -MTU Configuration-
 bool	CPreferences::usedoublesendsize;
+bool	CPreferences::retrieveMTUFromSocket; // netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
 
 bool	CPreferences::NAFCFullControl;	          // -Network Adapter Feedback Control-
 uint32	CPreferences::forceNAFCadapter;
 uint8	CPreferences::datarateSamples;              // -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 
 bool    CPreferences::enableMultiQueue;             // -One-queue-per-file- (idea bloodymad)
-bool    CPreferences::enableReleaseMultiQueue;
+//bool    CPreferences::enableReleaseMultiQueue;
 // Maella end
 
 // Mighty Knife: Static server handling
@@ -633,6 +639,20 @@ bool	CPreferences::m_bIsWinServImplDisabled;
 bool	CPreferences::m_bIsMinilibImplDisabled;
 int		CPreferences::m_nLastWorkingImpl;
 
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+//UPnP chooser
+bool	CPreferences::m_bUseACATUPnPCurrent;
+bool	CPreferences::m_bUseACATUPnPNextStart;
+
+//ACAT UPnP
+bool	CPreferences::m_bUPnPNat; // UPnP On/Off
+bool	CPreferences::m_bUPnPTryRandom; // Try to use random external port if already in use On/Off
+uint16	CPreferences::m_iUPnPTCPExternal = 0; // TCP External Port
+uint16	CPreferences::m_iUPnPUDPExternal = 0; // UDP External Port
+#endif //zz_fly :: dual upnp
+
+bool	CPreferences::m_bUPnPRebindOnIPChange; //zz_fly :: Rebind UPnP on IP-change
+
 bool	CPreferences::m_bEnableSearchResultFilter;
 
 bool	CPreferences::m_bIRCEnableSmileys;
@@ -641,6 +661,12 @@ bool	CPreferences::m_bMessageEnableSmileys;
 BOOL	CPreferences::m_bIsRunningAeroGlass;
 bool	CPreferences::m_bPreventStandby;
 bool	CPreferences::m_bStoreSearches;
+
+bool	CPreferences::m_bShowCountryFlagInKad; //zz_fly :: show country flag in KAD
+bool	CPreferences::m_bKnown2Buffer; //zz_fly :: known2 buffer
+bool	CPreferences::m_bKnown2Split; //zz_fly :: known2 split
+bool	CPreferences::m_bKnown2Split_next; //zz_fly :: known2 split
+uint64	CPreferences::m_uAutoPreviewLimit; //zz_fly :: do not auto preview big archive
 
 CPreferences::CPreferences()
 {
@@ -2062,6 +2088,10 @@ void CPreferences::SavePreferences()
 	ini.WriteInt(L"WinXPSP2OrHigher", IsRunningXPSP2OrHigher());
 	ini.WriteBool(L"RememberCancelledFiles", m_bRememberCancelledFiles);
 	ini.WriteBool(L"RememberDownloadedFiles", m_bRememberDownloadedFiles);
+	ini.WriteBool(L"PartiallyPurgeOldKnownFiles", m_bPartiallyPurgeOldKnownFiles);
+
+	if(!m_bTrustEveryHash) //zz_fly :: write this option when it disabled
+		ini.WriteBool(L"AICHTrustEveryHash", false);
 
 	ini.WriteBool(L"NotifierSendMail", m_bNotifierSendMail);
 	ini.WriteString(L"NotifierMailSender", m_strNotifierMailSender);
@@ -2146,7 +2176,18 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"SkipWANPPPSetup", m_bSkipWANPPPSetup);
 	ini.WriteBool(L"CloseUPnPOnExit", m_bCloseUPnPOnExit);
 	ini.WriteInt(L"LastWorkingImplementation", m_nLastWorkingImpl);
-	
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	ini.WriteBool(L"UseACATUPnPNextStart", m_bUseACATUPnPNextStart, L"UPnP");
+
+	//ACAT UPnP
+	ini.WriteBool(L"UPnPNAT", m_bUPnPNat, L"UPnP");
+	ini.WriteBool(L"UPnPNAT_TryRandom", m_bUPnPTryRandom, L"UPnP");
+#endif //zz_fly :: dual upnp
+
+	ini.WriteBool(L"UPnPNAT_RebindOnIPChange", m_bUPnPRebindOnIPChange, L"UPnP"); //zz_fly :: rebind UPnP on ip-change
+
 	//Xman Xtreme Mod:
 	//--------------------------------------------------------------------------
 
@@ -2182,6 +2223,10 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"AntiLeecherCommunity_Action", m_antileechercommunity_action);
 	ini.WriteBool(L"AntiLeecherGhost_Action", m_antileecherghost_action);
 	ini.WriteBool(L"AntiLeecherThief_Action", m_antileecherthief_action);
+	//X-Ray :: Fincan Hash Detection :: Start
+	ini.WriteBool(L"AntiLeecherFincan", m_antileecherFincan);
+	ini.WriteString(_T("AntiLeecherFincanURL"), m_antileecherFincanURL);
+	//X-Ray :: Fincan Hash Detection :: End
 	//Xman end
 
 	//Xman narrow font at transferwindow
@@ -2237,6 +2282,8 @@ void CPreferences::SavePreferences()
 	// Maella end
 
 	ini.WriteBool(L"usedoublesendsize",usedoublesendsize);
+	// netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
+	ini.WriteBool(L"retrieveMTUFromSocket", retrieveMTUFromSocket);
 
 	// Maella -Network Adapter Feedback Control-
 	ini.WriteBool(L"NAFCFullControl", NAFCFullControl);
@@ -2249,7 +2296,7 @@ void CPreferences::SavePreferences()
 
 	// Maella -One-queue-per-file- (idea bloodymad)
 	ini.WriteBool(L"EnableMultiQueue", enableMultiQueue);
-	ini.WriteBool(L"EnableReleaseMultiQueue", enableReleaseMultiQueue);
+	//ini.WriteBool(L"EnableReleaseMultiQueue", enableReleaseMultiQueue);
 	// Maella end
 
 	// Mighty Knife: Static server handling
@@ -2266,9 +2313,12 @@ void CPreferences::SavePreferences()
 	//Xman don't overwrite bak files if last sessions crashed
 	ini.WriteBool(L"last_session_aborted_in_an_unnormal_way", m_this_session_aborted_in_an_unnormal_way);
 
+	ini.WriteBool(L"ShowCountryFlagInKad", m_bShowCountryFlagInKad); //zz_fly :: show country flag in KAD
+	ini.WriteBool(L"EnableKnown2Buffer", m_bKnown2Buffer); //zz_fly :: known2 buffer
+	ini.WriteBool(L"SplitKnown2DotMet", m_bKnown2Split_next); //zz_fly :: known2 split
+	ini.WriteUInt64(L"AutoPreviewLimit", m_uAutoPreviewLimit); //zz_fly :: do not auto preview big archive
 	//Xman end
 	//--------------------------------------------------------------------------
-
 }
 
 void CPreferences::ResetStatsColor(int index)
@@ -2402,7 +2452,6 @@ void CPreferences::LoadPreferences()
 	m_wLanguageID=ini.GetWORD(L"Language",0);	//thx [MoNKi: -FIX: ini.GetFloat needs Language- ]
 	SetLanguage();
 
-
 	//Xman Xtreme Upload
 	/*
 	maxGraphDownloadRate=ini.GetInt(L"DownloadCapacity",96);
@@ -2469,10 +2518,8 @@ void CPreferences::LoadPreferences()
 		m_internetdownreactiontime=1;
 	if(m_internetdownreactiontime>10)
 		m_internetdownreactiontime=10;
-
 	//Xman end
 	//-------------------------------------------------------------------	
-
 
 	maxconnections=ini.GetInt(L"MaxConnections",GetRecommendedMaxConnections());
 	maxhalfconnections=ini.GetInt(L"MaxHalfConnections",9);
@@ -2784,10 +2831,11 @@ void CPreferences::LoadPreferences()
 	}
 
 	//messageFilter=ini.GetStringLong(L"MessageFilter",L"fastest download speed|fastest eMule");
-	messageFilter=ini.GetStringLong(L"MessageFilter",L"Your client has an infinite queue|Your client is connecting too fast|fastest download speed");
+	messageFilter=ini.GetStringLong(L"MessageFilter",L"angelm|autore|boomerang|Candide|connecting too fast|CoPeerRight|detected|DI-Emule|emule fx|fastest|havefuntonight|http://|https://|illecita|infinite queue|ketamine|penali|RIAA|scambi|slot|te@m|trade|Your MOD|zambor");
 	commentFilter = ini.GetStringLong(L"CommentFilter",L"http://|https://|ftp://|www.|ftp.");
 	commentFilter.MakeLower();
-	filenameCleanups=ini.GetStringLong(L"FilenameCleanups",L"http|www.|.com|.de|.org|.net|shared|powered|sponsored|sharelive|filedonkey|");
+	//filenameCleanups=ini.GetStringLong(L"FilenameCleanups",L"http|www.|.com|.de|.org|.net|shared|powered|sponsored|sharelive|filedonkey|");
+	filenameCleanups=ini.GetStringLong(L"FilenameCleanups",L".com|.it|.net|.org|32|33|34|$|€|abc|arica|berlus|cache|cambi|cerco|dagna|destra|downl|dwn|emul|fasci|global|govern|gratis|http|kad|legge|munis|negr|politi|prima|priorit|razor|rinomin|ronzi|slot|soldi|tepay|terron|unipol|usate|veloc|visit|vota|wc|www.|zambor|albania|alema|comuni|dinero|donkey|duce|glion|inter|juve|ladium|milan|moggi|money|napoli|prodi|referend|roia|sinistra|ttana|unione|zapatero|mulo|mule");
 	m_iExtractMetaData = ini.GetInt(L"ExtractMetaData", 1); // 0=disable, 1=mp3, 2=MediaDet
 	if (m_iExtractMetaData > 1)
 		m_iExtractMetaData = 1;
@@ -2888,8 +2936,13 @@ void CPreferences::LoadPreferences()
 	m_bCryptLayerSupported = ini.GetBool(L"CryptLayerSupported", true);
 	m_dwKadUDPKey = ini.GetInt(L"KadUDPKey", GetRandomUInt32());
 
+	//zz_fly :: hardlimit on CryptTCPPaddingLength
+	/*
 	uint32 nTmp = ini.GetInt(L"CryptTCPPaddingLength", 128);
 	m_byCryptTCPPaddingLength = (uint8)min(nTmp, 254);
+	*/
+	SetCryptTCPPaddingLength(ini.GetInt(L"CryptTCPPaddingLength", 128));
+	//zz_fly :: end
 
 	m_bEnableSearchResultFilter = ini.GetBool(L"EnableSearchResultSpamFilter", true);
 
@@ -2979,6 +3032,18 @@ void CPreferences::LoadPreferences()
 	m_bIsMinilibImplDisabled = ini.GetBool(L"DisableMiniUPNPLibImpl", false);
 	m_bIsWinServImplDisabled = ini.GetBool(L"DisableWinServImpl", false);
 
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	m_bUseACATUPnPNextStart = ini.GetBool(L"UseACATUPnPNextStart", false, L"UPnP"); 
+	m_bUseACATUPnPCurrent = m_bUseACATUPnPNextStart;
+
+	//ACAT UPnP
+	m_bUPnPNat = ini.GetBool(L"UPnPNAT", false, L"UPnP");
+	m_bUPnPTryRandom = ini.GetBool(L"UPnPNAT_TryRandom", false, L"UPnP");
+#endif //zz_fly :: dual upnp
+
+	m_bUPnPRebindOnIPChange = ini.GetBool(L"UPnPNAT_RebindOnIPChange", false, L"UPnP"); //zz_fly :: Rebind UPnP on IP-change
+
 	LoadCats();
 	//Xman done above
 	/*
@@ -2997,13 +3062,13 @@ void CPreferences::LoadPreferences()
 	m_sendbuffersize=ini.GetInt(L"sendbuffersize", 8192);
 	switch (m_sendbuffersize)
 	{
-	case 6000:
-	case 8192:
-	case 12000:
-	case 24000: //zz_fly :: support 24k send buffer
-		break;
-	default:
-		m_sendbuffersize=8192;
+		case 6000:
+		case 8192:
+		case 12000:
+		case 24000: //zz_fly :: support 24k send buffer
+			break;
+		default:
+			m_sendbuffersize=8192;
 	}
 
 	retryconnectionattempts=ini.GetBool(L"retryconnectionattempts",true);
@@ -3059,6 +3124,10 @@ void CPreferences::LoadPreferences()
 	// Maella end
 
 	usedoublesendsize=ini.GetBool(L"usedoublesendsize",false);
+	// netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
+	retrieveMTUFromSocket = ini.GetBool(L"retrieveMTUFromSocket", false);
+	if(retrieveMTUFromSocket && GetWindowsVersion() < _WINVER_VISTA_)
+		retrieveMTUFromSocket = false;
 
 	// Maella -Network Adapter Feedback Control-
 	NAFCFullControl=ini.GetBool(L"NAFCFullControl", false);
@@ -3073,7 +3142,7 @@ void CPreferences::LoadPreferences()
 
 	// Maella -One-queue-per-file- (idea bloodymad)
 	enableMultiQueue=ini.GetBool(L"EnableMultiQueue", false);
-	enableReleaseMultiQueue=ini.GetBool(L"EnableReleaseMultiQueue", false);
+	//enableReleaseMultiQueue=ini.GetBool(L"EnableReleaseMultiQueue", false);
 	// Maella end
 
 	//Xman Anti-Leecher
@@ -3091,7 +3160,10 @@ void CPreferences::LoadPreferences()
 	m_antileechercommunity_action= ini.GetBool(L"AntiLeecherCommunity_Action", true);
 	m_antileecherghost_action= ini.GetBool(L"AntiLeecherGhost_Action", true);
 	m_antileecherthief_action= ini.GetBool(L"AntiLeecherThief_Action", true);
-
+	//X-Ray :: Fincan Hash Detection :: Start
+	m_antileecherFincan = ini.GetBool(L"AntiLeecherFincan", false);
+	m_antileecherFincanURL = ini.GetString(_T("AntiLeecherFincanURL"), _T(""));
+	//X-Ray :: Fincan Hash Detection :: End
 	//Xman end
 
 	//Xman narrow font at transferwindow
@@ -3161,6 +3233,10 @@ void CPreferences::LoadPreferences()
 	//Xman don't overwrite bak files if last sessions crashed
 	m_last_session_aborted_in_an_unnormal_way = ini.GetBool(L"last_session_aborted_in_an_unnormal_way",false);
 
+	m_bShowCountryFlagInKad = ini.GetBool(L"ShowCountryFlagInKad", false); //zz_fly :: show country flag in KAD
+	m_bKnown2Buffer = ini.GetBool(L"EnableKnown2Buffer", false); //zz_fly :: known2 buffer
+	m_bKnown2Split = m_bKnown2Split_next = ini.GetBool(L"SplitKnown2DotMet", false); //zz_fly :: known2 split
+	m_uAutoPreviewLimit = ini.GetUInt64(L"AutoPreviewLimit", ((uint64)64)<<20); //zz_fly :: do not auto preview big archive
 	//Xman end
 	//--------------------------------------------------------------------------
 }
@@ -3174,6 +3250,7 @@ void CPreferences::CheckSlotSpeed()
 	if (maxupload<6) maxSlotSpeed=2.0f;
 	if (maxupload>=10)
 		maxSlotSpeed=maxupload/(3+(maxupload-10)/20);
+
 	if (maxSlotSpeed>XTREME_MAX_SLOTSPEED)
 		maxSlotSpeed=XTREME_MAX_SLOTSPEED;
 	if(m_slotspeed>maxSlotSpeed)
@@ -3183,8 +3260,6 @@ void CPreferences::CheckSlotSpeed()
 	m_uMaxGlobalSources=(uint32)(maxupload*400 - (maxupload-10.0f)*100);
 }
 //Xman end
-
-
 
 WORD CPreferences::GetWindowsVersion(){
 	static bool bWinVerAlreadyDetected = false;
@@ -4028,19 +4103,6 @@ bool CPreferences::IsRunningAeroGlassTheme(){
 	return m_bIsRunningAeroGlass == TRUE ? true : false;
 }
 
-//Xman
-//Xman NAFC -> Statisticgraph
-void CPreferences::SetNAFCFullControl(bool flag)
-{
-	if(NAFCFullControl!=flag && theApp.emuledlg && theApp.emuledlg->m_hWnd && theApp.m_app_state == APP_STATE_RUNNING)
-	{
-		NAFCFullControl = flag;
-		theApp.emuledlg->statisticswnd->RepaintMeters();
-	}
-	else
-		NAFCFullControl = flag;
-}
-
 // SLUGFILLER: SafeHash
 bool CPreferences::IsConfigFile(const CString& rstrDirectory, const CString& rstrName)
 {
@@ -4089,4 +4151,36 @@ bool CPreferences::IsConfigFile(const CString& rstrDirectory, const CString& rst
 	return false;
 }
 // SLUGFILLER: SafeHash
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+//ACAT UPnP
+uint16 CPreferences::GetPort(){
+	if (m_bUseACATUPnPCurrent && (m_iUPnPTCPExternal != 0))
+		return m_iUPnPTCPExternal;
+	else
+		return port;
+}
+
+uint16 CPreferences::GetUDPPort(){
+	if (udpport == 0)
+		return 0;
+
+	if(m_bUseACATUPnPCurrent && (m_iUPnPUDPExternal != 0))
+		return m_iUPnPUDPExternal;
+	else
+		return udpport;
+}
+#endif //zz_fly :: dual upnp
+
+//Xman NAFC -> Statisticgraph
+void CPreferences::SetNAFCFullControl(bool flag)
+{
+	if(NAFCFullControl!=flag && theApp.emuledlg && theApp.emuledlg->m_hWnd && theApp.m_app_state == APP_STATE_RUNNING)
+	{
+		NAFCFullControl = flag;
+		theApp.emuledlg->statisticswnd->RepaintMeters();
+	}
+	else
+		NAFCFullControl = flag;
+}
 //Xman end

@@ -410,7 +410,7 @@ CemuleApp::CemuleApp(LPCTSTR lpszAppName)
 	ipdlgisopen=false;
 
 	//Xman queued disc-access for read/flushing-threads
-	m_uRunningNonBlockedDiscAccessThreads=0;
+	//m_uRunningNonBlockedDiscAccessThreads=0;
 	//Xman end
 
 // MOD Note: Do not change this part - Merkur
@@ -800,7 +800,17 @@ BOOL CemuleApp::InitInstance()
 	}
 
 	// UPnP Port forwarding
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	m_pUPnPFinder = NULL;
+	m_pUPnPNat = NULL;
+	if (thePrefs.m_bUseACATUPnPCurrent)
+		m_pUPnPNat = new MyUPnP();
+	else
+		m_pUPnPFinder = new CUPnPImplWrapper(); //Official UPNP
+#else
 	m_pUPnPFinder = new CUPnPImplWrapper();
+#endif //zz_fly :: dual upnp
 
     // Highres scheduling gives better resolution for Sleep(...) calls, and timeGetTime() calls
     m_wTimerRes = 0;
@@ -1056,7 +1066,6 @@ BOOL CALLBACK CemuleApp::SearchEmuleWindow(HWND hWnd, LPARAM lParam){
 	} 
 	return TRUE; 
 } 
-
 
 //Xman
 // Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
@@ -2506,6 +2515,7 @@ void CemuleApp::ResetStandByIdleTimer()
 	if (IsConnected() || (uploadqueue != NULL && uploadqueue->GetUploadQueueLength() > 0)
 		|| (downloadqueue != NULL && downloadqueue->GetDatarate() > 0))
 	*/
+	// Retrieve the current datarates
 	uint32 eMuleIn;
 	uint32 notUsed;
 	theApp.pBandWidthControl->GetDatarates(thePrefs.GetDatarateSamples(),
@@ -2575,6 +2585,7 @@ void CemuleApp::ShowSplash(bool start)
 		AfxMessageBox(GetResString(IDS_BETANAG), MB_ICONINFORMATION | MB_OK, 0);
 #endif
 }
+
 void CemuleApp::DestroySplash()
 {
 	if (m_pSplashWnd != NULL)
@@ -2586,6 +2597,7 @@ void CemuleApp::DestroySplash()
 	}
 	spashscreenfinished=true;
 }
+
 void CemuleApp::UpdateSplash(LPCTSTR Text){
 	if(m_pSplashWnd)
 		m_pSplashWnd->SetText2(Text);
@@ -2593,6 +2605,7 @@ void CemuleApp::UpdateSplash(LPCTSTR Text){
 //Xman end
 
 //Xman queued disc-access for read/flushing-threads
+/*
 #define allowed_Threads 1
 //threading-info: synchronized with main-thread which is the only caller
 void CemuleApp::AddNewDiscAccessThread(CWinThread* threadtoadd)
@@ -2611,7 +2624,7 @@ void CemuleApp::AddNewDiscAccessThread(CWinThread* threadtoadd)
 	threadqueuelock.Lock();
 
 
-	if(m_uRunningNonBlockedDiscAccessThreads<=allowed_Threads-1 /*|| thePrefs.dontusediscaccessqueue==true*/) 
+	if(m_uRunningNonBlockedDiscAccessThreads<=allowed_Threads-1 /*|| thePrefs.dontusediscaccessqueue==true*//*) 
 	{
 		m_uRunningNonBlockedDiscAccessThreads++;
 		threadtoadd->ResumeThread();
@@ -2627,7 +2640,7 @@ void CemuleApp::AddNewDiscAccessThread(CWinThread* threadtoadd)
 void CemuleApp::ResumeNextDiscAccessThread()
 {
 	threadqueuelock.Lock();
-	if(threadqueue.IsEmpty()==false && (m_uRunningNonBlockedDiscAccessThreads<=allowed_Threads /*|| thePrefs.dontusediscaccessqueue==true*/))
+	if(threadqueue.IsEmpty()==false && (m_uRunningNonBlockedDiscAccessThreads<=allowed_Threads /*|| thePrefs.dontusediscaccessqueue==true*//*))
 	{
 		CWinThread* threadtorun=threadqueue.RemoveHead();
 		threadtorun->ResumeThread();
@@ -2654,6 +2667,42 @@ void CemuleApp::ForeAllDiscAccessThreadsToFinish()
 
 	threadqueuelock.Unlock();
 }
+*/
+//Xman end
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+//ACAT UPnP
+BOOL CemuleApp::AddUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping, bool tryRandom){
+	if(!thePrefs.m_bUseACATUPnPCurrent)
+		return false;
+
+	CString args;
+	if(m_pUPnPNat->AddNATPortMapping(mapping, tryRandom) == MyUPnP::UNAT_OK ){
+		if(theApp.emuledlg->IsRunning()){
+			AddLogLine(false, _T("Added UPnP NAT Support: (%s) NAT ROUTER/FIREWALL:%i -> %s:%i"),
+				mapping->description, mapping->externalPort, m_pUPnPNat->GetLocalIPStr(), mapping->internalPort);
+		}
+		return true;
+	}
+	else{
+		if(theApp.emuledlg->IsRunning()){
+			AddLogLine(false, _T("Error adding UPnP NAT Support: (%s) NAT ROUTER/FIREWALL:%i -> %s:%i (%s)"),
+				mapping->description, mapping->externalPort, m_pUPnPNat->GetLocalIPStr(), mapping->internalPort, m_pUPnPNat->GetLastError());
+		}
+		return false;
+	}
+}
+
+BOOL CemuleApp::RemoveUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping){
+	if(!thePrefs.m_bUseACATUPnPCurrent)
+		return false;
+
+	if(m_pUPnPNat->RemoveNATPortMapping(*mapping) == MyUPnP::UNAT_OK )
+		return true;
+	else
+		return false;
+}
+#endif //zz_fly :: dual upnp
 
 // Commander - Added: FriendLinks [emulEspaa] - Start - added by zz_fly
 bool CemuleApp::IsEd2kFriendLinkInClipboard()

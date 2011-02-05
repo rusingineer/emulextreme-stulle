@@ -88,7 +88,7 @@ public:
 
 	void	AddUploadingClient(CUpDownClient* client);
 	void	RemoveUploadingClient(CUpDownClient* client);
-	
+
 	bool	HideOvershares(CSafeMemFile* file, CUpDownClient* client); //Xman PowerRelease
 
 	//Xman advanced upload-priority
@@ -161,7 +161,6 @@ public:
 	/*
 	static bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL);
 	*/
-	static bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false);
 	//Xman end
 
 
@@ -192,6 +191,7 @@ public:
 
 	//MORPH START - Added by SiRoB, Import Parts [SR13]
 	bool	SR13_ImportParts();
+	static bool	CreateHash(const uchar* pucData, uint32 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false); //Xman Nice Hash
 	//MORPH END   - Added by SiRoB, Import Parts [SR13]
 
 protected:
@@ -207,6 +207,7 @@ protected:
 	static void	CreateHash(CFile* pFile, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false);
 	static bool	CreateHash(FILE* fp, uint64 uSize, uchar* pucHash, CAICHHashTree* pShaHashOut = NULL, bool slowdown=false);
 	//Xman end
+
 	virtual void	UpdateFileRatingCommentAvail(bool bForceUpdate = false);
 
 	uint32	*CalcPartSpread();	//Xman PowerRelease

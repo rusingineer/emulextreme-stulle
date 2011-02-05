@@ -62,7 +62,7 @@ public:
 	/*
 	void	UpdateFile(const CShareableFile* file, bool bUpdateFileSummary = true);
 	*/
-	void	UpdateFile(const CShareableFile* file, bool bUpdateFileSummary = true, bool force=false);
+	void	UpdateFile(const CShareableFile* file, bool bUpdateFileSummary = true, bool force = false);
 	//Xman end
 	void	Localize();
 	void	ShowFilesCount();

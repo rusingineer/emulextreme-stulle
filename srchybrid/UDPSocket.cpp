@@ -151,6 +151,20 @@ bool CUDPSocket::Create()
 			LogError(LOG_STATUSBAR, _T("Error: Server UDP socket: Failed to create server UDP socket - %s"), GetErrorMessage(GetLastError()));
 			return false;
 		}
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+		//ACAT UPnP
+		if(thePrefs.m_bUseACATUPnPCurrent && thePrefs.GetUPnPNat()){
+			CString client;
+			UINT port;
+			MyUPnP::UPNPNAT_MAPPING mapping;
+
+			GetSockName(client, port);
+			mapping.internalPort = mapping.externalPort = (WORD)port;
+			mapping.protocol = MyUPnP::UNAT_UDP;
+			mapping.description = "Server UDP Port";
+			theApp.AddUPnPNatPort(&mapping, thePrefs.GetUPnPNatTryRandom());
+		}
+#endif //zz_fly :: dual upnp
 		return true;
 	}
 	return false;

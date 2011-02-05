@@ -773,5 +773,4 @@ void CKnownFileList::ClearHistory(){
 		}
 	}	
 }
-
 //Xman end

@@ -208,6 +208,7 @@ void CDownloadClientsCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	GetClientRect(&rcClient);
 	const CUpDownClient *client = (CUpDownClient *)lpDrawItemStruct->itemData;
 
+	COLORREF crOldBackColor = dc->GetBkColor();  //Xman show LowIDs
 	CHeaderCtrl *pHeaderCtrl = GetHeaderCtrl();
 	int iCount = pHeaderCtrl->GetItemCount();
 	cur_rec.right = cur_rec.left - sm_iLabelOffset;
@@ -341,7 +342,8 @@ void CDownloadClientsCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 							cur_rec.left+=20;
 							POINT point2= {cur_rec.left,cur_rec.top+1};
 							int index = client->GetCountryFlagIndex();
-							theApp.ip2country->GetFlagImageList()->DrawIndirect(dc, index , point2, CSize(18,16), CPoint(0,0), ILD_NORMAL);
+							//theApp.ip2country->GetFlagImageList()->DrawIndirect(dc, index , point2, CSize(18,16), CPoint(0,0), ILD_NORMAL);
+							theApp.ip2country->GetFlagImageList()->DrawIndirect(&theApp.ip2country->GetFlagImageDrawParams(dc,client->GetCountryFlagIndex(),point2));
 							cur_rec.left += sm_iLabelOffset;
 						}
 						//EastShare End - added by AndCycle, IP to Country
@@ -359,18 +361,6 @@ void CDownloadClientsCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						//EastShare End - added by AndCycle, IP to Country
 						break;
 					}
-
-					//Xman show LowIDs
-					case 1:
-					{
-						COLORREF crOldTxtColor = dc->GetTextColor();
-						if(client->HasLowID())
-							dc.SetBkColor(RGB(255,250,200));
-						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-						dc->SetTextColor(crOldTxtColor);
-						break;
-					}
-					//Xman end
 
 					case 4:
 					{ //Xman
@@ -413,7 +403,12 @@ void CDownloadClientsCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 					} //Xman
 
 					default:
+						//Xman show LowIDs
+						if(iColumn == 1 && client->HasLowID()) 
+							dc.SetBkColor(RGB(255,250,200));
+						//Xman End
 						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
+						dc.SetBkColor(crOldBackColor); //Xman show LowIDs
 						break;
 				}
 			}
@@ -493,14 +488,14 @@ void CDownloadClientsCtrl::GetItemDisplayText(const CUpDownClient *client, int i
 				case SF_LINK:
 					_tcsncpy(pszText, GetResString(IDS_SW_LINK), cchTextMax);
 					break;
-				default:
-					_tcsncpy(pszText, GetResString(IDS_UNKNOWN), cchTextMax);
-					break;
 				//Xman SLS
 				case SF_SLS:
 					_tcsncpy(pszText, _T("SLS"), cchTextMax);
 					break;
 				//Xman end
+				default:
+					_tcsncpy(pszText, GetResString(IDS_UNKNOWN), cchTextMax);
+					break;
 			}
 			break;
 	}
@@ -643,6 +638,7 @@ int CDownloadClientsCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParam
 	if (iResult == 0 && (dwNextSort = theApp.emuledlg->transferwnd->GetDownloadClientsList()->GetNextSortOrder(lParamSort)) != -1)
 		iResult = SortProc(lParam1, lParam2, dwNextSort);
 	*/
+	// SLUGFILLER End
 
 	return iResult;
 }
@@ -674,8 +670,7 @@ void CDownloadClientsCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	//Xman Xtreme Downloadmanager
 	if (client && client->GetDownloadState() == DS_DOWNLOADING)
 		ClientMenu.AppendMenu(MF_STRING,MP_STOP_CLIENT,GetResString(IDS_STOP_CLIENT), _T("EXIT"));
-	//xman end
-
+	//Xman end
 	//Xman friendhandling
 	ClientMenu.AppendMenu(MF_SEPARATOR); 
 	//Xman end

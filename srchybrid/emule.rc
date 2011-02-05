@@ -25,162 +25,118 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_PPG_Xtreme DIALOGEX 0, 0, 224, 243
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_PPG_Xtreme DIALOGEX 0, 0, 220, 251
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Xtreme I"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Use amount based 1:3 Ratio if upload < 10",IDC_13RATIO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,45,197,12
-    GROUPBOX        "Upload Management",IDC_UPLOADMANAGEMENT,7,2,212,129
-    CONTROL         "Open more slots if needed (recommend)",
-                    IDC_OPENMORESLOTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    14,23,197,11
-    CONTROL         "NAFC full control",IDC_NAFCFULLCONTROL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,34,197,11
-    GROUPBOX        "Average Datarate",IDC_AVG_DATARATE_TIME,7,134,212,29
-    CONTROL         "",IDC_SAMPLERATESLIDER,"msctls_trackbar32",
-                    TBS_AUTOTICKS | WS_TABSTOP,14,145,197,13,
-                    WS_EX_STATICEDGE
-    EDITTEXT        IDC_MTU_EDIT,14,71,35,12,ES_AUTOHSCROLL
-    LTEXT           "MTU",IDC_STATIC_MTU,54,72,157,11
-    CONTROL         "Use Double Send Size",IDC_USEDOUBLESENDSIZE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,84,179,10
-    GROUPBOX        "Process Priority",IDC_PROCESSPRIO_STATIC,7,220,212,21
-    CONTROL         "High",IDC_HIGHPRIO_RADIO,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,14,230,59,10
-    CONTROL         "Above normal",IDC_ABOVENORMALPRIO_RADIO,"Button",
-                    BS_AUTORADIOBUTTON,74,230,88,10
-    CONTROL         "Normal",IDC_NORMALPRIO_RADIO,"Button",
-                    BS_AUTORADIOBUTTON,164,230,47,10
-    CONTROL         "One queue per file",IDC_MULTIQUEUE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,12,179,11
+    GROUPBOX        "Upload Management",IDC_UPLOADMANAGEMENT,7,2,208,135
+    CONTROL         "Open more slots if needed (recommend)",IDC_OPENMORESLOTS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,23,197,11
+    CONTROL         "NAFC full control",IDC_NAFCFULLCONTROL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,34,197,11
+    GROUPBOX        "Average Datarate",IDC_AVG_DATARATE_TIME,7,138,208,29
+    CONTROL         "",IDC_SAMPLERATESLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,14,149,197,13,WS_EX_STATICEDGE
+    EDITTEXT        IDC_MTU_EDIT,14,67,35,12,ES_AUTOHSCROLL
+    LTEXT           "MTU",IDC_STATIC_MTU,54,69,157,11
+    CONTROL         "Use Double Send Size",IDC_USEDOUBLESENDSIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,91,186,10
+    CONTROL         "Try to Retrieve MTU from System",IDC_RETRIEVEMTUFROMSOCKET,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,80,186,10
+    GROUPBOX        "Process Priority",IDC_PROCESSPRIO_STATIC,7,228,208,21
+    CONTROL         "High",IDC_HIGHPRIO_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,237,59,10
+    CONTROL         "Above normal",IDC_ABOVENORMALPRIO_RADIO,"Button",BS_AUTORADIOBUTTON,74,237,88,10
+    CONTROL         "Normal",IDC_NORMALPRIO_RADIO,"Button",BS_AUTORADIOBUTTON,164,237,47,10
+    CONTROL         "One queue per file",IDC_MULTIQUEUE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,12,179,11
     CONTROL         "retry connectio attempts",IDC_RETRYCONNECTIONATTEMPTS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,209,179,11
-    CONTROL         "6000",IDC_SENDBUFFER1,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,81,57,36,10
-    CONTROL         "8192",IDC_SENDBUFFER2,"Button",BS_AUTORADIOBUTTON,118,
-                    57,36,10
-    CONTROL         "12000",IDC_SENDBUFFER3,"Button",BS_AUTORADIOBUTTON,155,
-                    57,36,10
-	CONTROL         "24000",IDC_SENDBUFFER4,"Button",BS_AUTORADIOBUTTON,155,
-                    57,36,10
-    LTEXT           "Sendbuffer:",IDC_SENDBUFFER_STATIC,14,57,59,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,215,179,11
+    CONTROL         "6000",IDC_SENDBUFFER1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,83,57,36,10
+    CONTROL         "8192",IDC_SENDBUFFER2,"Button",BS_AUTORADIOBUTTON,120,57,36,10
+    CONTROL         "12000",IDC_SENDBUFFER3,"Button",BS_AUTORADIOBUTTON,157,57,36,10
+    CONTROL         "24000",IDC_SENDBUFFER4,"Button",BS_AUTORADIOBUTTON,157,57,36,10
+    LTEXT           "Sendbuffer:",IDC_SENDBUFFER_STATIC,14,57,67,10
     CONTROL         "show socket blocking ratio",IDC_SHOWBLOCKINGRATIO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,198,179,11
-    CONTROL         "Auto-update IPFilter.dat",IDC_AUTOUPDATEIPFILTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,188,179,11
-    CONTROL         "drop too oftenly blocking sockets",
-                    IDC_DROPBLOCKINGSOCKETS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,94,197,12
-    GROUPBOX        "Chunk Chooser",IDC_CHUNKCHOOSER,7,164,212,23
-    CONTROL         "Maella",IDC_CC_MAELLA,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,24,174,89,8
-    CONTROL         "zz",IDC_CC_ZZ,"Button",BS_AUTORADIOBUTTON,122,174,89,8
-    CONTROL         "Always one Rlease-Slot",IDC_ONERELEASESLOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,106,197,12
-    CONTROL         "Use advanced auto-uploadpriority",IDC_A_UPPRIO,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,117,197,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,204,179,11
+    CONTROL         "Auto-update IPFilter.dat",IDC_AUTOUPDATEIPFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,193,179,11
+    CONTROL         "drop too oftenly blocking sockets",IDC_DROPBLOCKINGSOCKETS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,101,197,12
+    GROUPBOX        "Chunk Chooser",IDC_CHUNKCHOOSER,7,169,208,23
+    CONTROL         "Maella",IDC_CC_MAELLA,"Button",BS_AUTORADIOBUTTON | WS_GROUP,24,179,89,8
+    CONTROL         "zz",IDC_CC_ZZ,"Button",BS_AUTORADIOBUTTON,122,179,89,8
+    CONTROL         "Always one Rlease-Slot",IDC_ONERELEASESLOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,112,197,12
+    CONTROL         "Use advanced auto-uploadpriority",IDC_A_UPPRIO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,123,197,12
 END
 
-IDD_PPG_Xtreme2 DIALOGEX 0, 0, 224, 243
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+IDD_PPG_Xtreme2 DIALOGEX 0, 0, 223, 255
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Xtreme II"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Anti-Leecher",IDC_ANTILEECHER_GROUP,7,2,212,168
+    GROUPBOX        "Anti-Leecher",IDC_ANTILEECHER_GROUP,7,2,211,181
     CONTROL         "Enable Anti-Leecher-Feature",IDC_ANTILEECHER_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,20,197,12
     CONTROL         "Detect Wrong Hello-Tag",IDC_ANTILEECHERBADHELLO_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,32,188,12
-    CONTROL         "Detect Bad Tags",IDC_ANTILEECHERSNAFU_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,43,188,12
-    CONTROL         "Anti-Ghost-Mod",IDC_ANTIGHOST_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,54,188,12
+    CONTROL         "Detect Bad Tags",IDC_ANTILEECHERSNAFU_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,43,188,12
+    CONTROL         "Anti-Ghost-Mod",IDC_ANTIGHOST_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,54,188,12
     CONTROL         "Detect Leecher by Modstring",IDC_ANTILEECHERMOD_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,65,188,12
     CONTROL         "Detect Leecher by UserName",IDC_ANTILEECHERNAME_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,76,188,12
     CONTROL         "Detect Nick / Modthiefs",IDC_ANTILEECHERTHIEF_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,87,188,12
-    CONTROL         "Detect Spammers",IDC_ANTILEECHERSPAMMER_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,98,188,12
+    CONTROL         "Detect Spammers",IDC_ANTILEECHERSPAMMER_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,98,188,12
     CONTROL         "Detect XS-Exploiter",IDC_ANTILEECHERXSEXPLOITER_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,109,188,12
-    CONTROL         "Detect emcrypt",IDC_ANTILEECHEREMCRYPT_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,23,120,188,12
+    CONTROL         "Detect emcrypt",IDC_ANTILEECHEREMCRYPT_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,120,188,12
     CONTROL         "Detect bad userhashes",IDC_ANTILEECHERUSERHASH_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,131,188,12
-    PUSHBUTTON      "Reload",IDC_DLPRELOAD,152,10,59,11
+    CONTROL         "Detect Fincan userhashes",IDC_ANTILEECHERFINCAN_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,142,188,12
+    PUSHBUTTON      "Reload",IDC_DLPRELOAD,152,9,59,11
     LTEXT           "version",IDC_DLP_STATIC,14,12,106,10
-    LTEXT           "Community Mods:",IDC_STATIC_LEECHERCOMMUNITY,14,146,84,
-                    10,SS_WORDELLIPSIS
-    CONTROL         "ban",IDC_RADIO_LEECHERCOMMUNITY_1,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,103,146,35,10
-    CONTROL         "reduce score",IDC_RADIO_LEECHERCOMMUNITY_2,"Button",
-                    BS_AUTORADIOBUTTON,140,146,77,10
-    CONTROL         "ban",IDC_RADIO_LEECHERGHOST_1,"Button",
-                    BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_GROUP | 
-                    WS_TABSTOP,103,164,28,10
-    CONTROL         "reduce score",IDC_RADIO_LEECHERGHOST_2,"Button",
-                    BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_TABSTOP,135,165,
-                    76,10
-    LTEXT           "Ghost Mods:",IDC_STATIC_LEECHERGHOST,9,166,92,10,
-                    SS_WORDELLIPSIS | NOT WS_VISIBLE
-    LTEXT           "Nick / Modthiefs",IDC_STATIC_LEECHERTHIEF,14,157,84,10,
-                    SS_WORDELLIPSIS
-    CONTROL         "ban",IDC_RADIO_LEECHERTHIEF_1,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,103,157,34,10
-    CONTROL         "reduce score",IDC_RADIO_LEECHERTHIEF_2,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,140,157,77,10
+    LTEXT           "Community Mods:",IDC_STATIC_LEECHERCOMMUNITY,14,157,84,10,SS_WORDELLIPSIS
+    CONTROL         "ban",IDC_RADIO_LEECHERCOMMUNITY_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,103,157,35,10
+    CONTROL         "reduce score",IDC_RADIO_LEECHERCOMMUNITY_2,"Button",BS_AUTORADIOBUTTON,140,157,77,10
+    CONTROL         "ban",IDC_RADIO_LEECHERGHOST_1,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,103,177,28,10
+    CONTROL         "reduce score",IDC_RADIO_LEECHERGHOST_2,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_TABSTOP,135,177,76,10
+    LTEXT           "Ghost Mods:",IDC_STATIC_LEECHERGHOST,9,177,92,10,SS_WORDELLIPSIS | NOT WS_VISIBLE
+    LTEXT           "Nick / Modthiefs",IDC_STATIC_LEECHERTHIEF,14,168,84,10,SS_WORDELLIPSIS
+    CONTROL         "ban",IDC_RADIO_LEECHERTHIEF_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,103,168,34,10
+    CONTROL         "reduce score",IDC_RADIO_LEECHERTHIEF_2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,140,168,77,10
     CONTROL         "Show active downloads bold",IDC_ACTIVEDOWNLOADSBOLD,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,174,197,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,197,10
     CONTROL         "Show additional graph-lines",IDC_SHOWADDITIONALGRAPH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,194,197,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,205,197,10
     CONTROL         "Use narrow font in transfer window",IDC_USENARROWFONT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,184,197,10
-    CONTROL         "Display FunnyNick",IDC_FUNNYNICK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,204,197,10
-    GROUPBOX        "Links",IDC_LINK_GROUP,7,217,212,24
-    PUSHBUTTON      "Homepage",IDC_HPLINK,11,226,59,11,BS_FLAT
-    PUSHBUTTON      "Support-Forum",IDC_FORUMLINK,81,226,59,11,BS_FLAT
-    PUSHBUTTON      "Vote",IDC_VOTELINK,149,226,59,11,BS_FLAT
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,195,197,10
+    CONTROL         "Display FunnyNick",IDC_FUNNYNICK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,215,197,10
+    GROUPBOX        "Links",IDC_LINK_GROUP,7,228,211,24
+    PUSHBUTTON      "Homepage",IDC_HPLINK,11,237,59,11,BS_FLAT
+    PUSHBUTTON      "Support-Forum",IDC_FORUMLINK,81,237,59,11,BS_FLAT
+    PUSHBUTTON      "Vote",IDC_VOTELINK,149,237,59,11,BS_FLAT
 END
 
 IDD_MASSRENAME DIALOGEX 0, 0, 377, 257
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Mass-Rename"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     PUSHBUTTON      "OK",IDOK,265,235,50,14,BS_FLAT
     PUSHBUTTON      "Cancel",IDCANCEL,319,235,50,14,BS_FLAT
-    LTEXT           "Filename mask (changes here will be done to all filenames below):",
-                    IDC_MR_STATIC1,4,4,210,8
+    LTEXT           "Filename mask (changes here will be done to all filenames below):",IDC_MR_STATIC1,4,4,210,8
     EDITTEXT        IDC_FILENAMEMASKEDITTEMPLATE,4,16,310,14,ES_AUTOHSCROLL
-    CONTROL         "Original filenames:",IDC_MR_STATIC2,"Static",
-                    SS_LEFTNOWORDWRAP | WS_GROUP,196,45,60,8
+    CONTROL         "Original filenames:",IDC_MR_STATIC2,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,196,45,60,8
     LTEXT           "New filenames:",IDC_MR_STATIC3,4,45,50,8
-    CONTROL         "Filenames left-justified",IDC_FILENAMELEFT,"Button",
-                    BS_AUTORADIOBUTTON | BS_FLAT,4,32,87,10
-    CONTROL         "Filenames right-justified",IDC_FILENAMERIGHT,"Button",
-                    BS_AUTORADIOBUTTON | BS_FLAT,100,32,96,10
+    CONTROL         "Filenames left-justified",IDC_FILENAMELEFT,"Button",BS_AUTORADIOBUTTON | BS_FLAT,4,32,87,10
+    CONTROL         "Filenames right-justified",IDC_FILENAMERIGHT,"Button",BS_AUTORADIOBUTTON | BS_FLAT,100,32,96,10
     PUSHBUTTON      "&Reset",IDC_RESETBUTTON,319,16,50,14
-    CONTROL         "",IDC_NEWFILENAMESEDITLEFT,"RichEdit20W",WS_BORDER | 
-                    WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | 0x10c4,4,53,180,
-                    178
-    CONTROL         "",IDC_NEWFILENAMESEDITRIGHT,"RichEdit20W",WS_BORDER | 
-                    WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | 0x10c4,4,53,180,
-                    178,WS_EX_RIGHT
-    CONTROL         "",IDC_OLDFILENAMESEDIT,"RichEdit20W",WS_BORDER | 
-                    WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | 0x18c4,196,53,173,
-                    178
+    CONTROL         "",IDC_NEWFILENAMESEDITLEFT,"RichEdit20W",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | 0x10c4,4,53,180,178
+    CONTROL         "",IDC_NEWFILENAMESEDITRIGHT,"RichEdit20W",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | 0x10c4,4,53,180,178,WS_EX_RIGHT
+    CONTROL         "",IDC_OLDFILENAMESEDIT,"RichEdit20W",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | 0x18c4,196,53,173,178
     PUSHBUTTON      "&Cleanup",IDC_BUTTONSTRIP,4,235,58,14,BS_FLAT
     PUSHBUTTON      "&Simple Cleanup",IDC_SIMPLECLEANUP,64,235,59,14,BS_FLAT
-    PUSHBUTTON      "Insert text column from clipboard",IDC_INSERTTEXTCOLUMN,
-                    126,235,131,14,BS_FLAT
+    PUSHBUTTON      "Insert text column from clipboard",IDC_INSERTTEXTCOLUMN,126,235,131,14,BS_FLAT
 END
 
 IDD_HTTPDOWNLOAD DIALOGEX 0, 0, 231, 145
@@ -4594,18 +4550,26 @@ END
 
 STRINGTABLE 
 BEGIN
-	IDS_OBFUSCATION_PADDING_LENGTH	"Obfuscation-Padding-Length [10-254]"
-	//Friendlinks
-	IDS_GETFRIENDED2KLINK   "Copy friend link to clipboard"
+    IDS_OBFUSCATION_PADDING_LENGTH	"Obfuscation-Padding-Length [10-254]"
+    IDS_TRUSTEVERYHASH      "Trust Every AICHHash (current session, not saved, not recommended)"
+    //Friendlinks
+    IDS_GETFRIENDED2KLINK   "Copy friend link to clipboard"
     IDS_GETHTMLFRIENDED2KLINK "Copy friend link to clipboard (HTML)"
+    IDS_DOWNLOADEMFRIENDSMET "Download emfriends.met"
+    IDS_EMFRIENDSMETURL     "Please enter the URL of emfriends.met:"
     IDS_ERR_FAILEDDOWNLOADEMFRIENDS "Failed to download the friendlist from %s"
     IDS_GETMYFRIENDED2KLINK "Copy my friend link to clipboard"
     IDS_GETMYHTMLFRIENDED2KLINK "Copy my friend link to clipboard (HTML)"
     IDS_FRIENDLINKMENUTITLE "FriendLinks"
-	IDS_DOWNLOADEMFRIENDSMET "Download emfriends.met"
-    IDS_EMFRIENDSMETURL     "Please enter the URL of emfriends.met:"
-	IDS_USER_ALREADY_FRIEND "User ""%s"" is already in your friend list"
-	IDS_PROGRESSHASHDONE	"Hashing done: %s"
+    IDS_USER_ALREADY_FRIEND "User ""%s"" is already in your friend list"
+    IDS_PROGRESSHASHDONE    "Hashing done: %s"
+    IDS_USEACATUPNPNEXTSTART1 "Keep using ACAT UPnP lib after restart eMule"
+    IDS_USEACATUPNPNEXTSTART2 "Switch to ACAT UPnP lib after restart eMule"
+    IDS_RETRIEVEMTUFROMSOCKET "Try to Retrieve MTU from System"
+    IDS_ENABLEKNOWN2BUFFER  "Enable AICHHashset buffer (reduce diskio while hashing tons of files)"
+    IDS_ANTILEECHERFINCAN_CHECK 
+                            "Detect Fincan Community Hash (CPU intensive!)"
+    IDS_ENABLEKNOWN2SPLIT   "Split Known2_64.met, let unshared AICHHashsets in a single file"
 END
 
 #endif    // English (U.S.) resources

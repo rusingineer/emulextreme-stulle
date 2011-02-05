@@ -138,8 +138,8 @@ CStatistics::CStatistics()
 {
 	// Xman Maella TPT 
 	/*
-	//maxDown =				0;
-	//maxDownavg =			0;
+	maxDown =				0;
+	maxDownavg =			0;
 	*/
 	//Xman end
 	maxcumDown =			0;
@@ -150,10 +150,10 @@ CStatistics::CStatistics()
 	maxcumUp =				0;
 	// Xman Maella TPT 
 	/*
-	//maxUp =					0;
-	//maxUpavg =				0;
-	//rateDown =				0;
-	//rateUp =				0;
+	maxUp =					0;
+	maxUpavg =				0;
+	rateDown =				0;
+	rateUp =				0;
 	*/
 	//Xman end
 	timeTransfers =			0;
@@ -594,8 +594,7 @@ void CStatistics::UpdateConnectionStats(void)
 			time_thisServerDuration = (GetTickCount() - theStats.serverConnectTime) / 1000;
 	}
 }
-// <-----khaos-
-//Xman end
+//Xman End
 
 #ifdef USE_MEM_STATS
 

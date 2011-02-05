@@ -423,8 +423,6 @@ void CKnownFile::UpdatePartsInfo()
 				if( m_nCompleteSourcesCountHi < m_nCompleteSourcesCount )
 					m_nCompleteSourcesCountHi = m_nCompleteSourcesCount;
 				*/
-
-				//Xman Code Improvement:
 				//the difference to partfiles is, that we don't see the complete sources
 				//-> the official CountLo gives a too small number
 				m_nCompleteSourcesCountLo= count.GetAt(i);
@@ -578,10 +576,10 @@ bool CKnownFile::CreateFromFile(LPCTSTR in_directory, LPCTSTR in_filename, LPVOI
 		}
 
 		//Xman Progress Hash (O2)
-		CString pourcent;
 		if(GetPartCount()>0) //just to be sure
 		{
-			pourcent.Format(_T("Hashing  :%d%% - %s") ,(hashcount+1)*100/GetPartCount(),in_filename);		
+			CString pourcent;
+			pourcent.Format(_T("Hashing: %d%% - %s") ,(hashcount+1)*100/GetPartCount(),in_filename);		
 			if (theApp.emuledlg->statusbar->m_hWnd) theApp.emuledlg->statusbar->SetText( pourcent ,0,0);
 		}
 		//Xman end
@@ -647,7 +645,12 @@ bool CKnownFile::CreateFromFile(LPCTSTR in_directory, LPCTSTR in_filename, LPVOI
 	} 
 	else {
 		m_FileIdentifier.GetRawMD4HashSet().Add(lasthash);
+		//Xman Nice Hash
+		/*
 		m_FileIdentifier.CalculateMD4HashByHashSet(false);
+		*/
+		m_FileIdentifier.CalculateMD4HashByHashSet(false, true, true);
+		//Xman end
 	}
 
 	if (pvProgressParam && theApp.emuledlg && theApp.emuledlg->IsRunning()){
@@ -676,12 +679,11 @@ bool CKnownFile::CreateFromFile(LPCTSTR in_directory, LPCTSTR in_filename, LPVOI
 	// Add filetags
 	UpdateMetaDataTags();
 
+	UpdatePartsInfo();
 
 	//Xman Progress Hash (O2)
 	AddLogLine(true, GetResString(IDS_PROGRESSHASHDONE), GetFilePath()  );
 	//Xman end
-
-	UpdatePartsInfo();
 
 	return true;	
 }
@@ -837,7 +839,7 @@ void CKnownFile::SetFileSize(EMFileSize nFileSize)
 	// nr. of parts to be used with OP_FILESTATUS
 	m_iED2KPartCount = (uint16)((uint64)nFileSize / PARTSIZE + 1);
 }
- 
+
 bool CKnownFile::LoadTagsFromFile(CFileDataIO* file)
 {
 	UINT tagcount = file->ReadUInt32();
@@ -1682,7 +1684,7 @@ void CKnownFile::SetUpPriority(uint8 iNewUpPriority, bool bSave)
 	else
 		m_iUpPriority = iNewUpPriority;
 
-	ASSERT( m_iUpPriority == PR_VERYLOW || m_iUpPriority == PR_LOW || m_iUpPriority == PR_NORMAL || m_iUpPriority == PR_HIGH || m_iUpPriority == PR_VERYHIGH || m_iUpPriority == PR_POWER );
+	ASSERT( m_iUpPriority == PR_VERYLOW || m_iUpPriority == PR_LOW || m_iUpPriority == PR_NORMAL || m_iUpPriority == PR_HIGH || m_iUpPriority == PR_VERYHIGH || m_iUpPriority == PR_POWER ); //Xman PowerRelease
 	//Xman end
 
 	if( IsPartFile() && bSave )

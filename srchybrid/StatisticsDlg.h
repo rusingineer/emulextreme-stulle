@@ -51,7 +51,6 @@ public:
 	void Process();
 	// Maelle end
 
-
 	void	UpdateConnectionsGraph();
 	void	DoTreeMenu();
 	void	CreateMyTree();
@@ -196,5 +195,4 @@ public:
 private:
 	int m_lastRange[2];
 	// Maella end
-
 };

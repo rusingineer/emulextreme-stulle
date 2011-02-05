@@ -392,19 +392,35 @@ void CreateNetworkInfo(CRichEditCtrlX& rCtrl, CHARFORMAT& rcfDef, CHARFORMAT& rc
 		rCtrl << _T("URL:\t") << _T("http://") << strHostname << _T(":") << thePrefs.GetWSPort() << _T("/\r\n");
 	}
 
-	//zz_fly :: show UPnP status :: start
-	//if(thePrefs.GetUPnPNat())
-	if(thePrefs.IsUPnPEnabled() && theApp.m_pUPnPFinder)
+	//zz_fly :: show UPnP status, dual upnp :: start
+#ifdef DUAL_UPNP
+	//UPnP chooser
+	if((thePrefs.m_bUseACATUPnPCurrent && thePrefs.GetUPnPNat()) ||
+	   (!thePrefs.m_bUseACATUPnPCurrent && thePrefs.IsUPnPEnabled() && theApp.m_pUPnPFinder))
 	{
 		rCtrl << _T("\r\n");
 		rCtrl.SetSelectionCharFormat(rcfBold);
 		rCtrl << GetResString(IDS_UPNPSTATUS) << _T("\r\n");
 		rCtrl.SetSelectionCharFormat(rcfDef);
-		//CString upnpinfo = theApp.m_UPnPNat.GetLastError(); //ACAT UPnP
-		CString upnpinfo = theApp.m_pUPnPFinder->GetImplementation() ? theApp.m_pUPnPFinder->GetImplementation()->GetStatusString() : _T(""); //Official UPNP
+		//UPnP chooser
+		CString upnpinfo = thePrefs.m_bUseACATUPnPCurrent ? 
+							(theApp.m_pUPnPNat->GetLastError()) //ACAT UPnP
+										:
+							(theApp.m_pUPnPFinder->GetImplementation() ? theApp.m_pUPnPFinder->GetImplementation()->GetStatusString() : _T("")); //Official UPNP
 		rCtrl << (upnpinfo.IsEmpty() ? _T("Unknown") : upnpinfo) << _T("\r\n");
 	}
-	//zz_fly :: show UPnP status :: end
+#else
+	if(thePrefs.IsUPnPEnabled() && theApp.m_pUPnPFinder) //Official UPNP
+	{
+		rCtrl << _T("\r\n");
+		rCtrl.SetSelectionCharFormat(rcfBold);
+		rCtrl << GetResString(IDS_UPNPSTATUS) << _T("\r\n");
+		rCtrl.SetSelectionCharFormat(rcfDef);
+		CString upnpinfo = theApp.m_pUPnPFinder->GetImplementation() ? theApp.m_pUPnPFinder->GetImplementation()->GetStatusString() : _T("");
+		rCtrl << (upnpinfo.IsEmpty() ? _T("Unknown") : upnpinfo) << _T("\r\n");
+	}
+#endif
+	//zz_fly :: show UPnP status, dual upnp :: end
 
 	//Xman show Hash always at end
 	if (!bFullInfo)

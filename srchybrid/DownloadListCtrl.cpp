@@ -51,7 +51,6 @@
 #include "Log.h" //Xman Mass Rename (Morph)
 #include "SR13-ImportParts.h"//MORPH - Added by SiRoB, Import Parts [SR13] - added by zz_fly
 
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -96,9 +95,12 @@ CDownloadListCtrl::CDownloadListCtrl()
 
 CDownloadListCtrl::~CDownloadListCtrl()
 {
-	if (m_DropMenu) VERIFY( m_DropMenu.DestroyMenu() ); //Xman Xtreme Downloadmanager
 	if (m_PreviewMenu)
 		VERIFY( m_PreviewMenu.DestroyMenu() );
+	//Xman Xtreme Downloadmanager
+	if (m_DropMenu) 
+		VERIFY( m_DropMenu.DestroyMenu() );
+	//Xman End
 	if (m_PrioMenu)
 		VERIFY( m_PrioMenu.DestroyMenu() );
     if (m_SourcesMenu)
@@ -156,7 +158,6 @@ void CDownloadListCtrl::Init()
 	//Xman Show active downloads bold
 	/*
 	if (thePrefs.GetShowActiveDownloadsBold())
-	*/
 	{
 		if (thePrefs.GetUseSystemFontForMainControls())
 		{
@@ -170,23 +171,27 @@ void CDownloadListCtrl::Init()
 		else
 			m_pFontBold = &theApp.m_fontDefaultBold;
 	}
-	//Xman client percentage
-	//m_fontBoldSmaller.CreateFont(12,0,0,1,FW_BOLD,0,0,0,0,3,2,1,34,_T("MS Serif"));
-	LOGFONT lfSmallerFont = {0};
-	m_pFontBold->GetLogFont(&lfSmallerFont);
-	//lfSmallerFont.lfWeight = FW_BOLD;
-	lfSmallerFont.lfHeight = 11;
-	m_fontBoldSmaller.CreateFontIndirect(&lfSmallerFont);
-	//Xman end
-	//Xman narrow font at transferwindow
+	*/
 	{
-		CFont* pFont = GetFont();
+		CFont *pFont = GetFont();
 		LOGFONT lfFont = {0};
 		pFont->GetLogFont(&lfFont);
-		_tcscpy(lfFont.lfFaceName, _T("Arial Narrow"));
 		lfFont.lfWeight = FW_BOLD;
-		m_fontNarrowBold.CreateFontIndirect(&lfFont);
+		m_fontBold.CreateFontIndirect(&lfFont);
+		m_pFontBold = thePrefs.GetUseSystemFontForMainControls() ? &m_fontBold : &theApp.m_fontDefaultBold;
+		//Xman client percentage
+		lfFont.lfHeight = 11;
+		m_fontBoldSmaller.CreateFontIndirect(&lfFont);
+		//Xman end		
 	}
+	//Xman End
+	//Xman narrow font at transferwindow
+	CFont* pFont = GetFont();
+	LOGFONT lfFont = {0};
+	pFont->GetLogFont(&lfFont);
+	_tcscpy(lfFont.lfFaceName, _T("Arial Narrow"));
+	lfFont.lfWeight = FW_BOLD;
+	m_fontNarrowBold.CreateFontIndirect(&lfFont);
 	//Xman end
 
 	// Barry - Use preferred sort order from preferences
@@ -269,7 +274,6 @@ void CDownloadListCtrl::SetAllIcons()
 	//Xman end
 	//Xman end
 
-
 	m_ImageList.SetOverlayImage(m_ImageList.Add(CTempIconLoader(_T("ClientSecureOvl"))), 1);
 	m_ImageList.SetOverlayImage(m_ImageList.Add(CTempIconLoader(_T("OverlayObfu"))), 2);
 	m_ImageList.SetOverlayImage(m_ImageList.Add(CTempIconLoader(_T("OverlaySecureObfu"))), 3);
@@ -348,6 +352,7 @@ void CDownloadListCtrl::Localize()
 	strRes = GetResString(IDS_AVGQR); 
 	hdi.pszText = const_cast<LPTSTR>((LPCTSTR)strRes);
 	pHeaderCtrl->SetItem(14, &hdi);
+	//Xman End
 
 	CreateMenues();
 	ShowFilesCount();
@@ -553,7 +558,7 @@ void CDownloadListCtrl::GetFileItemDisplayText(CPartFile *lpPartFile, int iSubIt
 				/*
 				_tcsncpy(pszText, CastItoXBytes(lpPartFile->GetDatarate(), false, true), cchTextMax);
 				*/
-				_tcsncpy(pszText, CastItoXBytes(lpPartFile->GetDownloadDatarate() , false, true), cchTextMax);
+				_tcsncpy(pszText, CastItoXBytes(lpPartFile->GetDownloadDatarate(), false, true), cchTextMax);
 				//Xman end
 			break;
 
@@ -664,7 +669,6 @@ void CDownloadListCtrl::GetFileItemDisplayText(CPartFile *lpPartFile, int iSubIt
 				_sntprintf(pszText, cchTextMax, _T("%u"), lpPartFile->GetAvgQr());
 			break;
 		//Xman end
-
 	}
 	pszText[cchTextMax - 1] = _T('\0');
 }
@@ -761,7 +765,7 @@ void CDownloadListCtrl::DrawFileItem(CDC *dc, int nColumn, LPCRECT lpRect, UINT 
 				cdcStatus.SelectObject(pCtrlItem->status);
 
 			dc->BitBlt(rcDraw.left, rcDraw.top, iWidth, iHeight,  &cdcStatus, 0, 0, SRCCOPY); 
-			//Xman end
+			//Xman End
 
 			if (thePrefs.GetUseDwlPercentage())
 			{
@@ -854,7 +858,7 @@ void CDownloadListCtrl::GetSourceItemDisplayText(const CtrlItem_Struct *pCtrlIte
 			_tcsncpy(pszText, pClient->GetClientSoftVer(), cchTextMax);
 			*/
 			_tcsncpy(pszText, pClient->DbgGetFullClientSoftVer(), cchTextMax);
-			//Xman end
+			//Xman End
 			break;
 
 		case 7:		// prio
@@ -880,7 +884,6 @@ void CDownloadListCtrl::GetSourceItemDisplayText(const CtrlItem_Struct *pCtrlIte
 					strBuffer.Append(_T("*"));
 				}
 				//Xman end
-
 			}
 			else {
 				//Xman Xtreme Downloadmanager
@@ -889,6 +892,7 @@ void CDownloadListCtrl::GetSourceItemDisplayText(const CtrlItem_Struct *pCtrlIte
 				*/
 				strBuffer.Format(_T("A4AF")); //= GetResString(IDS_ASKED4ANOTHERFILE);
 				//Xman end
+
 // ZZ:DownloadManager -->
 				if (thePrefs.IsExtControlsEnabled()) {
 					if (pClient->IsInNoNeededList(pCtrlItem->owner))
@@ -909,11 +913,11 @@ void CDownloadListCtrl::GetSourceItemDisplayText(const CtrlItem_Struct *pCtrlIte
 			}
 
 			//Xman Xtreme Downloadmanager
-			/*
+            		/*
 			if (thePrefs.IsExtControlsEnabled() && !pClient->m_OtherRequests_list.IsEmpty())
 				strBuffer.Append(_T("*"));
 			*/
-			//Xman end
+			//Xman End
 // ZZ:DownloadManager <--
 			_tcsncpy(pszText, strBuffer, cchTextMax);
 			break;
@@ -1085,7 +1089,8 @@ void CDownloadListCtrl::DrawSourceItem(CDC *dc, int nColumn, LPCRECT lpRect, UIN
 			//EastShare Start - added by AndCycle, IP to Country 
 			if(theApp.ip2country->ShowCountryFlag()){
 				POINT point3= {cur_rec.left,cur_rec.top+1};
-				theApp.ip2country->GetFlagImageList()->DrawIndirect(dc, pClient->GetCountryFlagIndex(), point3, CSize(18,16), CPoint(0,0), ILD_NORMAL);
+				//theApp.ip2country->GetFlagImageList()->DrawIndirect(dc, pClient->GetCountryFlagIndex(), point3, CSize(18,16), CPoint(0,0), ILD_NORMAL);
+				theApp.ip2country->GetFlagImageList()->DrawIndirect(&theApp.ip2country->GetFlagImageDrawParams(dc,pClient->GetCountryFlagIndex(),point3));
 				cur_rec.left+=20;
 			}
 			//EastShare End - added by AndCycle, IP to Country
@@ -1189,26 +1194,14 @@ void CDownloadListCtrl::DrawSourceItem(CDC *dc, int nColumn, LPCRECT lpRect, UIN
 			break;
 		}
 
-		//Xman show LowIDs
-		case 6:
-		{
-			COLORREF crOldTxtColor = dc->GetTextColor();
-			if(pClient->HasLowID())
-				dc->SetBkColor(RGB(255,250,200));
-			dc->DrawText(szItem, -1, const_cast<LPRECT>(lpRect), MLC_DT_TEXT | uDrawTextAlignment);
-			dc->SetTextColor(crOldTxtColor);
-			break;
-		}
-		//Xman end
-
 		case 9:		// remaining time & size
 		case 10:	// last seen complete
 		case 11:	// last received
 		case 12:	// category
 		case 13:	// added on
 			break;
-
-		case 14:    //Xman Xtreme-Downloadmanager: DiffQR (under AVG-QR)
+		//Xman Xtreme-Downloadmanager: DiffQR (under AVG-QR)
+		case 14:
 			if (pClient->GetDownloadState()==DS_ONQUEUE && pClient->GetRemoteQueueRank()>0) 
 			{
 				const COLORREF crOldTxtColor=dc->GetTextColor();
@@ -1226,7 +1219,13 @@ void CDownloadListCtrl::DrawSourceItem(CDC *dc, int nColumn, LPCRECT lpRect, UIN
 			//Xman end
 
 		default:
+			//Xman show LowIDs
+			COLORREF crOldBackColor = dc->GetBkColor();
+			if(pClient->HasLowID())
+				dc->SetBkColor(RGB(255,250,200));
+			//Xman end
 			dc->DrawText(szItem, -1, const_cast<LPRECT>(lpRect), MLC_DT_TEXT | uDrawTextAlignment);
+			dc->SetBkColor(crOldBackColor); //Xman show LowIDs
 			break;
 	}
 }
@@ -1751,7 +1750,7 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 			//Xman Xtreme Downloadmanager
 			if (client && client->GetDownloadState() == DS_DOWNLOADING)
 				ClientMenu.AppendMenu(MF_STRING,MP_STOP_CLIENT,GetResString(IDS_STOP_CLIENT), _T("EXIT"));
-			//xman end
+			//Xman end
 			//Xman friendhandling
 			ClientMenu.AppendMenu(MF_SEPARATOR); 
 			//Xman end
@@ -1832,7 +1831,7 @@ void CDownloadListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 			m_FileMenu.EnableMenuItem(MP_PREVIEW, MF_GRAYED);
 		}
 		m_FileMenu.EnableMenuItem(MP_MASSRENAME,MF_GRAYED);//Xman Mass Rename (Morph)
-		m_FileMenu.EnableMenuItem(MP_PREVIEW, MF_GRAYED);
+
 		//MORPH START - Added by SiRoB, Import Parts [SR13] - added by zz_fly
 		if (thePrefs.IsExtControlsEnabled())
 			m_FileMenu.EnableMenuItem(MP_SR13_ImportParts,MF_GRAYED);
@@ -2130,7 +2129,7 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					}
 					SetRedraw(true);
 					break;
-				
+
 				//Xman Mass Rename (Morph)
 				case MP_MASSRENAME: 
 				{
@@ -2179,7 +2178,6 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 									file->SavePartFile(); 
 								}
 							}
-
 							// Next item
 							selectedList.GetNext (pos);
 							i++;
@@ -2250,7 +2248,6 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 							&& (file->GetStatus(false) == PS_READY || file->GetStatus(false) == PS_EMPTY))
 						{
 							//theApp.downloadqueue->DisableAllA4AFAuto();
-
 							POSITION pos1, pos2;
 							for (pos1 = file->A4AFsrclist.GetHeadPosition();(pos2=pos1)!=NULL;)
 							{
@@ -2264,7 +2261,6 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 									cur_source->SwapToAnotherFile(true, false, false, file,true);
 								}
 							}
-
 						}
 						SetRedraw(true);
 						this->UpdateItem(file);						
@@ -2291,8 +2287,8 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					}
 					file->RemoveQueueFullSources();
 					break;
-			   }
-			   //Xman Anti-Leecher
+				}
+				//Xman Anti-Leecher
 				case MP_DROPLEECHER: { 
 					if(selectedCount > 1){
 						while (!selectedList.IsEmpty()) {
@@ -2303,13 +2299,11 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					}
 					file->RemoveLeecherSources();
 					break;
-			   }
-			 //Xman end
-
+			    	}
+				//Xman end
 				case MP_ALL_A4AF_TO_OTHER:
 					{
 						SetRedraw(false);
-
 						if (selectedCount == 1 
 							&& (file->GetStatus(false) == PS_READY || file->GetStatus(false) == PS_EMPTY))
 						{
@@ -2490,7 +2484,6 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 			CPartFile* file = (CPartFile*)content->owner; //Xman Xtreme Downloadmanager
 
 			switch (wParam){
-
 				//Xman Xtreme Downloadmanager
 				case MP_STOP_CLIENT: 
 					StopSingleClient(client);
@@ -2505,13 +2498,12 @@ BOOL CDownloadListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 						}
 					}
 					break;
-										   }
+					}
 				case MP_SWAP_A4AF_TO_OTHER:
 					if ((client != NULL)  && !(client->GetDownloadState() == DS_DOWNLOADING))
 						client->SwapToAnotherFile(true, true, false, NULL,true);
 					break;
-				//Xman end				
-
+				//Xman end	
 				case MP_SHOWLIST:
 					client->RequestSharedFileList();
 					break;
@@ -2703,8 +2695,7 @@ int CDownloadListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSor
 	if (comp == 0 && (dwNextSort = theApp.emuledlg->transferwnd->GetDownloadList()->GetNextSortOrder(dwOrgSort)) != -1)
 		return SortProc(lParam1, lParam2, dwNextSort);
 	*/
-	//Xman end
-	
+	//SLUGFILLER End
 	return sortMod * comp;
 }
 
@@ -2962,15 +2953,14 @@ int CDownloadListCtrl::Compare(const CUpDownClient *client1, const CUpDownClient
 					return -1;
 			}
 			return client1->GetDownloadState() - client2->GetDownloadState();
-
-	//Xman DiffQR
-	case 14:
-		if (client1->GetRemoteQueueRank() == 0)
-			return 1;
-		if (client2->GetRemoteQueueRank() == 0)
-			return -1;
-		return client1->GetDiffQR() - client2->GetDiffQR();
-	//Xman end
+		//Xman DiffQR
+		case 14:
+			if (client1->GetRemoteQueueRank() == 0)
+				return 1;
+			if (client2->GetRemoteQueueRank() == 0)
+				return -1;
+			return client1->GetDiffQR() - client2->GetDiffQR();
+		//Xman end
 	}
 	return 0;
 }
@@ -3030,10 +3020,12 @@ void CDownloadListCtrl::OnNmDblClk(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 
 void CDownloadListCtrl::CreateMenues()
 {
-	if (m_DropMenu) VERIFY( m_DropMenu.DestroyMenu() ); //Xman Xtreme Downloadmanager
-
 	if (m_PreviewMenu)
 		VERIFY( m_PreviewMenu.DestroyMenu() );
+	//Xman Xtreme Downloadmanager
+	if (m_DropMenu) 
+		VERIFY( m_DropMenu.DestroyMenu() );
+	//Xman End
 	if (m_PrioMenu)
 		VERIFY( m_PrioMenu.DestroyMenu() );
 	if (m_SourcesMenu)
@@ -3212,9 +3204,8 @@ void CDownloadListCtrl::ShowFilesCount()
 				countreadyfiles++;
 		}
 	}
-
 	theApp.emuledlg->transferwnd->UpdateFilesCount(iCount, countsources, countreadyfiles);
-//Xman end see all sources
+//Xman End
 }
 
 void CDownloadListCtrl::ShowSelectedFileDetails()

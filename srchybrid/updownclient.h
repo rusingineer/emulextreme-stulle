@@ -71,6 +71,30 @@ struct TransferredData {
 };
 //Xman end
 
+//Xman
+// BEGIN SiRoB: ReadBlockFromFileThread
+class CUpDownClient;
+class CReadBlockFromFileThread : public CWinThread
+{
+	DECLARE_DYNCREATE(CReadBlockFromFileThread)
+protected:
+	CReadBlockFromFileThread()	{}
+public:
+	virtual	BOOL	InitInstance() {return true;}
+	virtual int		Run();
+	void			SetReadBlockFromFile(LPCTSTR filepath, uint64 startOffset, uint32 togo, CUpDownClient* client, CSyncObject* lockhandle);
+	void			StopReadBlock();
+private:
+	uint64			StartOffset;
+	uint32			togo;
+	CUpDownClient*	m_client;
+	CString			m_clientname; //Fafner: avoid possible crash - 080421
+	CString			fullname;
+	CSyncObject*	m_lockhandle;
+	CEvent			pauseEvent;
+	volatile bool	doRun;
+};
+// END SiRoB: ReadBlockFromFileThread
 
 #pragma pack(1)
 struct Requested_File_Struct{
@@ -103,12 +127,10 @@ public:
 	CUpDownClient(CPartFile* in_reqfile, uint16 in_port, uint32 in_userid, uint32 in_serverup, uint16 in_serverport, bool ed2kID = false);
 	virtual ~CUpDownClient();
 
-
 	// Maella -Upload Stop Reason-
 	enum UpStopReason {USR_NONE, USR_SOCKET, USR_COMPLETEDRANSFER, USR_CANCELLED, USR_DIFFERENT_FILE, USR_BLOCKING, USR_EXCEPTION };
 	// Maella -Download Stop Reason-
 	enum DownStopReason {DSR_NONE, DSR_PAUSED, DSR_NONEEDEDPARTS, DSR_CORRUPTEDBLOCK, DSR_TIMEOUT, DSR_SOCKET, DSR_OUTOFPART, DSR_EXCEPTION};
-
 
 	void			StartDownload();
 	virtual void	CheckDownloadTimeout();
@@ -526,7 +548,7 @@ public:
 	uint16			m_lastPartAsked;
 	bool			m_bAddNextConnect;
 
-    //Xman not used
+	//Xman not used
 	/*
     void			SetSlotNumber(UINT newValue)					{ m_slotNumber = newValue; }
     UINT			GetSlotNumber() const							{ return m_slotNumber; }
@@ -716,9 +738,8 @@ public:
 	//zz_fly :: Drop stalled downloads :: netfinity :: end
 
 	// BEGIN SiRoB: ReadBlockFromFileThread
-	void	SetReadBlockFromFileBuffer(byte* pdata) {filedata = pdata;};
+	void	SetReadBlockFromFileBuffer(byte* pdata) {m_abyfiledata = pdata;};
 	// END SiRoB: ReadBlockFromFileThread
-
 
 // Maella -Unnecessary Protocol Overload-
 protected:
@@ -761,7 +782,9 @@ private:
 	UINT oldQR; //Xman diffQR
 
 	// BEGIN SiRoB: ReadBlockFromFileThread
-	byte* filedata;
+	byte* m_abyfiledata;
+	uint32 m_utogo;
+	CReadBlockFromFileThread* m_readblockthread;
 	// END SiRoB: ReadBlockFromFileThread
 
 
@@ -826,6 +849,7 @@ private:
 
 //Xman end
 //--------------------------------------------------------------------------------------
+
 protected:
 	int		m_iHttpSendState;
 	uint32	m_uPeerCacheDownloadPushId;
@@ -1002,7 +1026,6 @@ protected:
 	uint64		m_uReqEnd;
 	uint64		m_nUrlStartPos;
 
-
 	//Xman not used
 	/*
 	//////////////////////////////////////////////////////////
@@ -1089,23 +1112,3 @@ public:
 //EastShare End - added by AndCycle, IP to Country
 };
 //#pragma pack()
-
-//Xman
-// BEGIN SiRoB: ReadBlockFromFileThread
-class CReadBlockFromFileThread : public CWinThread
-{
-	DECLARE_DYNCREATE(CReadBlockFromFileThread)
-protected:
-	CReadBlockFromFileThread()	{}
-public:
-	virtual	BOOL	InitInstance() {return true;}
-	virtual int		Run();
-	void			SetReadBlockFromFile(CKnownFile* pfile, uint64 startOffset, uint32 togo, CUpDownClient* client);
-private:
-	uint64			StartOffset;
-	uint32			togo;
-	CUpDownClient*	m_client;
-	CKnownFile*		srcfile;
-	CSyncObject*	lockFile;
-};
-// END SiRoB: ReadBlockFromFileThread

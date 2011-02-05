@@ -392,7 +392,10 @@ void CUpDownClient::Init()
 	m_uiXSAnswer = 0;
 	//<<< Anti-XS-Exploit
 
-	filedata = NULL; // SiRoB: ReadBlockFromFileThread
+	//MORPH START - ReadBlockFromFileThread
+	m_abyfiledata = NULL;
+	m_readblockthread =NULL;
+	//MORPH END   - ReadBlockFromFileThread
 
 	//Xman Funny-Nick (Stulle/Morph)
 	m_pszFunnyNick=NULL;
@@ -407,6 +410,13 @@ void CUpDownClient::Init()
 }
 
 CUpDownClient::~CUpDownClient(){
+	//MORPH START - ReadBlockFromFileThread //Fafner: for safety (got mem leaks) - 071127
+	if (m_readblockthread) {
+		m_readblockthread->StopReadBlock();
+		m_readblockthread = NULL;
+	}
+	//MORPH END   - ReadBlockFromFileThread
+
 	if (IsAICHReqPending()){
 		m_fAICHRequested = FALSE;
 		CAICHRecoveryHashSet::ClientAICHRequestFailed(this);
@@ -770,7 +780,7 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 				//zz_fly :: Fake Shareaza Detection
 				if(!bWasUDPPortSent && !bIsFakeShareaza)
 					bIsFakeShareaza = true;
-				//zz_fly :: Fake Shareaza Detection
+				//zz_fly :: Fake Shareaza Detection end
 				break;
 
 			case CT_EMULE_MISCOPTIONS2:
@@ -810,7 +820,7 @@ bool CUpDownClient::ProcessHelloTypePacket(CSafeMemFile* data, bool isHelloPacke
 				//zz_fly :: Fake Shareaza Detection
 				if(!bWasUDPPortSent && !bIsFakeShareaza)
 					bIsFakeShareaza = true;
-				//zz_fly :: Fake Shareaza Detection
+				//zz_fly :: Fake Shareaza Detection end
 				break;
 
 			case CT_EMULE_VERSION:
@@ -2145,7 +2155,6 @@ bool CUpDownClient::TryToConnect(bool bIgnoreMaxCon, bool bNoCallbacks, CRuntime
 			if (CheckHandshakeFinished()){
 				DEBUG_ONLY( DebugLog(_T("TryToConnect: Already Connected (%s)"), DbgGetClientInfo()) );// TODO LogRemove
 				ConnectionEstablished();
-				return true;
 			}
 			else
 				DebugLogWarning( _T("TryToConnect found connected socket, but without Handshake finished - %s"), DbgGetClientInfo());
@@ -2171,7 +2180,6 @@ bool CUpDownClient::TryToConnect(bool bIgnoreMaxCon, bool bNoCallbacks, CRuntime
 		}
 		return true;
 	}
-
 	// do not try to connect to source which are incompatible with our encryption setting (one requires it, and the other one doesn't supports it)
 	if ( (RequiresCryptLayer() && !thePrefs.IsClientCryptLayerSupported()) || (thePrefs.IsClientCryptLayerRequired() && !SupportsCryptLayer()) )
 	{
@@ -2234,7 +2242,7 @@ bool CUpDownClient::TryToConnect(bool bIgnoreMaxCon, bool bNoCallbacks, CRuntime
 				return false;
 			}
 			return true;
-			}
+		}
 
 		// are callbacks disallowed?
 		if (bNoCallbacks){
@@ -2258,9 +2266,9 @@ bool CUpDownClient::TryToConnect(bool bIgnoreMaxCon, bool bNoCallbacks, CRuntime
 				delete this;
 				return false;
 			}
-					return true;
-				}
-			}
+			return true;
+		}
+	}
 
 	// Prechecks finished, now for the real connecting
 	////////////////////////////////////////////////////
@@ -2310,7 +2318,7 @@ bool CUpDownClient::TryToConnect(bool bIgnoreMaxCon, bool bNoCallbacks, CRuntime
 	// 6) Server Callback + 7) Kad Callback
 	if (GetDownloadState() == DS_CONNECTING)
 		SetDownloadState(DS_WAITCALLBACK);
-
+	
 	if (GetUploadState() == US_CONNECTING){
 		ASSERT( false ); // we should never try to connect in this case, but wait for the LowID to connect to us
 		DebugLogError( _T("LowID and US_CONNECTING (%s)"), DbgGetClientInfo());
@@ -2325,7 +2333,7 @@ bool CUpDownClient::TryToConnect(bool bIgnoreMaxCon, bool bNoCallbacks, CRuntime
 			DebugSend("OP__CallbackRequest", this);
 		theStats.AddUpDataOverheadServer(packet->size);
 		theApp.serverconnect->SendPacket(packet);
-				return true;
+		return true;
 	}
 	else if (HasValidBuddyID() && Kademlia::CKademlia::IsConnected())
 	{
@@ -2347,7 +2355,7 @@ bool CUpDownClient::TryToConnect(bool bIgnoreMaxCon, bool bNoCallbacks, CRuntime
 		}
 		else
 		{
-		// I don't think we should ever have a buddy without its IP (anymore), but nevertheless let the functionality in
+			// I don't think we should ever have a buddy without its IP (anymore), but nevertheless let the functionality in
 			//Create search to find buddy.
 			Kademlia::CSearch *findSource = new Kademlia::CSearch;
 			findSource->SetSearchTypes(Kademlia::CSearch::FINDSOURCE);
@@ -2404,9 +2412,8 @@ void CUpDownClient::Connect()
 
 void CUpDownClient::ConnectionEstablished()
 {
-
 	m_cFailed = 0; //Xman Downloadmanager / Xtreme Mod // holds the failed connection attempts
-	
+
 	//Xman Xtreme Mod
 	if (m_bUDPPending && !IsRemoteQueueFull()) //Xman  maybe the client has now place at its queue .. then it's right to not answer an UDPFilereaskping
 	{
@@ -2417,7 +2424,6 @@ void CUpDownClient::ConnectionEstablished()
 
 	//Xman -Reask sources after IP change- v4 
 	//Xman at this point we know, we have a internet-connection -> enable upload
-
 	static uint32 lastaskedforip;
 	if(theApp.internetmaybedown)
 	{
@@ -2434,7 +2440,6 @@ void CUpDownClient::ConnectionEstablished()
 			theApp.pBandWidthControl->AddeMuleOut(1); //this reopens the upload (internetmaybedown checks for upload==0
 		}
 	}
-
 	if(theApp.m_bneedpublicIP==true
 		&& m_fPeerCache 
 		&& lastaskedforip + SEC2MS(3) < ::GetTickCount() //give the client some time, we shouln't ask more than 2-3 clients after reconnect
@@ -3446,12 +3451,12 @@ LPCTSTR CUpDownClient::DbgGetKadState() const
 	const static LPCTSTR apszState[] =
 	{
 		_T("None"),
-			_T("FwCheckQueued"),
-			_T("FwCheckConnecting"),
-			_T("FwCheckConnected"),
-			_T("BuddyQueued"),
-			_T("BuddyIncoming"),
-			_T("BuddyConnecting"),
+		_T("FwCheckQueued"),
+		_T("FwCheckConnecting"),
+		_T("FwCheckConnected"),
+		_T("BuddyQueued"),
+		_T("BuddyIncoming"),
+		_T("BuddyConnecting"),
 		_T("BuddyConnected"),
 		_T("QueuedFWCheckUDP"),
 		_T("FWCheckUDP"),
@@ -3762,11 +3767,25 @@ void CUpDownClient::ProcessPublicIPAnswer(const BYTE* pbyData, UINT uSize){
 						AddLogLine(false, _T("Kad Connection detected IP-change, changed IP from %s to %s, all sources will be reasked within the next 10 minutes"), ipstr(theApp.last_valid_ip), ipstr(dwIP));
 					}
 					SetNextTCPAskedTime(::GetTickCount() + FILEREASKTIME); //not for this source
-					// official UPNP
+				}
+				//zz_fly :: Rebind UPnP on IP-change :: start
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+				//UPnP chooser
+				if (thePrefs.m_bUseACATUPnPCurrent){
+					//ACAT UPnP
+					if(thePrefs.GetUPnPNat() && thePrefs.GetUPnPNatRebind()){
+						theApp.clientudp->RebindUPnP();
+						theApp.listensocket->RebindUPnP();
+					}
+				}
+				else
+#endif //zz_fly :: dual upnp
+				{
+					//Official UPNP
 					// we don't want to trigger it twice, do we?!
 					theApp.emuledlg->RefreshUPnP(false); // refresh the UPnP mappings once
-					// official UPNP
 				}
+				//zz_fly :: Rebind UPnP on IP-change :: end
 				// Xman reconnect Kad on IP-change
 				if (Kademlia::CKademlia::IsConnected() && Kademlia::CKademlia::GetPrefs()->GetIPAddress())
 					if(ntohl(Kademlia::CKademlia::GetIPAddress()) != dwIP)
@@ -4278,7 +4297,6 @@ void CUpDownClient::ResetIP2Country(uint32 m_dwIP){
 //MORPH END - Changed by SiRoB, ProxyClient
 //EastShare End - added by AndCycle, IP to Country
 
-
 //Xman Anti-Leecher
 bool CUpDownClient::ProcessUnknownHelloTag(CTag *tag, CString &pszReason)
 {
@@ -4391,7 +4409,6 @@ float CUpDownClient::GetXtremeVersion(CString modversion) const
 		return 0.0f;
 
 	return (float)_tstof(modversion.Mid(7));
-
 }
 //Xman end
 
@@ -4749,6 +4766,19 @@ void CUpDownClient::TestLeecher(){
 		old_m_pszUsername.Empty(); //force recheck if user re enable function
 	}
 
+	//X-Ray :: Fincan Hash Detection :: Start	
+	if(thePrefs.GetAntiLeecherFincan()){
+		if(HasValidHash() && theApp.dlp->CheckForFincanHash(md4str(GetUserHash()))){
+			BanLeecher(_T("Fincan Community"),20);
+			return;
+		}
+	}
+	else if(IsLeecher()==20){
+		m_bLeecher=0;	//unban, because user doesn't want to check it anymore
+		m_strBanMessage.Format(_T("unban - Client %s"),DbgGetClientInfo());
+	}
+	//X-Ray :: Fincan Hash Detection :: End
+
 	if (m_nClientVersion > MAKE_CLIENT_VERSION(0, 30, 0) && m_byEmuleVersion > 0 && m_byEmuleVersion != 0x99 && m_clientSoft == SO_EMULE)
 	{
 		BanLeecher(_T("Fake emuleVersion"),9);
@@ -4812,10 +4842,14 @@ void CUpDownClient::ProcessBanMessage()
 {
 	if(m_strBanMessage.IsEmpty()==false)
 	{
+		//zz_fly :: fix a possible crash when username contain %s :: DolpinX :: start
+		/*
 		AddLeecherLogLine(false,m_strBanMessage);
+		*/
+		AddLeecherLogLine(false, _T("%s"), m_strBanMessage);
+		//zz_fly :: end
 		theApp.emuledlg->transferwnd->GetQueueList()->RefreshClient(this);
 	}
 	m_strBanMessage.Empty();
 }
-
 //Xman end

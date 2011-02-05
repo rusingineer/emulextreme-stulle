@@ -39,7 +39,7 @@ public:
 	/*
 	typedef enum { kServerList, kServer , kFile , kNodesList, kSearch, kInvalid } LinkType;
 	*/
-	typedef enum { kServerList, kServer , kFile , kNodesList, kFriend, kSearch, kFriendList, kInvalid } LinkType;
+	typedef enum { kServerList, kServer , kFile , kNodesList, kSearch, kFriend, kFriendList, kInvalid } LinkType;
 	// MORPH END - Modified by Commander, Friendlinks [emulEspaa]
 
 	virtual LinkType GetKind() const = 0;
@@ -194,7 +194,8 @@ public:
 	virtual CED2KServerListLink*	GetServerListLink();
 	virtual CED2KServerLink*		GetServerLink();
 	virtual CED2KFileLink*			GetFileLink();
-	virtual CED2KNodesListLink*		GetNodesListLink();
+	virtual CED2KNodesListLink* GetNodesListLink()		{ return NULL; }
+	virtual CED2KSearchLink* GetSearchLink()			{ return NULL; }
 
 	CString	GetUserName() const						{ return m_sUserName; }
 	void	GetUserHash(uchar userHash[]) const		{ memcpy(userHash, m_hash, 16*sizeof(uchar)); }
@@ -215,7 +216,8 @@ public:
 	virtual CED2KServerListLink*	GetServerListLink();
 	virtual CED2KServerLink*		GetServerLink();
 	virtual CED2KFileLink*			GetFileLink();
-	virtual CED2KNodesListLink*		GetNodesListLink();
+	virtual CED2KNodesListLink* GetNodesListLink()		{ return NULL; }
+	virtual CED2KSearchLink* GetSearchLink()			{ return NULL; }
 
 	CString	GetAddress() const		{ return m_address; }
 

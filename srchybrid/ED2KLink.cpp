@@ -693,11 +693,6 @@ CED2KFileLink* CED2KFriendLink::GetFileLink()
 	return NULL;
 }
 
-CED2KNodesListLink* CED2KFriendLink::GetNodesListLink()
-{
-	return NULL;
-}
-
 CED2KLink::LinkType CED2KFriendLink::GetKind() const
 {
 	return kFriend;
@@ -725,11 +720,6 @@ CED2KServerLink* CED2KFriendListLink::GetServerLink()
 
 CED2KFileLink* CED2KFriendListLink::GetFileLink() 
 { 
-	return NULL;
-}
-
-CED2KNodesListLink* CED2KFriendListLink::GetNodesListLink()
-{
 	return NULL;
 }
 

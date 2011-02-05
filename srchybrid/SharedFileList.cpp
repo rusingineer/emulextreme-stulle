@@ -360,13 +360,14 @@ int CAddFileThread::Run()
 	// locking that hashing thread is needed because we may create a couple of those threads at startup when rehashing
 	// potentially corrupted downloading part files. if all those hash threads would run concurrently, the io-system would be
 	// under very heavy load and slowly progressing
+
 	//Xman
 	// SLUGFILLER: SafeHash remove - locking code removed, unnecessary
 	/*
 	CSingleLock sLock1(&theApp.hashing_mut); // only one filehash at a time
 	sLock1.Lock();
 	*/
-
+	//Xman End
 	//MORPH START - Added by SiRoB, Import Parts [SR13] - added by zz_fly
 	if (m_partfile && m_partfile->GetFileOp() == PFOP_SR13_IMPORTPARTS){
 		SR13_ImportParts();
@@ -432,6 +433,7 @@ int CAddFileThread::Run()
 	/*
 	sLock1.Unlock();
 	*/
+	//Xman End
 	CoUninitialize();
 
 	return 0;
@@ -460,12 +462,12 @@ CSharedFileList::CSharedFileList(CServerConnect* in_server)
 	m_avg_virtual_sources = 0;
 	m_avg_client_on_uploadqueue = 0;
 	//Xman end
-	//Xman
+	// SLUGFILLER: SafeHash remove - delay load shared files
 	/*
 	LoadSingleSharedFilesList();
 	FindSharedFiles();
 	*/
-	// SLUGFILLER: SafeHash remove - delay load shared files
+	// SLUGFILLER End
 }
 
 CSharedFileList::~CSharedFileList(){

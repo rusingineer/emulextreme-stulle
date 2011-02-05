@@ -37,7 +37,7 @@ public:
 		alltimetransferred = 0;
 		alltimeaccepted = 0;
 		m_uFileupdatetime = 0; //Xman Code Improvement -> don't update to often
-		
+
 		//Xman advanced upload-priority
 		m_unotcountedtransferred = 0;
 		m_tlastdataupdate = 0;
@@ -56,7 +56,6 @@ public:
 	void	AddBlockTransferred(uint64 start, uint64 end, uint32 count);
 	//Xman end
 
-
 	UINT	GetRequests() const				{return requested;}
 	UINT	GetAccepts() const				{return accepted;}
 	uint64	GetTransferred() const			{return transferred;}
@@ -74,7 +73,6 @@ public:
 	uint32 m_tlastdataupdate;
 	//Xman end
 
-	
 	CKnownFile* fileParent;
 	CTypedPtrList<CPtrList, Spread_Struct*> spreadlist; //Xman PowerRelease
 

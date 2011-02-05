@@ -46,13 +46,10 @@ public:
 //Xman Xtreme Upload
 	bool IsSocketUploading() const {return slotstate!=0 && isready==true;} //Xman 
 
-	//virtual uint32	GetNeededBytes() = 0;
-
-	ThrottledFileSocket(void) {slotstate=0; isready=false;} //Xman 
+	ThrottledFileSocket(void) {slotstate=0; isready=false; m_dwMSS=0;} //Xman // netfinity: Maximum Segment Size
 
 	bool IsTrickle() const	{return slotstate==3;}
 	bool IsFull() const		{return slotstate==1;}
-
 
 	void SetTrickle()	{slotstate=3; CSlope=1;}
 	void SetFull()		{slotstate=1;}
@@ -61,6 +58,8 @@ public:
 	bool	isready;
 	sint32	CSlope;
 
+	// netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
+	DWORD		m_dwMSS;
 
 private:
 	uint8	slotstate;	//1=full, 3=trickle

@@ -41,15 +41,16 @@ public:
 	bool	IsOnUploadQueue(CUpDownClient* client)	const {return (waitinglist.Find(client) != 0);}
 	bool	IsDownloading(CUpDownClient* client)	const {return (uploadinglist.Find(client) != 0);}
 
-	//Xman
+	//Xman 
 	/*
     void    UpdateDatarates();
 	uint32	GetDatarate();
     uint32  GetToNetworkDatarate();
 	*/
-	//xman end
+	//Xman end
 
 	bool	CheckForTimeOver(CUpDownClient* client);
+
 	//Xman Xtreme Upload
 	/*
 	int		GetWaitingUserCount() const				{return waitinglist.GetCount();}
@@ -60,14 +61,15 @@ public:
 	int		GetUploadQueueLength()					{return uploadinglist.GetCount();}
 	void	ReplaceSlot(CUpDownClient* client);	//altenative method to Resortuploadslots ////Xman Xtreme Upload: Peercache-part
 	void	ChangeSendBufferSize(int newvalue);
+	//Xman end
+
+	uint32	GetWaitingUserForFileCount(const CSimpleArray<CObject*>& raFiles, bool bOnlyIfChanged);
+	uint32	GetDatarateForFile(const CSimpleArray<CObject*>& raFiles) const;
 
 	//Xman
 	// Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 	void	CompUploadRate();
 	//Xman end
-
-	uint32	GetWaitingUserForFileCount(const CSimpleArray<CObject*>& raFiles, bool bOnlyIfChanged);
-	uint32	GetDatarateForFile(const CSimpleArray<CObject*>& raFiles) const;
 	
 	POSITION GetFirstFromUploadList()				{return uploadinglist.GetHeadPosition();}
 	CUpDownClient* GetNextFromUploadList(POSITION &curpos)	{return uploadinglist.GetNext(curpos);}
@@ -112,6 +114,7 @@ protected:
 	*/
 	//Xman end
 	bool		ForceNewClient(bool allowEmptyWaitingQueue = false);
+
 	//Xman Xtreme Upload
 	/*
 	bool		AddUpNextClient(LPCTSTR pszReason, CUpDownClient* directadd = 0);
@@ -133,7 +136,7 @@ protected:
 private:
 	void	UpdateMaxClientScore();
 	uint32	GetMaxClientScore()						{return m_imaxscore;}
-    
+
 	//Xman Xtreme Upload
 	/*
     void    UpdateActiveClientsInfo(DWORD curTick);
@@ -152,7 +155,6 @@ private:
     void InsertInUploadingList(CUpDownClient* newclient);
     float GetAverageCombinedFilePrioAndCredit();
 
-
 	//Xman
 	/*
 	// By BadWolf - Accurate Speed Measurement
@@ -170,7 +172,6 @@ private:
 	// By BadWolf - Accurate Speed Measurement
 	*/
 	//Xman end
-
 	UINT_PTR h_timer;
 	//Xman for SiRoB: ReadBlockFromFileThread
 	/*

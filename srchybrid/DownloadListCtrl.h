@@ -135,7 +135,7 @@ protected:
 	CTitleMenu	m_FileMenu;
 	CTitleMenu	m_PreviewMenu;
 	CMenu		m_SourcesMenu;
-	CMenu		m_DropMenu;//Xman Xtreme Downloadmanager
+	CMenu		m_DropMenu; //Xman Xtreme Downloadmanager
 	bool		m_bRemainSort;
 	typedef std::pair<void*, CtrlItem_Struct*> ListItemsPair;
 	typedef std::multimap<void*, CtrlItem_Struct*> ListItems;

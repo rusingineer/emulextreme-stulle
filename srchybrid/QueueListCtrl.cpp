@@ -247,6 +247,7 @@ void CQueueListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	GetClientRect(&rcClient);
 	const CUpDownClient *client = (CUpDownClient *)lpDrawItemStruct->itemData;
 
+	COLORREF crOldBackColor = dc->GetBkColor(); //Xman PowerRelease //Xman show LowIDs
 	CHeaderCtrl *pHeaderCtrl = GetHeaderCtrl();
 	int iCount = pHeaderCtrl->GetItemCount();
 	cur_rec.right = cur_rec.left - sm_iLabelOffset;
@@ -374,7 +375,8 @@ void CQueueListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						{
 							cur_rec.left+=20;
 							POINT point2= {cur_rec.left,cur_rec.top+1};
-							theApp.ip2country->GetFlagImageList()->Draw(dc, client->GetCountryFlagIndex(), point2, ILD_NORMAL);
+							//theApp.ip2country->GetFlagImageList()->Draw(dc, client->GetCountryFlagIndex(), point2, ILD_NORMAL);
+							theApp.ip2country->GetFlagImageList()->DrawIndirect(&theApp.ip2country->GetFlagImageDrawParams(dc,client->GetCountryFlagIndex(),point2));
 							cur_rec.left += sm_iLabelOffset;
 						}
 						//EastShare End - added by AndCycle, IP to Country
@@ -392,24 +394,6 @@ void CQueueListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						//EastShare End - added by AndCycle, IP to Country
 						break;
 					}
-
-					//Xman PowerRelease
-					case 1:
-					{
-						const CKnownFile *file = theApp.sharedfiles->GetFileByID(client->GetUploadFileID());
-						if(file)
-						{
-							COLORREF crOldTxtColor = dc->GetTextColor();
-							if(file->GetUpPriority()==PR_POWER)
-								dc.SetBkColor(RGB(255,225,225));
-							dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-							dc->SetTextColor(crOldTxtColor);
-						}
-						else
-							dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-						break;
-					}
-					//Xman end
 					case 9:
 						if (client->GetUpPartCount()) {
 							cur_rec.bottom--;
@@ -449,21 +433,18 @@ void CQueueListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 							cur_rec.top--;
 						}
 						break;
-
-					//Xman show LowIDs
-					case 10:
-					{
-						COLORREF crOldTxtColor = dc->GetTextColor();
-						if(client->HasLowID())
-							dc.SetBkColor(RGB(255,250,200));
-						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-						dc->SetTextColor(crOldTxtColor);
-						break;
-					}
-					//Xman end
-
 					default:
+						//Xman PowerRelease //Xman show LowIDs
+						if(iColumn == 1) { 
+							const CKnownFile *file = theApp.sharedfiles->GetFileByID(client->GetUploadFileID());
+							if(file && file->GetUpPriority()==PR_POWER)
+							dc.SetBkColor(RGB(255,225,225));
+						}
+						else if(iColumn == 10 && client->HasLowID()) 
+							dc.SetBkColor(RGB(255,250,200));
+						//Xman end
 						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
+						dc.SetBkColor(crOldBackColor); //Xman PowerRelease //Xman show LowIDs
 						break;
 				}
 			}
@@ -812,7 +793,6 @@ void CQueueListCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	ClientMenu.AppendMenu(MF_STRING | (GetItemCount() > 0 ? MF_ENABLED : MF_GRAYED),MP_LIST_REQUESTED_FILES, GetResString(IDS_LISTREQUESTED), _T("FILEREQUESTED")); 
 	//Xman end
 
-
 	GetPopupMenuPos(*this, point);
 	ClientMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
 }
@@ -887,25 +867,12 @@ BOOL CQueueListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					client->ShowRequestedFiles(); 
 				}
 				break;
-										  }
-			  //Xman end
+			}
+			//Xman end
 		}
 	}
 	return true;
 }
-
-//Xman faster Updating of Queuelist
-void CQueueListCtrl::UpdateAll()
-{
-	if(theApp.emuledlg->IsRunning())
-	{
-		RedrawItems(0,GetItemCount());
-		//CWnd::UpdateWindow(); //not needed because of sorting
-		// Sort table
-		SortItems(SortProc, GetSortItem() + (GetSortAscending() ? 0:100));
-	}
-}
-//Xman end
 
 void CQueueListCtrl::AddClient(/*const*/ CUpDownClient *client, bool resetclient)
 {
@@ -1026,3 +993,16 @@ void CALLBACK CQueueListCtrl::QueueUpdateTimer(HWND /*hwnd*/, UINT /*uiMsg*/, UI
 	*/
 	//Xman end
 }
+
+//Xman faster Updating of Queuelist
+void CQueueListCtrl::UpdateAll()
+{
+	if(theApp.emuledlg->IsRunning())
+	{
+		RedrawItems(0,GetItemCount());
+		//CWnd::UpdateWindow(); //not needed because of sorting
+		// Sort table
+		SortItems(SortProc, GetSortItem() + (GetSortAscending() ? 0:100));
+	}
+}
+//Xman end

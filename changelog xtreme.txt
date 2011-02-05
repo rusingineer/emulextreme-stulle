@@ -37,8 +37,29 @@ Xtreme 8.0
 - updated to 0.50a codebase
 - add: Some more countries to country flags feature (tomchen1989)
 - add: ATL Server code for VS2008 compilation (Stulle)
+- improved: Made SafeHash ready for new AICH based file identifier (like official) (Stulle)
+- improved: update SafeHash from Morph (Stulle)
+- improved: update Flush Thread and Read Block From File Thread (Morph/Sirob)
+- fixed: Reset for BkColor after coloring LowID clients was broken (zz_fly)
+- fixed: Possibly crash fix on ShowComment (WiZaRd)
 partially updated to 8.0 by zz_fly:
+- add: Fincan community hash detection (WiZaRd)
+- add: retrieve MTU from system (netfinity)
+- add: dual upnp lib support (in code only)(zz_fly)
+- add: AICHHashset write buffer, reduce diskio while hashing (zz_fly)
+- add: let unshared hashsets in a single file, reduce the size of Known2_64.met (zz_fly)
+- add: save URL source (DolphinX)
 - improved: Reduced CPU usage in CUInt128 (netfinity)
+- improved: better clients.met file backup and recovery (Enig123)
+- improved: remove useless sort process in downloadqueue (Enig123)
+- improved: optimized in download queue balance (Enig123)
+- improved: don't Failed-Download-Ban http sources (DolphinX)
+- fixed: a splash-screen UI problem in Vista (WiZaRd)
+- fixed: don't transmit for nested/overlapping data requests (emuleplus)
+- fixed: a possible crash when username contain %s (DolphinX)
+- fixed: don't reload sharedfiles when we need not (DolphinX)
+- removed: Xman's Multi-threaded disc access with threading-queue. see emule.h for details.
+- removed: MediaInfo 0.4 support
 
 Xtreme 7.2 second source edit
 * this version is modded by Stulle

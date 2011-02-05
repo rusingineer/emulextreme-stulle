@@ -202,7 +202,6 @@ void CChatWnd::ShowFriendMsgDetails(CFriend* pFriend)
 			GetDlgItem(IDC_FRIENDS_SUBIDO_EDIT)->SetWindowText(_T("-"));
 		}
 		//Xman end
-
 	}
 	else
 	{

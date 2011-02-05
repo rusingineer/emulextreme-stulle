@@ -622,6 +622,31 @@ public:
 	static bool		m_bIsMinilibImplDisabled;
 	static int		m_nLastWorkingImpl;
 
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	static bool		m_bUseACATUPnPCurrent;
+	static bool		m_bUseACATUPnPNextStart;
+
+	//ACAT UPnP
+	static	bool m_bUPnPNat; // UPnP On/Off
+	static	bool m_bUPnPTryRandom; //UPnP use random ports
+	static	uint16 m_iUPnPTCPExternal; // TCP External Port
+	static	uint16 m_iUPnPUDPExternal; // UDP External Port
+	static	bool GetUPnPNat()    { return m_bUPnPNat; }
+	static	void SetUPnPNat(bool on)    { m_bUPnPNat = on; }
+	static	void SetUPnPTCPExternal(uint16 port) { m_iUPnPTCPExternal = port; }
+	static	void SetUPnPUDPExternal(uint16 port) { m_iUPnPUDPExternal = port; }
+	static	bool GetUPnPNatTryRandom() { return m_bUPnPTryRandom; }
+	static	void SetUPnPNatTryRandom(bool on) { m_bUPnPTryRandom = on; }
+#endif //zz_fly :: dual upnp
+
+	//zz_fly :: Rebind UPnP on IP-change
+	static  bool m_bUPnPRebindOnIPChange;
+	static  bool GetUPnPNatRebind() { return m_bUPnPRebindOnIPChange; }
+	static	void SetUPnPNatRebind(bool on) { m_bUPnPRebindOnIPChange = on; }
+	//zz_fy :: end
+
+
 	// Spam
 	static bool		m_bEnableSearchResultFilter;
 
@@ -698,8 +723,16 @@ public:
 
 	static	LPCSTR	GetBindAddrA()						{return m_pszBindAddrA; }
 	static	LPCWSTR	GetBindAddrW()						{return m_pszBindAddrW; }
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//ACAT UPnP
+	static	uint16	GetPort();
+	static	uint16	GetUDPPort();
+#else //zz_fly :: dual upnp
 	static	uint16	GetPort()							{return port;}
 	static	uint16	GetUDPPort()						{return udpport;}
+#endif //zz_fly :: dual upnp
+
 	static	uint16	GetServerUDPPort()					{return nServerUDPPort;}
 	static	uchar*	GetUserHash()						{return userhash;}
 	// ZZ:UploadSpeedSense -->
@@ -797,6 +830,11 @@ public:
 	static void SetAntiLeecherCommunity_Action(bool in) {m_antileechercommunity_action=in;}
 	static void SetAntiLeecherGhost_Action(bool in) {m_antileecherghost_action=in;}
 	static void SetAntiLeecherThief_Action(bool in) {m_antileecherthief_action=in;}
+	//X-Ray :: Fincan Hash Detection :: Start
+	static bool m_antileecherFincan;
+	static bool GetAntiLeecherFincan() {return m_antileecher && m_antileecherFincan;}
+	static CString m_antileecherFincanURL;
+	//X-Ray :: Fincan Hash Detection :: End
 	//Xman end
 
 	//Xman narrow font at transferwindow
@@ -879,13 +917,14 @@ public:
 
 	static uint16	MTU;                          // -MTU Configuration-
 	static bool		usedoublesendsize;
+	static bool		retrieveMTUFromSocket; // netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
 
 	static bool	NAFCFullControl;	          // -Network Adapter Feedback Control-
 	static uint32 forceNAFCadapter;	
 	static uint8	datarateSamples;              // -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 
 	static bool    enableMultiQueue;             // -One-queue-per-file- (idea bloodymad)
-	static bool    enableReleaseMultiQueue;
+	//static bool    enableReleaseMultiQueue;
 	// Maella end
 
 	// Maella [FAF] -Allow Bandwidth Settings in <1KB Incremements-
@@ -927,8 +966,8 @@ public:
 	// Maella -One-queue-per-file- (idea bloodymad)
 	static bool GetEnableMultiQueue()  { return enableMultiQueue; }
 	static void SetEnableMultiQueue(bool state) { enableMultiQueue = state; }
-	static bool GetEnableReleaseMultiQueue()  { return enableReleaseMultiQueue; }
-	static void SetEnableReleaseMultiQueue(bool state) { enableReleaseMultiQueue = state; }
+	//static bool GetEnableReleaseMultiQueue()  { return enableReleaseMultiQueue; }
+	//static void SetEnableReleaseMultiQueue(bool state) { enableReleaseMultiQueue = state; }
 	// Maella end
 
 	// Mighty Knife: Static server handling
@@ -959,6 +998,14 @@ public:
 	static bool		m_last_session_aborted_in_an_unnormal_way;
 	static bool		eMuleChrashedLastSession()		{ return m_last_session_aborted_in_an_unnormal_way;}
 
+	static bool		m_bShowCountryFlagInKad; //zz_fly :: show country flag in KAD
+	static bool		m_bKnown2Buffer; //zz_fly :: known2 buffer
+	//zz_fly :: known2 split :: start
+	static bool		m_bKnown2Split;
+	static bool		m_bKnown2Split_next;
+	static bool		IsKnown2SplitEnabled()	{return m_bKnown2Split && GetRememberAICH() && IsRememberingDownloadedFiles();} //this feature only available when user want to remember unused AichHashSet.
+	//zz_fly :: known2 split :: end
+	static uint64		m_uAutoPreviewLimit; //zz_fly :: do not auto preview big archive
 	//Xman end
 	//-----------------------------------------------------------------------------
 
@@ -1655,6 +1702,7 @@ public:
 	static bool		IsServerCryptLayerTCPRequested()	{return IsClientCryptLayerRequested();}
 	static uint32	GetKadUDPKey()						{return m_dwKadUDPKey;}
 	static uint8	GetCryptTCPPaddingLength()			{return m_byCryptTCPPaddingLength;}
+	static void		SetCryptTCPPaddingLength(int in)	{m_byCryptTCPPaddingLength = (uint8)((in>=10 && in<=254) ? in : 128);} //zz_fly :: hardlimit on CryptTCPPaddingLength
 
 	// UPnP
 	static bool		GetSkipWANIPSetup()					{return m_bSkipWANIPSetup;}

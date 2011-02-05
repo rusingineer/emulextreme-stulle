@@ -644,7 +644,7 @@ void CSharedFilesCtrl::ShowFilesCount()
 			str.Format(_T(" (%i)"), theApp.sharedfiles->GetCount());
 		theApp.emuledlg->sharedfileswnd->GetDlgItem(IDC_TRAFFIC_TEXT)->SetWindowText(GetResString(IDS_SF_FILES) + str);
 	}
-	//Xman end
+	//Xman End
 }
 
 void CSharedFilesCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -655,15 +655,38 @@ void CSharedFilesCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		return;
 
 	CMemDC dc(CDC::FromHandle(lpDrawItemStruct->hDC), &lpDrawItemStruct->rcItem);
+	//zz_fly :: we init it ourself :: from DolphinX :: start
+	/*
 	BOOL bCtrlFocused;
 	InitItemMemDC(dc, lpDrawItemStruct, bCtrlFocused);
+	*/
+	//zz_fly :: end
 	CRect cur_rec(lpDrawItemStruct->rcItem);
 	CRect rcClient;
 	GetClientRect(&rcClient);
+
 	/*const*/ CShareableFile* file = (CShareableFile*)lpDrawItemStruct->itemData;
 	CKnownFile* pKnownFile = NULL;
 	if (file->IsKindOf(RUNTIME_CLASS(CKnownFile)))
 		pKnownFile = (CKnownFile*)file;
+
+	//zz_fly :: we init it ourself :: from DolphinX :: start
+	BOOL bCtrlFocused = ((GetFocus() == this) || (GetStyle() & LVS_SHOWSELALWAYS));
+	dc.FillBackground((lpDrawItemStruct->itemState & ODS_SELECTED)?
+		((bCtrlFocused)?
+			m_crHighlight
+		:
+			m_crNoHighlight)
+	:
+		//Xman PowerRelease
+		((pKnownFile && pKnownFile->GetUpPriority()==PR_POWER)?
+			RGB(255,210,210)
+		:
+		//Xman end
+			m_crWindow));
+	dc.SetTextColor((lpDrawItemStruct->itemState & ODS_SELECTED) ? m_crHighlightText : m_crWindowText);
+	dc.SetFont(thePrefs.UseNarrowFont() ? &m_fontNarrow : GetFont()); //Xman narrow font at transferwindow
+	//zz_fly :: end
 
 	CHeaderCtrl *pHeaderCtrl = GetHeaderCtrl();
 	int iCount = pHeaderCtrl->GetItemCount();
@@ -682,13 +705,6 @@ void CSharedFilesCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			{
 				TCHAR szItem[1024];
 				GetItemDisplayText(file, iColumn, szItem, _countof(szItem));
-				//Xman PowerRelease
-				if(pKnownFile)
-				{
-					if(pKnownFile->GetUpPriority()==PR_POWER)
-						dc->SetTextColor((COLORREF)RGB(255,210,210));
-				}
-				//Xman end
 				switch (iColumn)
 				{
 					case 0: {
@@ -717,8 +733,8 @@ void CSharedFilesCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 								iNoStyleState = DFCS_INACTIVE;
 							}
 							*/
-							// SLUGFILLER: SafeHash remove - removed installation dir unsharing
-							
+							// SLUGFILLER: SafeHash remove - removed installation dir unsharing							
+
 							HTHEME hTheme = (g_xpStyle.IsThemeActive() && g_xpStyle.IsAppThemed()) ? g_xpStyle.OpenThemeData(NULL, L"BUTTON") : NULL;
 
 							CRect recCheckBox = cur_rec;
@@ -1350,7 +1366,10 @@ BOOL CSharedFilesCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					while (pos != NULL)
 					{
 						if (!selectedList.GetAt(pos)->IsKindOf(RUNTIME_CLASS(CKnownFile)))
+						{
+							selectedList.GetNext(pos); //zz_fly :: bug fix :: DolphinX
 							continue;
+						}
 						CKnownFile* file = (CKnownFile*)selectedList.GetNext(pos);
 						switch (wParam) {
 							case MP_PRIOVERYLOW:
@@ -1377,7 +1396,7 @@ BOOL CSharedFilesCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 								file->SetAutoUpPriority(false);
 								file->SetUpPriority(PR_VERYHIGH);
 								UpdateFile(file);
-								break;	
+								break;
 							//Xman PowerRelease
 							case MP_PRIOPOWER:
 								if(file->IsPartFile()) //only to be sure
@@ -1748,7 +1767,7 @@ int CSharedFilesCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort
 	if (iResult == 0 && (dwNextSort = theApp.emuledlg->sharedfileswnd->sharedfilesctrl.GetNextSortOrder(lParamSort)) != -1)
 		iResult = SortProc(lParam1, lParam2, dwNextSort);
 	*/
-
+	// SLUGFILLER End
 	return iResult;
 }
 

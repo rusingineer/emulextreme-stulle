@@ -224,8 +224,8 @@ BOOL CPPgDisplay::OnApply()
 		/*
 		theApp.emuledlg->SetWindowText(_T("eMule v") + theApp.m_strCurVersionLong);
 		*/
-		theApp.emuledlg->SetWindowText(_T("eMule v") + theApp.m_strCurVersionLong + _T(" ") + MOD_VERSION);
-		//Xman end
+		theApp.emuledlg->SetWindowText(_T("eMule v") + theApp.m_strCurVersionLong + _T(" ") + MOD_VERSION); 
+		//Xman End
 
 	SetModified(FALSE);
 	return CPropertyPage::OnApply();

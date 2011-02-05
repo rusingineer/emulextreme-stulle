@@ -148,7 +148,7 @@ CFileIdentifier::~CFileIdentifier(void)
 	DeleteMD4Hashset();
 }
 
-bool CFileIdentifier::CalculateMD4HashByHashSet(bool bVerifyOnly, bool bDeleteOnVerifyFail)
+bool CFileIdentifier::CalculateMD4HashByHashSet(bool bVerifyOnly, bool bDeleteOnVerifyFail, bool slowdown)
 {
 	if (m_aMD4HashSet.GetCount() <= 1)
 	{
@@ -159,7 +159,12 @@ bool CFileIdentifier::CalculateMD4HashByHashSet(bool bVerifyOnly, bool bDeleteOn
 	for (int i = 0; i < m_aMD4HashSet.GetCount(); i++)
 		md4cpy(buffer + (i*16), m_aMD4HashSet[i]);
 	uchar aucResult[16];
+	//Xman Nice Hash
+	/*
 	CKnownFile::CreateHash(buffer, m_aMD4HashSet.GetCount()*16, aucResult);
+	*/
+	CKnownFile::CreateHash(buffer, m_aMD4HashSet.GetCount()*16, aucResult, NULL, slowdown);
+	//Xman end
 	delete[] buffer;
 	if (bVerifyOnly)
 	{

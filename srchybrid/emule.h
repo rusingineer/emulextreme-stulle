@@ -23,6 +23,10 @@
 #include "ReadWriteLock.h"	// SLUGFILLER: SafeHash
 #include "Version.h"		// netfinity: Mod version
 
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+#include "UPnP_acat.h" //ACAT UPnP
+#endif //zz_fly :: dual upnp
+
 #define	DEFAULT_NICK		thePrefs.GetHomepageBaseURL()
 #define	DEFAULT_TCP_PORT_OLD	4662
 #define	DEFAULT_UDP_PORT_OLD	(DEFAULT_TCP_PORT_OLD+10)
@@ -289,14 +293,28 @@ public:
 	uint8	internetmaybedown;
 //Xman end
 
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+//ACAT UPnP
+public:
+	MyUPnP* m_pUPnPNat;
+	BOOL  AddUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping, bool tryRandom = false);
+	BOOL  RemoveUPnPNatPort(MyUPnP::UPNPNAT_MAPPING *mapping);
+#endif //zz_fly :: dual upnp
+
 	//Xman queued disc-access for read/flushing-threads
+	/* zz_fly :: drop, use Morph's synchronization method instead.
+	note: this feature can reduce the diskio. but it is hard to synchronize the threads.
+		  when synchronization failed, emule will crash. 
+		  i can not let this feature work properly in .50 codebase.
+		  so, my only choice is drop this feature.
 	void AddNewDiscAccessThread(CWinThread* threadtoadd);
 	void ResumeNextDiscAccessThread();
 	void ForeAllDiscAccessThreadsToFinish();
 private:
 	CTypedPtrList<CPtrList, CWinThread*> threadqueue;
 	CCriticalSection					 threadqueuelock;
-	uint16								 m_uRunningNonBlockedDiscAccessThreads;
+	volatile uint16						 m_uRunningNonBlockedDiscAccessThreads;
+	*/
 	//Xman end
 
 // MORPH START - Added by Commander, Friendlinks [emulEspaa] - added by zz_fly

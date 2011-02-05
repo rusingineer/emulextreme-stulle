@@ -70,7 +70,12 @@ public:
 	virtual EMFileSize GetFileSize() const									{ return m_rFileSize; }
 
 	//******************** MD4 Related
+	//Xman Nice Hash
+	/*
 	bool			CalculateMD4HashByHashSet(bool bVerifyOnly, bool bDeleteOnVerifyFail = true);
+	*/
+	bool			CalculateMD4HashByHashSet(bool bVerifyOnly, bool bDeleteOnVerifyFail = true, bool slowdown = false);
+	//Xman end
 	bool			LoadMD4HashsetFromFile(CFileDataIO* file, bool bVerifyExistingHash);
 	void			WriteMD4HashsetToFile(CFileDataIO* pFile) const;
 

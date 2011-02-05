@@ -306,14 +306,16 @@ protected:
 	//Xman
 	// BEGIN SLUGFILLER: SafeHash
 	afx_msg LRESULT OnPartHashedOK(WPARAM wParam,LPARAM lParam);
+	afx_msg LRESULT OnPartHashedOKNoAICH(WPARAM wParam,LPARAM lParam);
 	afx_msg LRESULT OnPartHashedCorrupt(WPARAM wParam,LPARAM lParam);
+	afx_msg LRESULT OnPartHashedCorruptNoAICH(WPARAM wParam,LPARAM lParam);
 	afx_msg LRESULT OnPartHashedOKAICHRecover(WPARAM wParam,LPARAM lParam);
 	afx_msg LRESULT OnPartHashedCorruptAICHRecover(WPARAM wParam,LPARAM lParam);
 	// END SLUGFILLER: SafeHash
 	// BEGIN SiRoB: ReadBlockFromFileThread
 	afx_msg LRESULT OnReadBlockFromFileDone(WPARAM wParam,LPARAM lParam);
-	// BEGIN SiRoB: ReadBlockFromFileThread
-	// END SiRoB: Flush Thread
+	// END SiRoB: ReadBlockFromFileThread
+	// BEGIN SiRoB: Flush Thread
 	afx_msg LRESULT OnFlushDone(WPARAM wParam,LPARAM lParam);
 	// END SiRoB: Flush Thread
 	//MORPH START - Added by SiRoB, Import Parts - added by zz_fly
@@ -373,7 +375,9 @@ enum EEMuleAppMsgs
 	//Xman
 	// BEGIN SLUGFILLER: SafeHash - new handling
 	TM_PARTHASHEDOK,
+	TM_PARTHASHEDOKNOAICH,
 	TM_PARTHASHEDCORRUPT,
+	TM_PARTHASHEDCORRUPTNOAICH,
 	TM_PARTHASHEDOKAICHRECOVER,
 	TM_PARTHASHEDCORRUPTAICHRECOVER,
 	// END SLUGFILLER: SafeHash

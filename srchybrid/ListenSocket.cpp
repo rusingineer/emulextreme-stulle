@@ -49,7 +49,6 @@
 //Xman
 #include "BandWidthControl.h" // Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -229,7 +228,7 @@ bool CClientReqSocket::CheckTimeOut()
 		//Xman end
 		return true;
 	}
-	
+
 	//there are some clients which are uploading to us.. and also get an uploadslot from us..
 	//but they don't send a blockrequest. the socket won't timeout and we have a 0-uploadsocket
 	if(client && client->GetUploadState()==US_UPLOADING && isready==false && client->HasPeerCacheState()==false && client->GetUpStartTimeDelay()>=MIN2MS(1)) //Xman Xtreme Upload: Peercache-part
@@ -314,7 +313,6 @@ void CClientReqSocket::Disconnect(LPCTSTR pszReason, CUpDownClient::UpStopReason
 void CClientReqSocket::Delete_Timed(){
 // it seems that MFC Sockets call socketfunctions after they are deleted, even if the socket is closed
 // and select(0) is set. So we need to wait some time to make sure this doesn't happens
-
 	//Xman improved socket closing
 	//other than official this isn't anymore the time between shutting down and deletion
 	//but the time from closing and removing from uploadbandwidththrottler to deletion
@@ -323,8 +321,9 @@ void CClientReqSocket::Delete_Timed(){
 	//Xman end
 	//zz_fly :: it is confirm that this fix is necessary to very big uploaders(upload>3000). normal user do not need this fix.
 	//			a simple solution is increase the time here. but for unknown reason, Xman had dropped it.
-	//			althought Xman's fix use more memory(about 10~20MB), but i restore it.
-	if (::GetTickCount() - deltimer > 10000)
+	//			althought Xman's fix use more memory(about 10MB), but i restore it.
+	uint32 currentTick = ::GetTickCount() + 30000;
+	if (currentTick - deltimer > 40000)
 		delete this;
 }
 
@@ -761,6 +760,13 @@ bool CClientReqSocket::ProcessPacket(const BYTE* packet, uint32 size, UINT opcod
 						//Xman end
 						client->CheckFailedFileIdReqs(cfilehash);
 					} //Xman
+					//zz_fly :: test code
+					//note: the easyMule client may send unexpect OP_FILESTATUS packet. from its src, it will send OP_FILESTATUS when CPartFile::FlushBuffer().
+					//		ignore those unexpect packets. thanks Enig123
+					//if(StrStrI(client->GetClientModVer(), L"easyMule") && client->GetDownloadState() == DS_DOWNLOADING)
+					//	AddDebugLogLine(false, _T("easyMule client send unexpect OP_FILESTATUS packet: %s"), client->DbgGetClientInfo());
+					//else
+					//zz_fly :: test code
 					client->ProcessFileStatus(false, &data, file);
 					break;
 				}
@@ -1768,15 +1774,36 @@ bool CClientReqSocket::ProcessExtPacket(const BYTE* packet, uint32 size, UINT op
 					CSafeMemFile data_in(packet, size);
 					
 					CPartFile* reqfile = NULL;
+					//Xman Code Fix
+					CFileIdentifierSA fileIdent;
+					uchar reqfilehash[16];
+					//Xman end
 					if (opcode == OP_MULTIPACKETANSWER_EXT2)
 					{
+						//Xman Code Fix
+						/*
 						CFileIdentifierSA fileIdent;
+						*/
+						//Xman end
 						if (!fileIdent.ReadIdentifier(&data_in))
 							throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (OP_MULTIPACKETANSWER_EXT2; ReadIdentifier() failed)");
 						reqfile = theApp.downloadqueue->GetFileByID(fileIdent.GetMD4Hash());
 						if (reqfile==NULL){
 							client->CheckFailedFileIdReqs(fileIdent.GetMD4Hash());
-							throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (OP_MULTIPACKETANSWER_EXT2; reqfile==NULL)");
+							//Xman Code Fix
+							//following situation: we are downloading a cue file (100 bytes) from many sources
+							//this file will be finished earlier than our sources are answering
+							//throwing an exception will filter good sources
+							//swapping can't be done at this point, so I let it just timeout.
+							CKnownFile* reqfiletocheck = theApp.sharedfiles->GetFileByID(fileIdent.GetMD4Hash());
+							if(reqfiletocheck!=NULL)
+							{	
+								AddDebugLogLine(false, _T("client send NULL reqfile: %s"), client->DbgGetClientInfo());
+								break;
+							}
+							else
+							//Xman end
+								throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (OP_MULTIPACKETANSWER_EXT2; reqfile==NULL)");
 						}
 						if (!reqfile->GetFileIdentifier().CompareRelaxed(fileIdent))
 							throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (OP_MULTIPACKETANSWER_EXT2; FileIdentifier mistmatch)");
@@ -1784,7 +1811,11 @@ bool CClientReqSocket::ProcessExtPacket(const BYTE* packet, uint32 size, UINT op
 							client->ProcessAICHFileHash(NULL, reqfile, &fileIdent.GetAICHHash());
 					}
 					else{
+						//Xman Code Fix
+						/*
 						uchar reqfilehash[16];
+						*/
+						//Xman end
 						data_in.ReadHash16(reqfilehash);
 						reqfile = theApp.downloadqueue->GetFileByID(reqfilehash);
 						//Make sure we are downloading this file.
@@ -1809,7 +1840,16 @@ bool CClientReqSocket::ProcessExtPacket(const BYTE* packet, uint32 size, UINT op
 					if (client->GetRequestFile()==NULL)
 						throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (OP_MULTIPACKETANSWER; client->GetRequestFile()==NULL)");
 					if (reqfile != client->GetRequestFile())
+					{
+						//Xman Code Fix
+						client->CheckFailedFileIdReqs((opcode == OP_MULTIPACKETANSWER_EXT2) ? fileIdent.GetMD4Hash() : reqfilehash);
+						//can happen with a late answer after swapping -->break!
+						break;
+						/*
 						throw GetResString(IDS_ERR_WRONGFILEID) + _T(" (OP_MULTIPACKETANSWER; reqfile!=client->GetRequestFile())");
+						*/
+						//Xman end
+					}
 					uint8 opcode_in;
 					while(data_in.GetLength()-data_in.GetPosition())
 					{
@@ -2534,6 +2574,7 @@ bool CClientReqSocket::ProcessExtPacket(const BYTE* packet, uint32 size, UINT op
 					if(client->GetUploadState() == US_UPLOADING)
 						client->CreateNextBlockPackage();
 					break;
+					//Xman end
 				}
 				case OP_COMPRESSEDPART:
 				case OP_SENDINGPART_I64:
@@ -2952,6 +2993,9 @@ void CClientReqSocket::OnConnect(int nErrorCode)
 	{
 		//This socket may have been delayed by SP2 protection, lets make sure it doesn't time out instantly.
 		ResetTimeOutTimer();
+
+		// netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
+		SetMSSFromSocket(m_SocketData.hSocket);
 	}
 }
 
@@ -2971,7 +3015,6 @@ void CClientReqSocket::OnSend(int nErrorCode)
 		{
 			theApp.pBandWidthControl->SetBoundIP(socketcheck.sin_addr.S_un.S_addr);
 		}
-
 	}
 }
 
@@ -3216,11 +3259,27 @@ CListenSocket::~CListenSocket()
 
 bool CListenSocket::Rebind()
 {
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if (thePrefs.port == m_port)
+#else
 	if (thePrefs.GetPort() == m_port)
+#endif //zz_fly :: dual upnp
 		return false;
 
 	Close();
 	KillAllSockets();
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//ACAT UPnP
+	if(thePrefs.m_bUseACATUPnPCurrent && thePrefs.GetUPnPNat())
+	{
+		if(theApp.m_pUPnPNat->RemoveSpecifiedPort(thePrefs.m_iUPnPTCPExternal, MyUPnP::UNAT_TCP))
+			AddLogLine(false, _T("UPNP: removed TCP-port %u"),thePrefs.m_iUPnPTCPExternal);
+		else
+			AddLogLine(false, _T("UPNP: failed to remove TCP-port %u"), thePrefs.m_iUPnPTCPExternal);
+	}
+	thePrefs.m_iUPnPTCPExternal=0;
+#endif //zz_fly :: dual upnp
 
 	//Xman NAFC
 	boundcheck=true;
@@ -3230,6 +3289,48 @@ bool CListenSocket::Rebind()
 
 bool CListenSocket::StartListening()
 {
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if (thePrefs.m_bUseACATUPnPCurrent){
+	//ACAT UPnP
+	//Xman Info about binding
+	if(thePrefs.GetBindAddrW()!=NULL)
+	{
+		AddLogLine(false,_T("You specified an ip-address to bind. Try to bind to: %s"), thePrefs.GetBindAddrW());
+	}
+	//Xman Info about binding
+
+	bool ret=Create(thePrefs.GetPort(), SOCK_STREAM, FD_ACCEPT, thePrefs.GetBindAddrA(), FALSE/*bReuseAddr*/) && Listen();
+
+	//Xman Info about binding
+	if(thePrefs.GetBindAddrW()!=NULL && ret)
+	{
+		AddLogLine(false,_T("binding successful"));
+	}
+	//Xman Info about binding
+
+	if(ret){
+		if(thePrefs.GetUPnPNat()){
+			MyUPnP::UPNPNAT_MAPPING mapping;
+
+			mapping.internalPort = mapping.externalPort = thePrefs.GetPort();
+			mapping.protocol = MyUPnP::UNAT_TCP;
+			mapping.description = "TCP Port";
+			if(theApp.AddUPnPNatPort(&mapping, thePrefs.GetUPnPNatTryRandom()))
+				thePrefs.SetUPnPTCPExternal(mapping.externalPort);
+		}
+		else{
+			thePrefs.SetUPnPTCPExternal(thePrefs.GetPort());
+		}
+	}
+
+	if (ret)
+		m_port=thePrefs.GetPort();
+
+	return ret;
+	}
+	else{
+#endif //zz_fly :: dual upnp
+	//Official UPNP
 	bListening = true;
 
 	// Creating the socket with SO_REUSEADDR may solve LowID issues if emule was restarted
@@ -3284,6 +3385,9 @@ bool CListenSocket::StartListening()
 
 	m_port = thePrefs.GetPort();
 	return true;
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	}
+#endif //zz_fly :: dual upnp
 }
 
 void CListenSocket::ReStartListening()
@@ -3415,6 +3519,9 @@ void CListenSocket::OnAccept(int nErrorCode)
 				newclient->AttachHandle(sNew);
 
 				AddConnection();
+
+				// netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
+				newclient->SetMSSFromSocket(newclient->GetSocketHandle());
 			}
 			else
 			{
@@ -3423,64 +3530,67 @@ void CListenSocket::OnAccept(int nErrorCode)
 				// - Maella -Accurate measure of bandwidth: eDonkey data + control, network adapter-
 				theApp.pBandWidthControl->AddeMuleOutTCPOverall(0);
 				// Maella end
-			    if (!Accept(*newclient, (SOCKADDR*)&SockAddr, &iSockAddrLen)){
-				    newclient->Safe_Delete();
-				    DWORD nError = GetLastError();
-				    if (nError == WSAEWOULDBLOCK){
-					    DebugLogError(LOG_STATUSBAR, _T("%hs: Backlogcounter says %u connections waiting, Accept() says WSAEWOULDBLOCK - setting counter to zero!"), __FUNCTION__, m_nPendingConnections);
-					    m_nPendingConnections = 0;
-					    break;
-				    }
-				    else{
-					    DebugLogError(LOG_STATUSBAR, _T("%hs: Backlogcounter says %u connections waiting, Accept() says %s - setting counter to zero!"), __FUNCTION__, m_nPendingConnections, GetErrorMessage(nError, 1));
-					    nFataErrors++;
-				    }
-				    if (nFataErrors > 10){
-					    // the question is what todo on a error. We cant just ignore it because then the backlog will fill up
-					    // and lock everything. We can also just endlos try to repeat it because this will lock up eMule
-					    // this should basically never happen anyway
-					    // however if we are in such a position, try to reinitalize the socket.
-					    DebugLogError(LOG_STATUSBAR, _T("%hs: Accept() Error Loop, recreating socket"), __FUNCTION__);
-					    Close();
-					    StartListening();
-					    m_nPendingConnections = 0;
-					    break;
-				    }
-				    continue;
-			    }
-	    
-			    AddConnection();
-    
-			    if (SockAddr.sin_addr.S_un.S_addr == 0) // for safety..
-			    {
-				    iSockAddrLen = sizeof SockAddr;
-				    newclient->GetPeerName((SOCKADDR*)&SockAddr, &iSockAddrLen);
-				    DebugLogWarning(_T("SockAddr.sin_addr.S_un.S_addr == 0;  GetPeerName returned %s"), ipstr(SockAddr.sin_addr.S_un.S_addr));
-			    }
-    
-			    ASSERT( SockAddr.sin_addr.S_un.S_addr != 0 && SockAddr.sin_addr.S_un.S_addr != INADDR_NONE );
-    
-			    if (theApp.ipfilter->IsFiltered(SockAddr.sin_addr.S_un.S_addr)){
-				    if (thePrefs.GetLogFilteredIPs())
-					    AddDebugLogLine(false, _T("Rejecting connection attempt (IP=%s) - IP filter (%s)"), ipstr(SockAddr.sin_addr.S_un.S_addr), theApp.ipfilter->GetLastHit());
-				    newclient->Safe_Delete();
-				    theStats.filteredclients++;
-				    continue;
-			    }
-    
-			    if (theApp.clientlist->IsBannedClient(SockAddr.sin_addr.S_un.S_addr)){
-				    if (thePrefs.GetLogBannedClients()){
-					    CUpDownClient* pClient = theApp.clientlist->FindClientByIP(SockAddr.sin_addr.S_un.S_addr);
+				if (!Accept(*newclient, (SOCKADDR*)&SockAddr, &iSockAddrLen)){
+					newclient->Safe_Delete();
+					DWORD nError = GetLastError();
+					if (nError == WSAEWOULDBLOCK){
+						DebugLogError(LOG_STATUSBAR, _T("%hs: Backlogcounter says %u connections waiting, Accept() says WSAEWOULDBLOCK - setting counter to zero!"), __FUNCTION__, m_nPendingConnections);
+						m_nPendingConnections = 0;
+						break;
+					}
+					else{
+						DebugLogError(LOG_STATUSBAR, _T("%hs: Backlogcounter says %u connections waiting, Accept() says %s - setting counter to zero!"), __FUNCTION__, m_nPendingConnections, GetErrorMessage(nError, 1));
+						nFataErrors++;
+					}
+					if (nFataErrors > 10){
+						// the question is what todo on a error. We cant just ignore it because then the backlog will fill up
+						// and lock everything. We can also just endlos try to repeat it because this will lock up eMule
+						// this should basically never happen anyway
+						// however if we are in such a position, try to reinitalize the socket.
+						DebugLogError(LOG_STATUSBAR, _T("%hs: Accept() Error Loop, recreating socket"), __FUNCTION__);
+						Close();
+						StartListening();
+						m_nPendingConnections = 0;
+						break;
+					}
+					continue;
+				}
+
+				AddConnection();
+
+				// netfinity: Maximum Segment Size (MSS - Vista only) //added by zz_fly
+				newclient->SetMSSFromSocket(newclient->GetSocketHandle());
+
+				if (SockAddr.sin_addr.S_un.S_addr == 0) // for safety..
+				{
+					iSockAddrLen = sizeof SockAddr;
+					newclient->GetPeerName((SOCKADDR*)&SockAddr, &iSockAddrLen);
+					DebugLogWarning(_T("SockAddr.sin_addr.S_un.S_addr == 0;  GetPeerName returned %s"), ipstr(SockAddr.sin_addr.S_un.S_addr));
+				}
+
+				ASSERT( SockAddr.sin_addr.S_un.S_addr != 0 && SockAddr.sin_addr.S_un.S_addr != INADDR_NONE );
+
+				if (theApp.ipfilter->IsFiltered(SockAddr.sin_addr.S_un.S_addr)){
+					if (thePrefs.GetLogFilteredIPs())
+						AddDebugLogLine(false, _T("Rejecting connection attempt (IP=%s) - IP filter (%s)"), ipstr(SockAddr.sin_addr.S_un.S_addr), theApp.ipfilter->GetLastHit());
+					newclient->Safe_Delete();
+					theStats.filteredclients++;
+					continue;
+				}
+
+				if (theApp.clientlist->IsBannedClient(SockAddr.sin_addr.S_un.S_addr)){
+					if (thePrefs.GetLogBannedClients()){
+						CUpDownClient* pClient = theApp.clientlist->FindClientByIP(SockAddr.sin_addr.S_un.S_addr);
 						//Xman Code Fix
 						/*
 					    AddDebugLogLine(false, _T("Rejecting connection attempt of banned client %s %s"), ipstr(SockAddr.sin_addr.S_un.S_addr), pClient->DbgGetClientInfo());
 						*/
 						AddDebugLogLine(false, _T("Rejecting connection attempt of banned client %s %s"), ipstr(SockAddr.sin_addr.S_un.S_addr), pClient ? pClient->DbgGetClientInfo() : _T("unknown"));
 						//Xman end
-				    }
-				    newclient->Safe_Delete();
-				    continue;
-			    }
+					}
+					newclient->Safe_Delete();
+					continue;
+				}
 			}
 			newclient->AsyncSelect(FD_WRITE | FD_READ | FD_CLOSE);
 		}
@@ -3689,6 +3799,7 @@ void CListenSocket::UpdateConnectionsStatus()
 			 totalconnectionchecks = 100;
 		}
 		*/
+		//Xman End
 
 		// Get a weight for the 'avg. connections' value. The longer we run the higher 
 		// gets the weight (the percent of 'avg. connections' we use).
@@ -3746,3 +3857,31 @@ float CListenSocket::GetMaxConperFiveModifier(){
 	return 1.0f - (SpikeSize/SpikeTolerance);
 }
 //Xman end
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+//ACAT UPnP :: Rebind UPnP on IP-change
+bool CListenSocket::RebindUPnP(){ 
+	if (!thePrefs.m_bUseACATUPnPCurrent)
+		return false;
+
+	if(theApp.m_pUPnPNat->RemoveSpecifiedPort(thePrefs.m_iUPnPTCPExternal, MyUPnP::UNAT_TCP))
+	{
+		AddLogLine(false, _T("UPNP: removed TCP-port %u"),thePrefs.m_iUPnPTCPExternal);
+		thePrefs.m_iUPnPTCPExternal=0;
+		MyUPnP::UPNPNAT_MAPPING mapping;
+		mapping.internalPort = mapping.externalPort = thePrefs.GetPort();
+		mapping.protocol = MyUPnP::UNAT_TCP;
+		mapping.description = "TCP Port";
+		if(theApp.AddUPnPNatPort(&mapping, thePrefs.GetUPnPNatTryRandom()))
+		{
+			thePrefs.SetUPnPTCPExternal(mapping.externalPort);
+			return true;
+		}
+		else
+			thePrefs.SetUPnPTCPExternal(thePrefs.GetPort());
+	}
+	else
+		AddLogLine(false, _T("UPNP: failed to remove TCP-port %u"), thePrefs.m_iUPnPTCPExternal);
+	return false;
+}
+#endif //zz_fly :: dual upnp

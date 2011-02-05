@@ -429,8 +429,8 @@ bool CUpDownClient::IsSourceRequestAllowed() const
 	if(thePrefs.GetAntiLeecherXSExploiter() && IsXSExploiter())
 		return false; //this client doesn't answer
 	//Xman end
-    return IsSourceRequestAllowed(reqfile); 
-} 
+    return IsSourceRequestAllowed(reqfile);
+}
 
 //Xman Xtreme mod: modified version:
 /*
@@ -530,7 +530,6 @@ void CUpDownClient::SendFileRequest()
 	/*
     SwapToAnotherFile(_T("A4AF check before tcp file reask. CUpDownClient::SendFileRequest()"), true, false, false, NULL, true, true);
 	*/
-
 	//the purpose of this method is, to balance the clients(sources) between the partfiles
 	//example: one file has 60%of hardlimt sources, other only 20%. we should move our sources 
 	//to the file with low sources, if the fileprio is the same.
@@ -749,7 +748,7 @@ void CUpDownClient::SendFileRequest()
 				IncXSReqs();//>>> Anti-XS-Exploit (Xman)
 			reqfile->SetLastAnsweredTimeTimeout();
 			//Xman end
-			
+
 			Packet* packet;
 			if (SupportsSourceExchange2()){
 				packet = new Packet(OP_REQUESTSOURCES2,19,OP_EMULEPROT);
@@ -792,9 +791,7 @@ void CUpDownClient::SendFileRequest()
 	//we will look at m_partstatusmap when swapping
 	// Keep a track when this file was asked for the last time 
 	m_partStatusMap[reqfile].dwStartUploadReqTime = GetTickCount();
-
 	// Maella end
-
 }
 
 void CUpDownClient::SendStartupLoadReq()
@@ -849,7 +846,6 @@ void CUpDownClient::SendStartupLoadReq()
 	else
 		m_dwNextTCPAskedTime = m_dwLastAskedTime + 4 * GetJitteredFileReaskTime();
 	// Maella end
-
 }
 
 void CUpDownClient::ProcessFileInfo(CSafeMemFile* data, CPartFile* file)
@@ -998,18 +994,18 @@ void CUpDownClient::ProcessFileStatus(bool bUdpPacket, CSafeMemFile* data, CPart
 		delete[] psz;
 	}
 
-		//Xman 4.8.2 moved the update display down. Because in most  cases it has been already updated, if not it will be done now:
-		/*
+	//Xman 4.8.2 moved the update display down. Because in most  cases it has been already updated, if not it will be done now:
+	/*
 	UpdateDisplayedInfo(bUdpPacket);
-		*/
-		//Xman end
+	*/
+	//Xman end
 	reqfile->UpdateAvailablePartsCount();
 
 	// NOTE: This function is invoked from TCP and UDP socket!
 	if (!bUdpPacket)
 	{
 		if (!bPartsNeeded)
-		{
+        {
 			// - Maella -Download Stop Reason-
 			/*
 			SetDownloadState(DS_NONEEDEDPARTS);
@@ -1029,7 +1025,7 @@ void CUpDownClient::ProcessFileStatus(bool bUdpPacket, CSafeMemFile* data, CPart
 					AddDebugLogLine(false, _T("-o- ProcessFileStatus swapping NNS: client %s, %s swaped from %s to %s"), DbgGetFullClientSoftVer(),GetUserName(), oldreqfile->GetFileName(), reqfile->GetFileName());
 			}
 			//Xman end
-		}
+        }
         else if (reqfile->m_bMD4HashsetNeeded || (reqfile->IsAICHPartHashSetNeeded() && SupportsFileIdentifiers() 
 			&& GetReqFileAICHHash() != NULL && *GetReqFileAICHHash() == reqfile->GetFileIdentifier().GetAICHHash())) //If we are using the eMule filerequest packets, this is taken care of in the Multipacket!
 			SendHashSetRequest();
@@ -1042,7 +1038,7 @@ void CUpDownClient::ProcessFileStatus(bool bUdpPacket, CSafeMemFile* data, CPart
 	else
 	{
 		if (!bPartsNeeded)
-		{
+        {
 			// - Maella -Download Stop Reason-
 			/*
 			SetDownloadState(DS_NONEEDEDPARTS);
@@ -1050,7 +1046,7 @@ void CUpDownClient::ProcessFileStatus(bool bUdpPacket, CSafeMemFile* data, CPart
 			*/
 			SetDownloadState(DS_NONEEDEDPARTS, _T("No Needed Parts"), CUpDownClient::DSR_NONEEDEDPARTS);
 			//Xman end
-		}
+        }
 		else
 			SetDownloadState(DS_ONQUEUE);
 	}
@@ -1196,7 +1192,6 @@ void CUpDownClient::SetDownloadState(EDownloadState nNewState, LPCTSTR pszReason
 			if(socket != NULL)
 			{
 				socket->SetSockOpt(SO_RCVBUF, &newValue, sizeof(newValue), SOL_SOCKET);
-			
 				/*
 				int oldValue=0;
 				int size=sizeof(oldValue);
@@ -1230,7 +1225,6 @@ void CUpDownClient::SetDownloadState(EDownloadState nNewState, LPCTSTR pszReason
                     AddDebugLogLine(DLP_VERYLOW, false, _T("Download session ended: %s User: %s in SetDownloadState(). New State: %i, Length: %s, Payload: %s, Transferred: %s, Req blocks not yet completed: %i."), pszReason, DbgGetClientInfo(), nNewState, CastSecondsToHM(GetDownTimeDifference(false)/1000), CastItoXBytes(GetSessionPayloadDown(), false, false), CastItoXBytes(GetSessionDown(), false, false), m_PendingBlocks_list.GetCount());
 			}
 
-
 			//Xman filter clients with failed downloads
 			/*
 			ResetSessionDown();
@@ -1240,7 +1234,6 @@ void CUpDownClient::SetDownloadState(EDownloadState nNewState, LPCTSTR pszReason
 			else
 				m_faileddownloads=0; 
 			//Xman end
-
 
 			// -khaos--+++> Extended Statistics (Successful/Failed Download Sessions)
 			if ( m_bTransferredDownMini && nNewState != DS_ERROR )
@@ -1351,17 +1344,19 @@ void CUpDownClient::ProcessHashSet(const uchar* packet, uint32 size, bool bFileI
 		else if (m_fHashsetRequestingMD4)
 			DebugLog(_T("Received valid MD4 Hashset (FileIdentifiers) form %s, file: %s"), DbgGetClientInfo(), reqfile->GetFileName());
 		
+		bool bPerformFirstHash = true;		// SLUGFILLER: SafeHash - Rehash
 		if (m_fHashsetRequestingAICH && !bAICH)
 		{
 			DebugLogWarning(_T("Client was unable to deliver requested AICH part hashset, asking other clients - %s, file: %s"), DbgGetClientInfo(), reqfile->GetFileName());
 			reqfile->SetAICHHashSetNeeded(true);
+			bPerformFirstHash = false;		// SLUGFILLER: SafeHash - Rehash
 		}
 		else if (m_fHashsetRequestingAICH)
 			DebugLog(_T("Received valid AICH Part Hashset form %s, file: %s"), DbgGetClientInfo(), reqfile->GetFileName());
 		m_fHashsetRequestingMD4 = 0;
 		m_fHashsetRequestingAICH = 0;
 		//Xman
-		reqfile->PerformFirstHash();		// SLUGFILLER: SafeHash - Rehash
+		if(bPerformFirstHash) reqfile->PerformFirstHash();		// SLUGFILLER: SafeHash - Rehash
 	}
 	else
 	{
@@ -1392,18 +1387,17 @@ void CUpDownClient::CreateBlockRequests(int iMaxBlocks)
 		uint16 count;
 		if(iMaxBlocks > m_PendingBlocks_list.GetCount()) {
 			count = (uint16)(iMaxBlocks - m_PendingBlocks_list.GetCount());
- 		//Xman bugfix
+		//Xman bugfix
 		/*
-       } else {
+        } else {
             count = 0;
         }
 		*/
-		//Xman end
-		
+		//Xman end 	
 			Requested_Block_Struct** toadd = new Requested_Block_Struct*[count];
 			//Xman chunk chooser
 			/*
-		if (reqfile->GetNextRequestedBlock(this, toadd, &count)){
+			if (reqfile->GetNextRequestedBlock(this, toadd, &count)){
 			*/
 			bool result = thePrefs.GetChunkChooseMethod()==1 ? reqfile->GetNextRequestedBlock_Maella(this,toadd,&count) : reqfile->GetNextRequestedBlock_zz(this,toadd,&count);
 			if (result){
@@ -1432,9 +1426,8 @@ void CUpDownClient::SendBlockRequests()
 	if (!reqfile)
 		return;
 
-	// prevent locking of too many blocks when we are on a slow (probably standby/trickle) slot
-	int blockCount = 3;
-	
+    // prevent locking of too many blocks when we are on a slow (probably standby/trickle) slot
+    int blockCount = 3;
 	//Xman Dynamic block request
 	/*
     if(IsEmuleClient() && m_byCompatibleClient==0 && reqfile->GetFileSize()-reqfile->GetCompletedSize() <= (uint64)PARTSIZE*4) {
@@ -1454,13 +1447,13 @@ void CUpDownClient::SendBlockRequests()
 		// Only trust eMule clients to be able to handle less blocks than three
 		if(m_nDownDatarate10 < 600 || GetSessionPayloadDown() < 40*1024) { 
 			blockCount = 1;
-		} else if(m_nDownDatarate10 < 2400) { 
-			blockCount = 2;
-		}
-	}
+		} else if(m_nDownDatarate10 < 2400) {
+            blockCount = 2;
+        }
+    }
 	//Xman end Dynamic block request
 	CreateBlockRequests(blockCount);
-	
+
 	//zz_fly :: Drop stalled downloads :: netfinity :: start
 	try
 	{
@@ -1470,38 +1463,37 @@ void CUpDownClient::SendBlockRequests()
 				reqfile->GetUnrequestedSize() == 0 && reqfile->FindAndDropStalledDownload(this) )
 				CreateBlockRequests(blockCount);
 	//zz_fly :: Drop stalled downloads :: netfinity :: end
-			if (m_PendingBlocks_list.IsEmpty()){
-				//Xman 0.46b
-				//Xman Xtreme Downloadmanager
-				/*
-				SendCancelTransfer();
-				SetDownloadState(DS_NONEEDEDPARTS);
-		        SwapToAnotherFile(_T("A4AF for NNP file. CUpDownClient::SendBlockRequests()"), true, false, false, NULL, true, true);
-				*/
-				//Xman end
+			//Xman 0.46b
+			//Xman Xtreme Downloadmanager
+			/*
+	if (m_PendingBlocks_list.IsEmpty()){
+		SendCancelTransfer();
+		SetDownloadState(DS_NONEEDEDPARTS);
+        SwapToAnotherFile(_T("A4AF for NNP file. CUpDownClient::SendBlockRequests()"), true, false, false, NULL, true, true);
+		return;
+			*/
+			//Xman end
 
-				//Xman 4.2 just in time swapping
-				//try do swap just in time
-				CPartFile* oldreqfile=reqfile;
-				if(GetDownloadState()==DS_DOWNLOADING && socket!=NULL && socket->IsConnected() && SwapToAnotherFile(false,false,false, NULL, false, true)  )
-				{
-					protocolstepflag1=true;
-					SendFileRequest(); //ask for the file we swapped to
-					if(thePrefs.GetLogA4AF())
-						AddDebugLogLine(false, _T("-o- SendBlockRequests just in time swapping NNS: client %s, %s swapped from %s to %s"), DbgGetFullClientSoftVer(),GetUserName(), oldreqfile->GetFileName(), reqfile->GetFileName());
-				}
-				else
-				{
-					SendCancelTransfer();
-					SetDownloadState(DS_NONEEDEDPARTS, _T("No Needed Parts") , CUpDownClient::DSR_NONEEDEDPARTS); // - Maella -Download Stop Reason-
-				}
-				//to be sure not to fall in an endless loop (which theoretically can't happen):
-				DontSwapTo(oldreqfile);
-		
-
-				//Xman end
-				return;
+			//Xman 4.2 just in time swapping
+			//try do swap just in time
+			CPartFile* oldreqfile=reqfile;
+			if(GetDownloadState()==DS_DOWNLOADING && socket!=NULL && socket->IsConnected() && SwapToAnotherFile(false,false,false, NULL, false, true)  )
+			{
+				protocolstepflag1=true;
+				SendFileRequest(); //ask for the file we swapped to
+				if(thePrefs.GetLogA4AF())
+					AddDebugLogLine(false, _T("-o- SendBlockRequests just in time swapping NNS: client %s, %s swapped from %s to %s"), DbgGetFullClientSoftVer(),GetUserName(), oldreqfile->GetFileName(), reqfile->GetFileName());
 			}
+			else
+			{
+				SendCancelTransfer();
+				SetDownloadState(DS_NONEEDEDPARTS, _T("No Needed Parts") , CUpDownClient::DSR_NONEEDEDPARTS); // - Maella -Download Stop Reason-
+			}
+			//to be sure not to fall in an endless loop (which theoretically can't happen):
+			DontSwapTo(oldreqfile);
+
+			return;
+			//Xman end
 	//zz_fly :: Drop stalled downloads :: netfinity :: start
 		} 
 	} 
@@ -1642,13 +1634,13 @@ void CUpDownClient::SendBlockRequests()
 void CUpDownClient::ProcessBlockPacket(const uchar *packet, uint32 size, bool packed, bool bI64Offsets)
 {
 	if (!bI64Offsets) {
-		uint32 nDbgStartPos = *((uint32*)(packet+16));
-		if (thePrefs.GetDebugClientTCPLevel() > 1){
-			if (packed)
-				Debug(_T("  Start=%u  BlockSize=%u  Size=%u  %s\n"), nDbgStartPos, *((uint32*)(packet + 16+4)), size-24, DbgGetFileInfo(packet));
-			else
-				Debug(_T("  Start=%u  End=%u  Size=%u  %s\n"), nDbgStartPos, *((uint32*)(packet + 16+4)), *((uint32*)(packet + 16+4)) - nDbgStartPos, DbgGetFileInfo(packet));
-		}
+	    uint32 nDbgStartPos = *((uint32*)(packet+16));
+	    if (thePrefs.GetDebugClientTCPLevel() > 1){
+		    if (packed)
+			    Debug(_T("  Start=%u  BlockSize=%u  Size=%u  %s\n"), nDbgStartPos, *((uint32*)(packet + 16+4)), size-24, DbgGetFileInfo(packet));
+		    else
+			    Debug(_T("  Start=%u  End=%u  Size=%u  %s\n"), nDbgStartPos, *((uint32*)(packet + 16+4)), *((uint32*)(packet + 16+4)) - nDbgStartPos, DbgGetFileInfo(packet));
+	    }
 	}
 
 	// Ignore if no data required
@@ -1657,7 +1649,7 @@ void CUpDownClient::ProcessBlockPacket(const uchar *packet, uint32 size, bool pa
 		return;
 	}
 
-
+	
 
 	// Update stats
 	m_dwLastBlockReceived = ::GetTickCount();
@@ -1678,7 +1670,7 @@ void CUpDownClient::ProcessBlockPacket(const uchar *packet, uint32 size, bool pa
 	uint64 nStartPos;
 	uint64 nEndPos;
 	uint32 nBlockSize = 0;
-
+	
 	if (bI64Offsets){
 		nStartPos = data.ReadUInt64();
 		nHeaderSize += 8;
@@ -2081,7 +2073,6 @@ void CUpDownClient::CompDownloadRate(){
 		m_nDownDatarate10 = (deltaTime > 0) ? (UINT)(1000.0 * deltaByte / deltaTime) : 0;   // [bytes/s]
 	}
 
-
 	// Check and then refresh GUI
 	m_displayDownDatarateCounter++;
 	//Xman Code Improvement: slower refresh for clientlist
@@ -2094,7 +2085,6 @@ void CUpDownClient::CompDownloadRate(){
 		m_displayDownDatarateCounter = 0;
 	}
 }
-
 
 void CUpDownClient::CheckDownloadTimeout()
 {
@@ -2201,7 +2191,6 @@ void CUpDownClient::UDPReaskACK(uint16 nNewQR)
 	if(reqfile)
 		m_partStatusMap[reqfile].dwStartUploadReqTime = GetTickCount();
 	// Maella end
-
 }
 
 void CUpDownClient::UDPReaskFNF()
@@ -2277,7 +2266,6 @@ void CUpDownClient::UDPReaskForDownload()
 	//Xman end
 		return;
 
-
 	//Xman 4.8.2 code-Improvement
 	//it can happen that our UDP-packet is received by remote client 
 	//but the answer get always lost. In this case it makes no sence to send the second UDP-packet
@@ -2301,7 +2289,7 @@ void CUpDownClient::UDPReaskForDownload()
 				return;
 			}
 
-			//Xman force TCP
+	        //Xman force TCP
 			/*
 	        if(SwapToAnotherFile(_T("A4AF check before OP__ReaskFilePing. CUpDownClient::UDPReaskForDownload()"), true, false, false, NULL, true, true)) {
 	            return; // we swapped, so need to go to tcp
@@ -2323,7 +2311,7 @@ void CUpDownClient::UDPReaskForDownload()
 			if (GetUDPVersion() > 2)
 				data.WriteUInt16(reqfile->m_nCompleteSourcesCount);
 			if (thePrefs.GetDebugClientUDPLevel() > 0)
-				DebugSend("OP__ReaskFilePing", this, reqfile->GetFileHash());
+			    DebugSend("OP__ReaskFilePing", this, reqfile->GetFileHash());
 			Packet* response = new Packet(&data, OP_EMULEPROT);
 			response->opcode = OP_REASKFILEPING;
 			theStats.AddUpDataOverheadFileRequest(response->size);
@@ -2345,14 +2333,15 @@ void CUpDownClient::UDPReaskForDownload()
 				&& (m_bCompleteSource || GetUploadState()==US_ONUPLOADQUEUE))
 				SetNextTCPAskedTime(GetNextTCPAskedTime() + GetJitteredFileReaskTime());
 			//Xman end
+
 		}
 		else if (HasLowID() && GetBuddyIP() && GetBuddyPort() && HasValidBuddyID())
 		{
-				//Xman
-				/*
+			//Xman
+			/*
 			m_bUDPPending = true;
-				*/
-				//Xman end
+			*/
+			//Xman end
 			CSafeMemFile data(128);
 			data.WriteHash16(GetBuddyID());
 			data.WriteHash16(reqfile->GetFileHash());
@@ -2387,7 +2376,7 @@ void CUpDownClient::UDPReaskForDownload()
 			if(GetUDPVersion()>3 && m_OtherNoNeeded_list.IsEmpty() && m_OtherRequests_list.IsEmpty() && (GetNextTCPAskedTime()  < MIN2MS(45) + ::GetTickCount())
 				&& (m_bCompleteSource || GetUploadState()==US_ONUPLOADQUEUE))
 				SetNextTCPAskedTime(GetNextTCPAskedTime() + GetJitteredFileReaskTime());
-				//Xman end
+			//Xman end
 		}
 	}
 }
@@ -2421,15 +2410,13 @@ const bool CUpDownClient::IsInNoNeededList(const CPartFile* fileToCheck) const
 */
 const bool CUpDownClient::IsInNoNeededList(const CPartFile* fileToCheck) const
 {
-    for (POSITION pos = m_OtherNoNeeded_list.GetHeadPosition();pos != 0;m_OtherNoNeeded_list.GetNext(pos)) {
-        if(m_OtherNoNeeded_list.GetAt(pos) == fileToCheck) {
+    for (POSITION pos = m_OtherNoNeeded_list.GetHeadPosition();pos != 0;m_OtherNoNeeded_list.GetNext(pos))
+    {
+        if (m_OtherNoNeeded_list.GetAt(pos) == fileToCheck)
             return true;
-        }
     }
-
     return false;
 }
-
 
 //Xman Xtreme Downloadmanager
 /*
@@ -2833,8 +2820,6 @@ bool CUpDownClient::SwapToAnotherFile(bool bIgnoreNoNeeded, bool ignoreSuspensio
 			}
 		}
 	}
-
-
 	if (!SwapTo && bIgnoreNoNeeded){
 		usedList = &m_OtherNoNeeded_list;
 		for (POSITION pos = m_OtherNoNeeded_list.GetHeadPosition();pos != 0;m_OtherNoNeeded_list.GetNext(pos)){
@@ -2861,7 +2846,6 @@ bool CUpDownClient::SwapToAnotherFile(bool bIgnoreNoNeeded, bool ignoreSuspensio
 			}
 		}
 	}
-
 	if (SwapTo ){
 		//AddDebugLogLine(false, "Swapped source '%s'; Status %i; Remove %s to %s", this->GetUserName(), this->GetDownloadState(), (bRemoveCompletely ? "Yes" : "No" ), SwapTo->GetFileName());		
 		if (DoSwap(SwapTo,bRemoveCompletely)){
@@ -2870,10 +2854,8 @@ bool CUpDownClient::SwapToAnotherFile(bool bIgnoreNoNeeded, bool ignoreSuspensio
 			return true;
 		}
 	}
-
 	return false;
 }
-
 //Xman end
 
 //Xman Xtreme Downloadmanager
@@ -2989,8 +2971,6 @@ bool CUpDownClient::DoSwap(CPartFile* SwapTo, bool bRemoveCompletely) {
 		//Xman just in time swapping end
 
 		isduringswap=true;
-
-
 		return true;
 	}
 	return false;
@@ -3253,7 +3233,6 @@ void CUpDownClient::ProcessAcceptUpload()
 			SendFileRequest();
 		}
 		//Xman end Xtreme Mod
-		
 	}
 	else
 	{

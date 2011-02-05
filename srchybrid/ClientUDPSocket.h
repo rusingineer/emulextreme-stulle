@@ -45,6 +45,11 @@ public:
 
 	bool	Create();
 	bool	Rebind();
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	bool	RebindUPnP(); //ACAT UPnP :: Rebind UPnP on IP-change
+#endif //zz_fly :: dual upnp
+
 	uint16	GetConnectedPort()			{ return m_port; }
 	bool	SendPacket(Packet* packet, uint32 dwIP, uint16 nPort, bool bEncrypt, const uchar* pachTargetClientHashORKadID, bool bKad, uint32 nReceiverVerifyKey);
     SocketSentBytes  SendControlData(uint32 maxNumberOfBytesToSend, uint32 minFragSize); // ZZ:UploadBandWithThrottler (UDP)

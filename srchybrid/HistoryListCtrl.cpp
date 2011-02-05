@@ -44,6 +44,7 @@
 #include "HighColorTab.hpp"
 #include "PartFile.h"
 #include "TransferDlg.h"
+#include "AbstractFile.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -715,7 +716,6 @@ BOOL CHistoryListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 		return TRUE;
 	}
 
-
 	CTypedPtrList<CPtrList, CKnownFile*> selectedList;
 	POSITION pos = GetFirstSelectedItemPosition();
 	while (pos != NULL){
@@ -733,7 +733,7 @@ BOOL CHistoryListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 		switch (wParam){
 			case Irc_SetSendLink:
 			{
-				theApp.emuledlg->ircwnd->SetSendFileString(CreateED2kLink(file));
+				theApp.emuledlg->ircwnd->SetSendFileString(file->GetED2kLink());
 				break;
 			}
 			case MP_SHOWED2KLINK:
@@ -758,7 +758,7 @@ BOOL CHistoryListCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 				while (!selectedList.IsEmpty()){
 					if (!str.IsEmpty())
 						str += _T("\r\n");
-					str += CreateED2kLink(selectedList.GetHead());
+					str += selectedList.GetHead()->GetED2kLink();
 					selectedList.RemoveHead();
 				}
 				theApp.CopyTextToClipboard(str);
@@ -890,6 +890,7 @@ void CHistoryListCtrl::UpdateFile(const CKnownFile* file)
 			theApp.emuledlg->sharedfileswnd->ShowSelectedFilesDetails(false,true);
 	}
 }
+
 int CHistoryListCtrl::FindFile(const CKnownFile* pFile)
 {
 	LVFINDINFO find;
@@ -906,6 +907,7 @@ void CHistoryListCtrl::ShowFileDialog(CTypedPtrList<CPtrList, CKnownFile*>& aFil
 		dialog.DoModal();
 	}
 }
+
 void CHistoryListCtrl::OnLvnGetDispInfo(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	if (theApp.emuledlg->IsRunning()) {

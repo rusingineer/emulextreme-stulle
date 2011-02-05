@@ -764,8 +764,10 @@ BOOL CSharedDirsTreeCtrl::OnCommand(WPARAM wParam, LPARAM /*lParam*/)
 					POSITION pos = selectedList.GetHeadPosition();
 					while (pos != NULL)
 					{
-						if (!selectedList.GetAt(pos)->IsKindOf(RUNTIME_CLASS(CKnownFile)))
+						if (!selectedList.GetAt(pos)->IsKindOf(RUNTIME_CLASS(CKnownFile))){
+							selectedList.GetNext(pos); //bug fix
 							continue;
+						}
 						CKnownFile* file = (CKnownFile*)selectedList.GetNext(pos);
 						switch (wParam) {
 							case MP_PRIOVERYLOW:

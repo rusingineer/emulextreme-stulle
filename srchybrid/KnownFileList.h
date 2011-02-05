@@ -68,7 +68,6 @@ public:
 	bool	bReloadHistory; //Fafner: possible exception in history - 070626
 	//Xman end
 
-
 private:
 	bool	LoadKnownFiles();
 	bool	LoadCancelledFiles();

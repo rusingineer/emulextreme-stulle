@@ -468,6 +468,7 @@ void CClientCreditsList::LoadList()
 		}
 
 		// everything is ok, lets see if the backup exist...
+		//Enig123::improved clients.met handle, not needed
 		CString strBakFileName;
 		strBakFileName.Format(_T("%s") CLIENTS_MET_FILENAME _T(".bak"), thePrefs.GetMuleDirectory(EMULE_CONFIGDIR));
 
@@ -517,6 +518,7 @@ void CClientCreditsList::LoadList()
 			setvbuf(file.m_pStream, NULL, _IOFBF, 16384);
 			file.Seek(1, CFile::begin); //set filepointer behind file version byte
 		}
+		//Enig123::improved clients.met handle
 
 		UINT count = file.ReadUInt32();
 		//Xman Extened credit- table-arragement
@@ -606,7 +608,12 @@ void CClientCreditsList::SaveList()
 	CString name = thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + CLIENTS_MET_FILENAME;
 	CFile file;// no buffering needed here since we swap out the entire array
 	CFileException fexp;
+	//Enig123::improved clients.met handle
+	/*
 	if (!file.Open(name, CFile::modeWrite|CFile::modeCreate|CFile::typeBinary|CFile::shareDenyWrite, &fexp)){
+	*/
+	if (!file.Open(name + _T(".new"), CFile::modeWrite|CFile::modeCreate|CFile::typeBinary|CFile::shareDenyWrite, &fexp)){
+	//Enig123::improved clients.met handle
 		CString strError(GetResString(IDS_ERR_FAILED_CREDITSAVE));
 		TCHAR szError[MAX_CFEXP_ERRORMSG];
 		if (fexp.GetErrorMessage(szError, ARRSIZE(szError))){
@@ -654,6 +661,21 @@ void CClientCreditsList::SaveList()
 		if (thePrefs.GetCommitFiles() >= 2 || (thePrefs.GetCommitFiles() >= 1 && !theApp.emuledlg->IsRunning()))
 			file.Flush();
 		file.Close();
+		//Enig123::improved clients.met handle ->>
+		try {
+			CFile::Remove(name + _T(".bak"));
+		}
+		catch(CFileException* e){
+			e->Delete();
+		}
+		try {
+			CFile::Rename(name, name + _T(".bak"));
+		}
+		catch(CFileException* e){
+			e->Delete();
+		}
+		CFile::Rename(name + _T(".new"), name);
+		//Enig123::improved clients.met handle <<-
 	}
 	catch(CFileException* error){
 		CString strError(GetResString(IDS_ERR_FAILED_CREDITSAVE));
@@ -697,7 +719,6 @@ CClientCredits* CClientCreditsList::GetCredit(const uchar* key)
 	//zz_fly :: Optimized :: Enig123, DolphinX :: Start
 	/*
 	result->SetLastSeen();
-
 	result->UnMarkToDelete(); //Xman Extened credit- table-arragement
 	return result;
 	*/
@@ -714,7 +735,6 @@ CClientCredits* CClientCreditsList::GetCredit(const uchar* key)
 
 void CClientCreditsList::Process()
 {
-
 #define HOURS_KEEP_IN_MEMORY 6	//Xman Extened credit- table-arragement
 
 	if (::GetTickCount() - m_nLastSaved > MIN2MS(13))
@@ -773,13 +793,13 @@ void CClientCreditsList::Process()
 					//zz_fly :: End
 					unused_count++; //zz_fly :: debug only
 					if(cur_credit){
-					delete cur_credit;
+						delete cur_credit;
 					//zz_fly :: Optimized on table-arragement :: Enig123 :: Start
 					/*
 					delete result;
 					*/
-					cur_credit = NULL;
-					result->clientCredit = NULL; //fix crash
+						cur_credit = NULL;
+						result->clientCredit = NULL; //fix crash
 					}
 					if(ul==0 && dl==0)
 					{
@@ -797,7 +817,8 @@ void CClientCreditsList::Process()
 				//zz_fly :: End
 			}
 		}
-	//Xman end
+		//Xman end
+
 		//zz_fly :: show statistics :: Start
 		AddDebugLogLine( false, _T("%i ClientCredits in memory(Total:%i)"), credit_count, m_mapClients.GetSize());
 		if (unused_count)
@@ -1071,59 +1092,36 @@ bool CClientCreditsList::Debug_CheckCrypting()
 	uint32 challenge = rand();
 	// create fake client which pretends to be this emule
 	//zz_fly start
-	/*
-	CreditStruct* newcstruct = new CreditStruct;
-	memset(newcstruct, 0, sizeof(CreditStruct));
-	CClientCredits* newcredits = new CClientCredits(newcstruct);
-	newcredits->SetSecureIdent(m_abyMyPublicKey,m_nMyPublicKeyLen);
-	newcredits->m_dwCryptRndChallengeFrom = challenge;
-	// create signature with fake priv key
-	uchar pachSignature[200];
-	memset(pachSignature,0,200);
-	uint8 sigsize = CreateSignature(newcredits,pachSignature,200,0,false, &priv);
-
-
-	// next fake client uses the random created public key
-	CreditStruct* newcstruct2 = new CreditStruct;
-	memset(newcstruct2, 0, sizeof(CreditStruct));
-	CClientCredits* newcredits2 = new CClientCredits(newcstruct2);
-	newcredits2->m_dwCryptRndChallengeFor = challenge;
-
-	// if you uncomment one of the following lines the check has to fail
-	//abyPublicKey[5] = 34;
-	//m_abyMyPublicKey[5] = 22;
-	//pachSignature[5] = 232;
-
-	newcredits2->SetSecureIdent(abyPublicKey,PublicKeyLen);
-
-	//now verify this signature - if it's true everything is fine
-	bool bResult = VerifyIdent(newcredits2,pachSignature,sigsize,0,0);
-
-	delete newcredits;
-	delete newcredits2;
-	*/
+	//CreditStruct* newcstruct = new CreditStruct;
 	ClientCreditContainer* newContainer = new ClientCreditContainer;
 	CreditStruct* newcstruct = &newContainer->theCredit;
 
 	memset(newcstruct, 0, sizeof(CreditStruct));
 
+	//CClientCredits* newcredits = new CClientCredits(newcstruct);
 	newContainer->clientCredit = new CClientCredits(newcstruct);
+	//newcredits->SetSecureIdent(m_abyMyPublicKey,m_nMyPublicKeyLen);
 	newContainer->clientCredit->SetSecureIdent(m_abyMyPublicKey,m_nMyPublicKeyLen);
+	//newcredits->m_dwCryptRndChallengeFrom = challenge;
 	newContainer->clientCredit->m_dwCryptRndChallengeFrom = challenge;
 
 	// create signature with fake priv key
 	uchar pachSignature[200];
 	memset(pachSignature,0,200);
 
+	//uint8 sigsize = CreateSignature(newcredits,pachSignature,200,0,false, &priv);
 	uint8 sigsize = CreateSignature(newContainer->clientCredit,pachSignature,200,0,false, &priv);
 
 	// next fake client uses the random created public key
+	//CreditStruct* newcstruct2 = new CreditStruct;
 	ClientCreditContainer* newContainer2 = new ClientCreditContainer;
 	CreditStruct* newcstruct2 = &newContainer2->theCredit;
 
 	memset(newcstruct2, 0, sizeof(CreditStruct));
 
+	//CClientCredits* newcredits2 = new CClientCredits(newcstruct2);
 	newContainer2->clientCredit = new CClientCredits(newcstruct2);
+	//newcredits2->m_dwCryptRndChallengeFor = challenge;
 	newContainer2->clientCredit->m_dwCryptRndChallengeFor = challenge;
 
 	// if you uncomment one of the following lines the check has to fail
@@ -1131,11 +1129,15 @@ bool CClientCreditsList::Debug_CheckCrypting()
 	//m_abyMyPublicKey[5] = 22;
 	//pachSignature[5] = 232;
 
+	//newcredits2->SetSecureIdent(abyPublicKey,PublicKeyLen);
 	newContainer2->clientCredit->SetSecureIdent(abyPublicKey,PublicKeyLen);
 
 	//now verify this signature - if it's true everything is fine
+	//bool bResult = VerifyIdent(newcredits2,pachSignature,sigsize,0,0);
 	bool bResult = VerifyIdent(newContainer2->clientCredit,pachSignature,sigsize,0,0);
 
+	//delete newcredits;
+	//delete newcredits2;
 	if(newContainer->clientCredit) 
 		delete newContainer->clientCredit;
 	delete newContainer;

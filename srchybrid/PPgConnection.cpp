@@ -235,7 +235,6 @@ void CPPgConnection::LoadSettings(void)
 		strBuffer.Format(_T("%.1f"),(float) thePrefs.maxGraphDownloadRate);
 		GetDlgItem(IDC_DOWNLOAD_CAP)->SetWindowText(strBuffer);
 
-
 		strBuffer.Format(_T("%.1f"), (float)thePrefs.maxGraphUploadRate);
 		GetDlgItem(IDC_UPLOAD_CAP)->SetWindowText(strBuffer);
 
@@ -303,20 +302,27 @@ void CPPgConnection::LoadSettings(void)
 		if (thePrefs.GetWindowsVersion() == _WINVER_XP_ && IsRunningXPSP2() == 0 && theApp.m_pFirewallOpener->DoesFWConnectionExist())
 		{//zz_fly
 			GetDlgItem(IDC_OPENPORTS)->ShowWindow(SW_SHOW);
-			GetDlgItem(IDC_PREF_UPNPONSTART)->ShowWindow(SW_HIDE); //zz_fly :: show upnp option when there is enough place
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+			if(!thePrefs.m_bUseACATUPnPCurrent) 
+#endif //zz_fly :: end
+				GetDlgItem(IDC_PREF_UPNPONSTART)->ShowWindow(SW_HIDE); //zz_fly :: show upnp option when there is enough place
 		}//zz_fly
 		else
 		{//zz_fly
 			GetDlgItem(IDC_OPENPORTS)->ShowWindow(SW_HIDE);
-			GetDlgItem(IDC_PREF_UPNPONSTART)->ShowWindow(SW_SHOW); //zz_fly :: show upnp option when there is enough place
-		
-
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+			if(!thePrefs.m_bUseACATUPnPCurrent)
+#endif //zz_fly :: end
+				GetDlgItem(IDC_PREF_UPNPONSTART)->ShowWindow(SW_SHOW); //zz_fly :: show upnp option when there is enough place
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+			GetDlgItem(IDC_PREF_UPNPONSTART)->EnableWindow(!thePrefs.m_bUseACATUPnPCurrent);
+#else
 		if (thePrefs.GetWindowsVersion() != _WINVER_95_ && thePrefs.GetWindowsVersion() != _WINVER_98_ && thePrefs.GetWindowsVersion() != _WINVER_NT4_)
 			GetDlgItem(IDC_PREF_UPNPONSTART)->EnableWindow(true);
 		else
 			GetDlgItem(IDC_PREF_UPNPONSTART)->EnableWindow(false);
+#endif //zz_fly :: end
 		}//zz_fly
-
 		if (thePrefs.IsUPnPEnabled())
 			CheckDlgButton(IDC_PREF_UPNPONSTART, 1);
 		else
@@ -595,6 +601,10 @@ BOOL CPPgConnection::OnApply()
 	}
 	thePrefs.maxconnections = tempcon;
 
+	//Official UPNP
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if(!thePrefs.m_bUseACATUPnPCurrent)
+#endif //zz_fly :: dual upnp
 	if (IsDlgButtonChecked(IDC_PREF_UPNPONSTART) != 0){
 		if (!thePrefs.IsUPnPEnabled()){
 			thePrefs.m_bEnableUPnP = true;
@@ -630,7 +640,7 @@ void CPPgConnection::Localize(void)
 		GetDlgItem(IDC_LIMITS_FRM)->SetWindowText(GetResString(IDS_PW_CON_LIMITFRM));
 		//Xman Xtreme upload
 		/*
-		GetDlgItem(IDC_DLIMIT_LBL)->SetWindowText(GetResString(IDS_PW_DOWNL)); 
+		GetDlgItem(IDC_DLIMIT_LBL)->SetWindowText(GetResString(IDS_PW_DOWNL));
 		GetDlgItem(IDC_ULIMIT_LBL)->SetWindowText(GetResString(IDS_PW_UPL));
 		*/
 		GetDlgItem(IDC_DCAP_LBL2)->SetWindowText(GetResString(IDS_PW_CON_DOWNLBL));
@@ -712,6 +722,7 @@ void CPPgConnection::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	UpdateData(false); 
 	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
 }
+
 void CPPgConnection::ShowLimitValues()
 {
 	CString buffer;
@@ -855,6 +866,7 @@ void CPPgConnection::CalculateMaxUpSlotSpeed()
 	if (maxUp<6) maxSlotSpeed=2.0f;
 	if (maxUp>=10)
 		maxSlotSpeed=maxUp/(3+(maxUp-10)/20.0f);
+
 	if (maxSlotSpeed>XTREME_MAX_SLOTSPEED)
 		maxSlotSpeed=XTREME_MAX_SLOTSPEED;
 	float a=ceil(maxSlotSpeed*10.0f);
@@ -869,15 +881,11 @@ void CPPgConnection::CalculateMaxUpSlotSpeed()
 	CString strbuffer;
 	strbuffer.Format(_T("%u"),(uint32)(maxUp*400 - (maxUp-10.0f)*100));
 	GetDlgItem(IDC_MAXGLOBALSOURCES)->SetWindowText(strbuffer);
-
 }
-
-
-
 
 void CPPgConnection::OnEnKillfocusMaxup()
 {
-		CalculateMaxUpSlotSpeed();
-		ShowLimitValues();
+	CalculateMaxUpSlotSpeed();
+	ShowLimitValues();
 }
 //Xman end

@@ -228,7 +228,7 @@ void CMuleListCtrl::ShowColumn(int iColumn) {
 	if(iColumn < 1 || iColumn >= iCount || !m_aColumns[iColumn].bHidden)
 	*/
 	if(iColumn < 1 || iColumn >= iCount || iColumn >= m_iColumnsTracked || !m_aColumns[iColumn].bHidden)
-	//<<< WiZaRd::FiX 
+	//<<< WiZaRd::FiX
 		return;
 
 	//stop it from redrawing
@@ -246,7 +246,7 @@ void CMuleListCtrl::ShowColumn(int iColumn) {
 	if(iCurrent == -1)
 		return;
 	INT *piArray = new INT[m_iColumnsTracked];
-	pHeaderCtrl->GetOrderArray(piArray, m_iColumnsTracked); 
+	pHeaderCtrl->GetOrderArray(piArray, m_iColumnsTracked);
 	//<<< WiZaRd::FiX - just to be sure!
 
 	for(; iCurrent < IndexToOrder(pHeaderCtrl, 0) && iCurrent < m_iColumnsTracked - 1; iCurrent++ )
@@ -256,7 +256,7 @@ void CMuleListCtrl::ShowColumn(int iColumn) {
 	//first, test the validity of iCurrent before accessing an element!
 	/*
 	for(; m_aColumns[iColumn].iLocation > m_aColumns[pHeaderCtrl->OrderToIndex(iCurrent + 1)].iLocation &&
-	      iCurrent < m_iColumnsTracked - 1; iCurrent++)
+		iCurrent < m_iColumnsTracked - 1; iCurrent++)
 	*/
 	for(; iCurrent < m_iColumnsTracked - 1 && 
 		m_aColumns[iColumn].iLocation > m_aColumns[pHeaderCtrl->OrderToIndex(iCurrent + 1)].iLocation; iCurrent++)
@@ -467,7 +467,6 @@ void CMuleListCtrl::LoadSettings()
 			m_fontNarrow.CreateFontIndirect(&lfFont);
 	}
 	//Xman end
-
 }
 
 HBITMAP LoadImageAsPARGB(LPCTSTR pszPath)
@@ -785,7 +784,7 @@ int CMuleListCtrl::UpdateLocation(int iItem) {
 		int iResult = m_SortProc(dwpItemData, GetParamAt(pos, iNewIndex), m_dwParamSort);
 		*/
 		int iResult = MultiSortProc(dwpItemData, GetParamAt(pos, iNewIndex));
-		//Xman end
+		// SLUGFILLER End
 		if(iResult < 0) {
 			POSITION posPrev = pos;
 			int iDist = iNewIndex / 2;
@@ -798,7 +797,7 @@ int CMuleListCtrl::UpdateLocation(int iItem) {
 				if(m_SortProc(dwpItemData, GetParamAt(posPrev, iNewIndex - iDist), m_dwParamSort) < 0) {
 				*/
 				if(MultiSortProc(dwpItemData, GetParamAt(posPrev, iNewIndex - iDist)) < 0) {
-				//Xman end
+				// SLUGFILLER End
 					iNewIndex = iNewIndex - iDist;
 					pos = posPrev;
 				} else {
@@ -813,7 +812,7 @@ int CMuleListCtrl::UpdateLocation(int iItem) {
 				if(m_SortProc(dwpItemData, GetParamAt(pos, iNewIndex), m_dwParamSort) >= 0)
 				*/
 				if(MultiSortProc(dwpItemData, GetParamAt(pos, iNewIndex)) >= 0)
-				//Xman end
+				// SLUGFILLER End
 					break;
 			}
 			MoveItem(iItem, iNewIndex + 1);
@@ -829,7 +828,7 @@ int CMuleListCtrl::UpdateLocation(int iItem) {
 		int iResult = m_SortProc(dwpItemData, GetParamAt(pos, iNewIndex), m_dwParamSort);
 		*/
 		int iResult = MultiSortProc(dwpItemData, GetParamAt(pos, iNewIndex));
-		//Xman end
+		// SLUGFILLER End
 		if(iResult > 0) {
 			POSITION posNext = pos;
 			int iDist = (GetItemCount() - iNewIndex) / 2;
@@ -842,7 +841,7 @@ int CMuleListCtrl::UpdateLocation(int iItem) {
 				if(m_SortProc(dwpItemData, GetParamAt(posNext, iNewIndex + iDist), m_dwParamSort) > 0) {
 				*/
 				if(MultiSortProc(dwpItemData, GetParamAt(posNext, iNewIndex + iDist)) > 0) {
-				//Xman end
+				// SLUGFILLER End
 					iNewIndex = iNewIndex + iDist;
 					pos = posNext;
 				} else {
@@ -857,7 +856,7 @@ int CMuleListCtrl::UpdateLocation(int iItem) {
 				if(m_SortProc(dwpItemData, GetParamAt(pos, iNewIndex), m_dwParamSort) <= 0)
 				*/
 				if(MultiSortProc(dwpItemData, GetParamAt(pos, iNewIndex)) <= 0)
-				//Xman end
+				// SLUGFILLER End
 					break;
 			}
 			MoveItem(iItem, iNewIndex);
@@ -1116,7 +1115,7 @@ BOOL CMuleListCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT
 				int iResult = m_SortProc(pItem->lParam, GetParamAt(pos, iNewIndex), m_dwParamSort);
 				*/
 				int iResult = MultiSortProc(pItem->lParam, GetParamAt(pos, iNewIndex));
-				//Xman end
+				// SLUGFILLER End
 				if(iResult < 0) {
 					POSITION posPrev = pos;
 					int iDist = iNewIndex / 2;
@@ -1129,7 +1128,7 @@ BOOL CMuleListCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT
 						if(m_SortProc(pItem->lParam, GetParamAt(posPrev, iNewIndex - iDist), m_dwParamSort) < 0) {
 						*/
 						if(MultiSortProc(pItem->lParam, GetParamAt(posPrev, iNewIndex - iDist)) < 0) {
-						//Xman end
+						// SLUGFILLER End
 							iNewIndex = iNewIndex - iDist;
 							pos = posPrev;
 						} else {
@@ -1144,7 +1143,7 @@ BOOL CMuleListCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT
 						if(m_SortProc(pItem->lParam, GetParamAt(pos, iNewIndex), m_dwParamSort) >= 0)
 						*/
 						if(MultiSortProc(pItem->lParam, GetParamAt(pos, iNewIndex)) >= 0)
-						//Xman end
+						// SLUGFILLER End
 							break;
 					}
 					pItem->iItem = iNewIndex + 1;
@@ -1160,7 +1159,7 @@ BOOL CMuleListCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT
 				int iResult = m_SortProc(pItem->lParam, GetParamAt(pos, iNewIndex), m_dwParamSort);
 				*/
 				int iResult = MultiSortProc(pItem->lParam, GetParamAt(pos, iNewIndex));
-				//Xman end
+				// SLUGFILLER End
 				if(iResult > 0) {
 					POSITION posNext = pos;
 					int iDist = (GetItemCount() - iNewIndex) / 2;
@@ -1173,7 +1172,7 @@ BOOL CMuleListCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT
 						if(m_SortProc(pItem->lParam, GetParamAt(posNext, iNewIndex + iDist), m_dwParamSort) > 0) {
 						*/
 						if(MultiSortProc(pItem->lParam, GetParamAt(posNext, iNewIndex + iDist)) > 0) {
-						//Xman end
+						// SLUGFILLER End
 							iNewIndex = iNewIndex + iDist;
 							pos = posNext;
 						} else {
@@ -1188,7 +1187,7 @@ BOOL CMuleListCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT
 						if(m_SortProc(pItem->lParam, GetParamAt(pos, iNewIndex), m_dwParamSort) <= 0)
 						*/
 						if(MultiSortProc(pItem->lParam, GetParamAt(pos, iNewIndex)) <= 0)
-						//Xman end
+						// SLUGFILLER End
 							break;
 					}
 					pItem->iItem = iNewIndex;
@@ -1453,7 +1452,7 @@ void CMuleListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			pDC->FillRect(rcHighlight, &CBrush(m_crHighlight));
 			*/
 			pDC->FillSolidRect(rcHighlight, m_crHighlight);
-			//Xman end
+			//Xman End
 			pDC->SetBkColor(m_crHighlight);
 		}
 		else if(bGlowing)
@@ -1463,7 +1462,7 @@ void CMuleListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			pDC->FillRect(rcHighlight, &CBrush(m_crGlow));
 			*/
 			pDC->FillSolidRect(rcHighlight, m_crGlow);
-			//Xman end
+			//Xman End
 			pDC->SetBkColor(m_crGlow);
 		}
 		else 
@@ -1473,7 +1472,7 @@ void CMuleListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			pDC->FillRect(rcHighlight, &CBrush(m_crNoHighlight));
 			*/
 			pDC->FillSolidRect(rcHighlight, m_crNoHighlight);
-			//Xman end
+			//Xman End
 			pDC->SetBkColor(m_crNoHighlight);
 		}
 	} 
@@ -1486,7 +1485,7 @@ void CMuleListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			pDC->FillRect(rcHighlight, &CBrush(m_crGlow));
 			*/
 			pDC->FillSolidRect(rcHighlight, m_crGlow);
-			//Xman end
+			//Xman End
 			pDC->SetBkColor(m_crGlow);
 		}
 		else
@@ -1499,7 +1498,7 @@ void CMuleListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 				pDC->FillRect(rcHighlight, &CBrush(m_crWindow));
 				*/
 				pDC->FillSolidRect(rcHighlight, m_crWindow);
-				//Xman end
+				//Xman End
 			pDC->SetBkColor(m_crWindow);
 		}
 	}
@@ -1875,7 +1874,7 @@ void CMuleListCtrl::UpdateSortHistory(int dwNewOrder, int dwInverseValue){
 	int dwInverse = (dwNewOrder > dwInverseValue) ? (dwNewOrder-dwInverseValue) : (dwNewOrder+dwInverseValue);
 	*/
 	int dwInverse = (dwNewOrder >= dwInverseValue) ? (dwNewOrder-dwInverseValue) : (dwNewOrder+dwInverseValue);
-	//Xman end
+	// SLUGFILLER End
 	// delete the value (or its inverse sorting value) if it appears already in the list
 	POSITION pos1, pos2;
 	for (pos1 = m_liSortHistory.GetHeadPosition();( pos2 = pos1 ) != NULL;)
@@ -1891,6 +1890,7 @@ void CMuleListCtrl::UpdateSortHistory(int dwNewOrder, int dwInverseValue){
 	if (m_liSortHistory.GetSize() > MAX_SORTORDERHISTORY)
 		m_liSortHistory.RemoveTail();
 	*/
+	// SLUGFILLER End
 }
 
 int	CMuleListCtrl::GetNextSortOrder(int dwCurrentSortOrder) const{
@@ -1956,6 +1956,7 @@ void CMuleListCtrl::OnLvnGetInfoTip(NMHDR *pNMHDR, LRESULT *pResult)
 	}
 	*pResult = 0;
 }
+
 void CMuleListCtrl::SetAutoSizeWidth(int iAutoSizeWidth)
 {
 	m_iAutoSizeWidth = iAutoSizeWidth;

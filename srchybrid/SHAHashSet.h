@@ -70,6 +70,7 @@ Version 2 of AICH also supports 32bit identifiers to support large files, check 
 #define KNOWN2_MET_FILENAME			_T("known2_64.met")
 #define OLD_KNOWN2_MET_FILENAME		_T("known2.met")
 #define KNOWN2_MET_VERSION			0x02
+#define KNOWN2_UNSHARED_MET_FILENAME _T("known2_unshared.met") //zz_fly :: known2 split
 
 enum EAICHStatus {
 	AICH_ERROR = 0,
@@ -138,6 +139,13 @@ class CAICHHashTree
 public:
 	CAICHHashTree(uint64 nDataSize, bool bLeftBranch, uint64 nBaseSize);
 	~CAICHHashTree();
+	//zz_fly :: known2 buffer // helper method of CList
+	CAICHHashTree()									{;}
+	CAICHHashTree(const CAICHHashTree& k1)					{ *this = k1; }
+	CAICHHashTree&	operator=(const CAICHHashTree& k1);
+	friend bool operator==(const CAICHHashTree& k1,const CAICHHashTree& k2)	{ return (k1.m_Hash == k2.m_Hash);}
+	friend bool operator!=(const CAICHHashTree& k1,const CAICHHashTree& k2)	{ return !(k1 == k2); }
+	//zz_fly :: end
 	void			SetBlockHash(uint64 nSize, uint64 nStartPos, CAICHHashAlgo* pHashAlg);
 	bool			ReCalculateHash(CAICHHashAlgo* hashalg, bool bDontReplace );
 	bool			VerifyHashTree(CAICHHashAlgo* hashalg, bool bDeleteBadTrees);
@@ -145,6 +153,11 @@ public:
 	const CAICHHashTree* FindExistingHash(uint64 nStartPos, uint64 nSize) const		{uint8 buffer = 0; return FindExistingHash(nStartPos, nSize, &buffer);}
 	uint64			GetBaseSize() const;		
 	void			SetBaseSize(uint64 uValue);
+	//zz_fly :: known2 buffer
+	void			ClearSubTree();  //a safe way to clear subtrees
+	void			MarkBuffered();  //marked the subtrees as buffered
+	void			MarkUnBuffered();  //marked the subtrees as unbuffered
+	//zz_fly :: end
 
 protected:
 	CAICHHashTree*	FindHash(uint64 nStartPos, uint64 nSize, uint8* nLevel);
@@ -169,6 +182,7 @@ private:
 	// BaseSize: to save ressources we use a bool to store the basesize as currently only two values are used
 	// keep the original number based calculations and checks in the code through, so it can easily be adjusted in case we want to use hashsets with different basesizes
 	bool			m_bBaseSize;		// blocksize on which the lowest hash is based on
+	bool			m_bIsBuffered; //zz_fly :: known2 buffer //is this tree in buffer
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -233,9 +247,19 @@ public:
 	CAICHHashTree	m_pHashTree;
 	static CList<CAICHRequestedData>	m_liRequestedData;
 	static CMutex						m_mutKnown2File;
+	//zz_fly :: known2 buffer
+	//do not update known2.met until we have buffered enough hashsets. reduce the diskio during hashing.
+	static bool		SaveHashSetToFile(bool forced); //this method also called in uploadtimer.
+	static CMutex						m_mutSaveHashSet; //make sure there is only one saving process in progress.
+	//zz_fly :: end
 private:
 	static CList<CAICHHash>				m_liAICHHashsStored; // contains all AICH hahses stored in known2*.met
 	CKnownFile*		m_pOwner;
 	EAICHStatus		m_eStatus;
 	CArray<CAICHUntrustedHash> m_aUntrustedHashs;
+	//zz_fly :: known2 buffer
+	static CList<CAICHHashTree>	m_liBufferedHashTree; //the hashsets we have buffered
+	static uint32	m_nLastSaved; //last time we saved the hashsets
+	static uint64	m_uBufferedSize; //buffered hashsets size
+	//zz_fly :: end
 };

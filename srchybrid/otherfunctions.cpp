@@ -162,8 +162,8 @@ CString CastItoXBytes(double count, bool isK, bool isPerSec, uint32 decimal){
 				buffer.Format(_T("%.*f %s"), decimal, count/1073741824.0, GetResString(IDS_GBYTESPERSEC));
 			else 
 				buffer.Format(_T("%.*f %s"), decimal, count/1099511627776.0, GetResString(IDS_TBYTESPERSEC));
-			//Xman end
 		}
+		//Xman end
 	}
 	else
 	{

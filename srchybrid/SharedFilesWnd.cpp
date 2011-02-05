@@ -201,7 +201,6 @@ void CSharedFilesWnd::DoResize(int iDelta)
 	RemoveAnchor(m_ctlFilter);
 	RemoveAnchor(m_dlgDetails);
 
-
 	//Xman [MoNKi: -Downloaded History-]
 	AddAnchor(IDC_DOWNHISTORYLIST,TOP_LEFT,BOTTOM_RIGHT);
 	//Xman end
@@ -288,7 +287,12 @@ BOOL CSharedFilesWnd::PreTranslateMessage(MSG* pMsg)
 		sharedfilesctrl.SetItemState(-1, 0, LVIS_SELECTED);
 		sharedfilesctrl.SetItemState(it, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 		sharedfilesctrl.SetSelectionMark(it);   // display selection mark correctly!
+		//MORPH START - Changed by Stulle, Possibly crash fix on ShowComment [WiZaRd]
+		/*
 		sharedfilesctrl.ShowComments((CKnownFile*)sharedfilesctrl.GetItemData(it));
+		*/
+		sharedfilesctrl.ShowComments((CShareableFile*)sharedfilesctrl.GetItemData(it));
+		//MORPH END   - Changed by Stulle, Possibly crash fix on ShowComment [WiZaRd]
 		return TRUE;
 	}
 
@@ -529,6 +533,7 @@ void CSharedFilesWnd::ShowDetailsPanel(bool bShow)
 	thePrefs.SetShowSharedFilesDetails(bShow);
 	RemoveAnchor(sharedfilesctrl);
 	RemoveAnchor(IDC_SF_HIDESHOWDETAILS);
+	RemoveAnchor(IDC_DOWNHISTORYLIST); //Xman [MoNKi: -Downloaded History-]
 	
 	CRect rcFile, rcDetailDlg, rcButton;
 	sharedfilesctrl.GetWindowRect(rcFile);
@@ -556,9 +561,15 @@ void CSharedFilesWnd::ShowDetailsPanel(bool bShow)
 		historylistctrl.SetWindowPos(NULL, 0, 0, rcFile.Width(), rcFile.Height() - (rcDetailDlg.Height() - nOffset), SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 		//Xman end
 	}
-	sharedfilesctrl.SetFocus();
+	//Xman [MoNKi: -Downloaded History-]
+	if(historylistctrl.IsWindowVisible())
+		historylistctrl.SetFocus();
+	else
+	//Xman end
+		sharedfilesctrl.SetFocus();
 	AddAnchor(sharedfilesctrl, TOP_LEFT, BOTTOM_RIGHT);
 	AddAnchor(IDC_SF_HIDESHOWDETAILS, BOTTOM_RIGHT);
+	AddAnchor(IDC_DOWNHISTORYLIST,TOP_LEFT,BOTTOM_RIGHT); //Xman [MoNKi: -Downloaded History-]
 	ShowSelectedFilesDetails();
 }
 

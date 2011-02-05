@@ -124,10 +124,14 @@ public:
 		m_hLib = NULL;
 		m_ullVersion = 0;
 		// MediaInfoLib - v0.4.0.1
+		//DolphinX :: Remove MediaInfo 0.4 Support :: Start
+		/*
 		m_pfnMediaInfo4_Open = NULL;
 		m_pfnMediaInfo4_Close = NULL;
 		m_pfnMediaInfo4_Get = NULL;
 		m_pfnMediaInfo4_Count_Get = NULL;
+		*/
+		//DolphinX :: Remove MediaInfo 0.4 Support :: End
 		// MediaInfoLib - v0.5 - v0.6.1
 		m_pfnMediaInfo5_Open = NULL;
 		// MediaInfoLib - v0.7+
@@ -184,6 +188,8 @@ public:
 			if (m_hLib != NULL)
 			{
 				ULONGLONG ullVersion = GetModuleVersion(m_hLib);
+				//DolphinX :: Remove MediaInfo 0.4 Support :: Start
+				/*
 				if (ullVersion == 0) // MediaInfoLib - v0.4.0.1 does not have a Win32 version info resource record
 				{
 					char* (__stdcall *fpMediaInfo4_Info_Version)();
@@ -217,6 +223,9 @@ public:
 				// ---
 				// eMule currently handles v0.5.1.0, v0.6.0.0, v0.6.1.0
 				else if (ullVersion >= MAKEDLLVERULL(0, 5, 0, 0) && ullVersion < MAKEDLLVERULL(0, 7, 0, 0))
+				*/
+				if (ullVersion >= MAKEDLLVERULL(0, 5, 0, 0) && ullVersion < MAKEDLLVERULL(0, 7, 0, 0))
+				//DolphinX :: Remove MediaInfo 0.4 Support :: End
 				{
 					// Don't use 'MediaInfo_Info_Version' with version v0.5+. This function is exported,
 					// can be called, but does not return a valid version string..
@@ -267,9 +276,14 @@ public:
 
 	void* Open(LPCTSTR File)
 	{
+		//DolphinX :: Remove MediaInfo 0.4 Support :: Start
+		/*
 		if (m_pfnMediaInfo4_Open)
 			return (*m_pfnMediaInfo4_Open)(CT2A(File));
 		else if (m_pfnMediaInfo5_Open)
+		*/
+		if (m_pfnMediaInfo5_Open)
+		//DolphinX :: Remove MediaInfo 0.4 Support :: End
 			return (*m_pfnMediaInfo5_Open)(File);
 		else if (m_pfnMediaInfo_New) {
 			void* Handle = (*m_pfnMediaInfo_New)();
@@ -284,17 +298,26 @@ public:
 	{
 		if (m_pfnMediaInfo_Delete)
 			(*m_pfnMediaInfo_Delete)(Handle);	// File is automaticly closed
+		//DolphinX :: Remove MediaInfo 0.4 Support :: Start
+		/*
 		else if (m_pfnMediaInfo4_Close)
 			(*m_pfnMediaInfo4_Close)(Handle);
+		*/
+		//DolphinX :: Remove MediaInfo 0.4 Support :: End
 		else if (m_pfnMediaInfo_Close)
 			(*m_pfnMediaInfo_Close)(Handle);
 	}
 
 	CString Get(void* Handle, stream_t_C StreamKind, int StreamNumber, LPCTSTR Parameter, info_t_C KindOfInfo, info_t_C KindOfSearch)
 	{
+		//DolphinX :: Remove MediaInfo 0.4 Support :: Start
+		/*
 		if (m_pfnMediaInfo4_Get)
 			return CString((*m_pfnMediaInfo4_Get)(Handle, StreamKind, StreamNumber, CT2A(Parameter), KindOfInfo, KindOfSearch));
 		else if (m_pfnMediaInfo_Get) {
+		*/
+		if (m_pfnMediaInfo_Get) {
+		//DolphinX :: Remove MediaInfo 0.4 Support :: End
 			CString strNewParameter(Parameter);
 			if (m_ullVersion >= MAKEDLLVERULL(0, 7, 1, 0)) {
 				// Convert old tags to new tags
@@ -311,9 +334,14 @@ public:
 
 	int Count_Get(void* Handle, stream_t_C StreamKind, int StreamNumber)
 	{
+		//DolphinX :: Remove MediaInfo 0.4 Support :: Start
+		/*
 		if (m_pfnMediaInfo4_Get)
 			return (*m_pfnMediaInfo4_Count_Get)(Handle, StreamKind, StreamNumber);
 		else if (m_pfnMediaInfo_Count_Get)
+		*/
+		if (m_pfnMediaInfo_Count_Get)
+		//DolphinX :: Remove MediaInfo 0.4 Support :: End
 			return (*m_pfnMediaInfo_Count_Get)(Handle, StreamKind, StreamNumber);
 		return 0;
 	}
@@ -324,10 +352,14 @@ protected:
 	HINSTANCE m_hLib;
 
 	// MediaInfoLib - v0.4.0.1
+	//DolphinX :: Remove MediaInfo 0.4 Support :: Start
+	/*
 	void* (__stdcall *m_pfnMediaInfo4_Open)(char* File) throw(...);
 	void  (__stdcall *m_pfnMediaInfo4_Close)(void* Handle) throw(...);
 	char* (__stdcall *m_pfnMediaInfo4_Get)(void* Handle, stream_t_C StreamKind, int StreamNumber, char* Parameter, info_t_C KindOfInfo, info_t_C KindOfSearch) throw(...);
 	int   (__stdcall *m_pfnMediaInfo4_Count_Get)(void* Handle, stream_t_C StreamKind, int StreamNumber) throw(...);
+	*/
+	//DolphinX :: Remove MediaInfo 0.4 Support :: End
 
 	// MediaInfoLib - v0.5+
 	void*			(__stdcall *m_pfnMediaInfo5_Open)(const wchar_t* File) throw(...);

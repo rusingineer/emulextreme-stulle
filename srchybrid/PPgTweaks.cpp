@@ -29,6 +29,7 @@
 #include "HelpIDs.h"
 #include "Log.h"
 #include "UserMsgs.h"
+#include "SHAHashSet.h" //zz_fly :: known2 buffer
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -174,6 +175,13 @@ CPPgTweaks::CPPgTweaks()
 	m_htiShareeMuleOldStyle = NULL;
 	m_htiResolveShellLinks = NULL;
 	m_htiCryptTCPPaddingLength=NULL; //Xman Added PaddingLength to Extended preferences
+
+	//zz_fly
+	m_hti_TrustEveryHash = NULL; //TrustEveryHash
+
+	m_htiKnown2Buffer = NULL; //known2 buffer
+	m_htiKnown2Split = NULL; //known2 split
+	//zz_fly end
 }
 
 CPPgTweaks::~CPPgTweaks()
@@ -322,11 +330,29 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 		/////////////////////////////////////////////////////////////////////////////
 		// UPnP group
 		//
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+		if (thePrefs.m_bUseACATUPnPCurrent){
+			m_htiUPnP = m_ctrlTreeOptions.InsertGroup(_T("ACAT UPnP"), iImgUPnP, TVI_ROOT);
+			//ACAT UPnP
+			m_htiUPnPNat = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_CN_UPNPNAT), m_htiUPnP, m_iUPnPNat);
+			m_htiUPnPTryRandom = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_CN_UPNPTRYRANDOM), m_htiUPnP, m_iUPnPTryRandom);
+		}
+		else{
+#endif //zz_fly :: dual upnp
         m_htiUPnP = m_ctrlTreeOptions.InsertGroup(GetResString(IDS_UPNP), iImgUPnP, TVI_ROOT);
 		m_htiIsUPnPEnabled = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPSTART), m_htiUPnP, m_bIsUPnPEnabled); //zz_fly :: add UPnP option in Tweaks
 		m_htiCloseUPnPPorts = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPCLOSEONEXIT), m_htiUPnP, m_bCloseUPnPOnExit);
 		m_htiSkipWANIPSetup = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPSKIPWANIP), m_htiUPnP, m_bSkipWANIPSetup);
 		m_htiSkipWANPPPSetup = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNPSKIPWANPPP), m_htiUPnP, m_bSkipWANPPPSetup);
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+		}
+		//UPnP chooser
+		if(thePrefs.IsExtControlsEnabled())
+			m_htiUseACATUPnPNextStart = m_ctrlTreeOptions.InsertCheckBox(GetResString(thePrefs.m_bUseACATUPnPCurrent ? IDS_USEACATUPNPNEXTSTART1 : IDS_USEACATUPNPNEXTSTART2), m_htiUPnP, m_iUseACATUPnPNextStart);
+		else
+			m_htiUseACATUPnPNextStart = NULL;
+#endif //zz_fly :: dual upnp
+		m_htiUPnPRebindOnIPChange = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_UPNP_REBINDTEXT), m_htiUPnP, m_iUPnPRebindOnIPChange); //zz_fly :: Rebind UPnP on IP-change
 
 		/////////////////////////////////////////////////////////////////////////////
 		// eMule Shared User
@@ -335,7 +361,6 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 		m_htiShareeMuleMultiUser = m_ctrlTreeOptions.InsertRadioButton(GetResString(IDS_SHAREEMULEMULTI), m_htiShareeMule, m_iShareeMule == 0);
 		m_htiShareeMulePublicUser = m_ctrlTreeOptions.InsertRadioButton(GetResString(IDS_SHAREEMULEPUBLIC), m_htiShareeMule, m_iShareeMule == 1);
 		m_htiShareeMuleOldStyle = m_ctrlTreeOptions.InsertRadioButton(GetResString(IDS_SHAREEMULEOLD), m_htiShareeMule, m_iShareeMule == 2);
-		
 
 		//Xman Added PaddingLength to Extended preferences
 		m_htiCryptTCPPaddingLength=m_ctrlTreeOptions.InsertItem(GetResString(IDS_OBFUSCATION_PADDING_LENGTH),TREEOPTSCTRLIMG_EDIT,TREEOPTSCTRLIMG_EDIT,TVI_ROOT);
@@ -345,6 +370,14 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	    m_ctrlTreeOptions.Expand(m_htiTCPGroup, TVE_EXPAND);
         if (m_htiVerboseGroup)
 		    m_ctrlTreeOptions.Expand(m_htiVerboseGroup, TVE_EXPAND);
+
+		//zz_fly
+		m_hti_TrustEveryHash = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_TRUSTEVERYHASH),TVI_ROOT,m_bTrustEveryHash); //TrustEveryHash
+		
+		m_htiKnown2Buffer = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_ENABLEKNOWN2BUFFER),TVI_ROOT,m_bKnown2Buffer); //known2 buffer
+		m_htiKnown2Split = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_ENABLEKNOWN2SPLIT),TVI_ROOT,m_bKnown2Split); //known2 split
+		//zz_fly end
+
 		m_ctrlTreeOptions.Expand(m_htiCommit, TVE_EXPAND);
 		m_ctrlTreeOptions.Expand(m_htiCheckDiskspace, TVE_EXPAND);
 		//Xman
@@ -457,10 +490,28 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	/////////////////////////////////////////////////////////////////////////////
 	// UPnP group
 	//
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	if (thePrefs.m_bUseACATUPnPCurrent){
+		//ACAT UPnP
+		DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiUPnPNat, m_iUPnPNat);
+		DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiUPnPTryRandom, m_iUPnPTryRandom);	
+		DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiUPnPRebindOnIPChange, m_iUPnPRebindOnIPChange); //zz_fly :: Rebind UPnP on IP-change
+		m_ctrlTreeOptions.SetCheckBoxEnable(m_htiUPnPTryRandom, m_iUPnPNat);
+		m_ctrlTreeOptions.SetCheckBoxEnable(m_htiUPnPRebindOnIPChange, m_iUPnPNat); //zz_fly :: Rebind UPnP on IP-change
+	}
+	else{
+#endif //zz_fly :: dual upnp
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiIsUPnPEnabled, m_bIsUPnPEnabled); //zz_fly :: add UPnP option in Tweaks
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiCloseUPnPPorts, m_bCloseUPnPOnExit);
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiSkipWANIPSetup, m_bSkipWANIPSetup);
 	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiSkipWANPPPSetup, m_bSkipWANPPPSetup);
+	DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiUPnPRebindOnIPChange, m_iUPnPRebindOnIPChange); //zz_fly :: Rebind UPnP on IP-change
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	}
+	//UPnP chooser
+	if (m_htiUseACATUPnPNextStart)	 
+		DDX_TreeCheck(pDX, IDC_EXT_OPTS, m_htiUseACATUPnPNextStart, m_iUseACATUPnPNextStart);
+#endif //zz_fly :: dual upnp
 
 	/////////////////////////////////////////////////////////////////////////////
 	// eMule Shared User
@@ -472,6 +523,17 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	DDX_TreeEdit(pDX,IDC_EXT_OPTS,m_htiCryptTCPPaddingLength,m_iCryptTCPPaddingLength );
 	DDV_MinMaxInt(pDX, m_iCryptTCPPaddingLength , 10,254);
 	//Xman end
+	
+	//zz_fly
+	if(m_hti_TrustEveryHash) DDX_TreeCheck(pDX,IDC_EXT_OPTS,m_hti_TrustEveryHash,m_bTrustEveryHash); //TrustEveryHash
+
+	if(m_htiKnown2Buffer) DDX_TreeCheck(pDX,IDC_EXT_OPTS,m_htiKnown2Buffer,m_bKnown2Buffer); //known2 buffer
+	 //known2 split
+	if(m_htiKnown2Split) {
+		DDX_TreeCheck(pDX,IDC_EXT_OPTS,m_htiKnown2Split,m_bKnown2Split);
+		m_ctrlTreeOptions.SetCheckBoxEnable(m_htiKnown2Split, thePrefs.GetRememberAICH()); //this feature only available when user want to remember unused AichHashSet.
+	}
+	//zz_fly end
 }
 
 BOOL CPPgTweaks::OnInitDialog()
@@ -524,11 +586,20 @@ BOOL CPPgTweaks::OnInitDialog()
     m_iDynUpNumberOfPings = thePrefs.GetDynUpNumberOfPings();
 	*/
 	//Xman end
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	m_iUseACATUPnPNextStart = thePrefs.m_bUseACATUPnPNextStart;
 
+	//ACAT UPnP
+	m_iUPnPNat = thePrefs.GetUPnPNat();
+	m_iUPnPTryRandom = thePrefs.GetUPnPNatTryRandom();
+#endif //zz_fly :: dual upnp
 	m_bIsUPnPEnabled = thePrefs.IsUPnPEnabled(); //zz_fly :: add UPnP option in Tweaks
 	m_bCloseUPnPOnExit = thePrefs.CloseUPnPOnExit();
 	m_bSkipWANIPSetup = thePrefs.GetSkipWANIPSetup();
 	m_bSkipWANPPPSetup = thePrefs.GetSkipWANPPPSetup();
+
+	m_iUPnPRebindOnIPChange = thePrefs.GetUPnPNatRebind(); //zz_fly :: Rebind UPnP on IP-change
 
 	m_iShareeMule = thePrefs.m_nCurrentUserDirMode;
 
@@ -541,6 +612,13 @@ BOOL CPPgTweaks::OnInitDialog()
     m_bA4AFSaveCpu = thePrefs.GetA4AFSaveCpu();
 	*/
 	//Xman end
+
+	//zz_fly
+	m_bTrustEveryHash=thePrefs.m_bTrustEveryHash; //TrustEveryHash
+
+	m_bKnown2Buffer = thePrefs.m_bKnown2Buffer; //known2 buffer
+	m_bKnown2Split = thePrefs.m_bKnown2Split_next; //known2 split
+	//zz_fly end
 
 	m_ctrlTreeOptions.SetImageListColorFlags(theApp.m_iDfltImageListColorFlags);
     CPropertyPage::OnInitDialog();
@@ -672,6 +750,19 @@ BOOL CPPgTweaks::OnApply()
 	//Xman end
 	thePrefs.m_bAutomaticArcPreviewStart = !m_bAutoArchDisable;
 
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	thePrefs.m_bUseACATUPnPNextStart = m_iUseACATUPnPNextStart;
+	if (thePrefs.m_bUseACATUPnPCurrent){
+		//ACAT UPnP
+		if(thePrefs.GetUPnPNat()!=m_iUPnPNat || thePrefs.GetUPnPNatTryRandom() != m_iUPnPTryRandom)
+			AfxMessageBox(_T("You must restart emule to apply the changes in UPnP"));
+		thePrefs.SetUPnPNat( m_iUPnPNat );
+		thePrefs.SetUPnPNatTryRandom( m_iUPnPTryRandom );
+	}
+	else
+#endif //zz_fly :: dual upnp
+	{
 	//zz_fly :: add UPnP option in Tweaks :: start
 	if (m_bIsUPnPEnabled){
 		if (!thePrefs.IsUPnPEnabled()){
@@ -685,11 +776,16 @@ BOOL CPPgTweaks::OnApply()
 	thePrefs.m_bCloseUPnPOnExit = m_bCloseUPnPOnExit;
 	thePrefs.SetSkipWANIPSetup(m_bSkipWANIPSetup);
 	thePrefs.SetSkipWANPPPSetup(m_bSkipWANPPPSetup);
+	}
+	thePrefs.SetUPnPNatRebind( m_iUPnPRebindOnIPChange ); //zz_fly :: Rebind UPnP on IP-change
 
 	thePrefs.ChangeUserDirMode(m_iShareeMule);
 
 	//Xman Added PaddingLength to Extended preferences
+	/*
 	thePrefs.m_byCryptTCPPaddingLength=(uint8)m_iCryptTCPPaddingLength;
+	*/
+	thePrefs.SetCryptTCPPaddingLength(m_iCryptTCPPaddingLength);
 	//Xman end
 
 	//Xman
@@ -697,6 +793,19 @@ BOOL CPPgTweaks::OnApply()
     thePrefs.m_bA4AFSaveCpu = m_bA4AFSaveCpu;
 	*/
 	//Xman end
+
+	//zz_fly
+	thePrefs.m_bTrustEveryHash = m_bTrustEveryHash; //TrustEveryHash
+
+	//known2 buffer
+	//there maybe something in buffer. don't worry, it will be wrote to file in uploadtimer.
+	thePrefs.m_bKnown2Buffer = m_bKnown2Buffer;
+
+	//known2 split
+	if(thePrefs.m_bKnown2Split != m_bKnown2Split && thePrefs.m_bKnown2Split_next != m_bKnown2Split)
+		AfxMessageBox(_T("The changes in knwon2.met will not take effects until you restart emule!"));
+	thePrefs.m_bKnown2Split_next = m_bKnown2Split;
+	//zz_fly end
 
 	if (thePrefs.GetEnableVerboseOptions())
 	{
@@ -794,16 +903,42 @@ void CPPgTweaks::Localize(void)
 		//Xman end
         if (m_htiFullAlloc) m_ctrlTreeOptions.SetItemText(m_htiFullAlloc, GetResString(IDS_FULLALLOC));
 		if (m_htiAutoArch) m_ctrlTreeOptions.SetItemText(m_htiAutoArch, GetResString(IDS_DISABLE_AUTOARCHPREV));
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+		if (thePrefs.m_bUseACATUPnPCurrent){
+			//ACAT UPnP
+			if (m_htiUPnP) m_ctrlTreeOptions.SetItemText(m_htiUPnP, _T("ACAT UPnP"));
+			if (m_htiUPnPNat) m_ctrlTreeOptions.SetItemText(m_htiUPnPNat, GetResString(IDS_CN_UPNPNAT));
+			if (m_htiUPnPTryRandom) m_ctrlTreeOptions.SetItemText(m_htiUPnPTryRandom, GetResString(IDS_CN_UPNPTRYRANDOM));
+			//UPnP chooser
+			if (m_htiUseACATUPnPNextStart) m_ctrlTreeOptions.SetItemText(m_htiUseACATUPnPNextStart, GetResString(IDS_USEACATUPNPNEXTSTART1));
+		}
+		else{
+#endif //zz_fly :: dual upnp
         if (m_htiUPnP) m_ctrlTreeOptions.SetItemText(m_htiUPnP, GetResString(IDS_UPNP));
 		if (m_htiIsUPnPEnabled) m_ctrlTreeOptions.SetItemText(m_htiIsUPnPEnabled, GetResString(IDS_UPNPSTART)); //zz_fly :: add UPnP option in Tweaks
 		if (m_htiCloseUPnPPorts) m_ctrlTreeOptions.SetItemText(m_htiCloseUPnPPorts, GetResString(IDS_UPNPCLOSEONEXIT));
 		if (m_htiSkipWANIPSetup) m_ctrlTreeOptions.SetItemText(m_htiSkipWANIPSetup, GetResString(IDS_UPNPSKIPWANIP));
 		if (m_htiSkipWANPPPSetup) m_ctrlTreeOptions.SetItemText(m_htiSkipWANPPPSetup, GetResString(IDS_UPNPSKIPWANPPP));
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+			//UPnP chooser
+			if (m_htiUseACATUPnPNextStart) m_ctrlTreeOptions.SetItemText(m_htiUseACATUPnPNextStart, GetResString(IDS_USEACATUPNPNEXTSTART2));
+		}
+#endif //zz_fly :: dual upnp
+		if (m_htiUPnPRebindOnIPChange) m_ctrlTreeOptions.SetItemText(m_htiUPnPRebindOnIPChange, GetResString(IDS_UPNP_REBINDTEXT)); //zz_fly :: Rebind UPnP on IP-change
+
 		if (m_htiShareeMule) m_ctrlTreeOptions.SetItemText(m_htiShareeMule, GetResString(IDS_SHAREEMULELABEL));
 		if (m_htiShareeMuleMultiUser) m_ctrlTreeOptions.SetItemText(m_htiShareeMuleMultiUser, GetResString(IDS_SHAREEMULEMULTI));
 		if (m_htiShareeMulePublicUser) m_ctrlTreeOptions.SetItemText(m_htiShareeMulePublicUser, GetResString(IDS_SHAREEMULEPUBLIC));
 		if (m_htiShareeMuleOldStyle) m_ctrlTreeOptions.SetItemText(m_htiShareeMuleOldStyle, GetResString(IDS_SHAREEMULEOLD));
 		if (m_htiResolveShellLinks) m_ctrlTreeOptions.SetItemText(m_htiResolveShellLinks, GetResString(IDS_RESOLVELINKS));
+
+		//zz_fly
+		if (m_hti_TrustEveryHash) m_ctrlTreeOptions.SetItemText(m_hti_TrustEveryHash, GetResString(IDS_TRUSTEVERYHASH)); //TrustEveryHash
+
+		if (m_htiKnown2Buffer) m_ctrlTreeOptions.SetItemText(m_htiKnown2Buffer, GetResString(IDS_ENABLEKNOWN2BUFFER)); //known2 buffer
+		if (m_htiKnown2Split) m_ctrlTreeOptions.SetItemText(m_htiKnown2Split, GetResString(IDS_ENABLEKNOWN2SPLIT)); //known2 split
+		//zz_fly end
 
         CString temp;
 		temp.Format(_T("%s: %s"), GetResString(IDS_FILEBUFFERSIZE), CastItoXBytes(m_iFileBufferSize, false, false));
@@ -872,11 +1007,29 @@ void CPPgTweaks::OnDestroy()
 	m_htiExtractMetaDataNever = NULL;
 	m_htiExtractMetaDataID3Lib = NULL;
 	m_htiAutoArch = NULL;
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+	//UPnP chooser
+	m_htiUseACATUPnPNextStart = NULL;
+	m_iUseACATUPnPNextStart = 0;
+
+	//ACAT UPnP
+	m_htiUPnPNat = NULL;
+	m_htiUPnPTryRandom = NULL;
+	m_iUPnPNat = 0;
+	m_iUPnPTryRandom = 0;
+#endif //zz_fly :: dual upnp
 	m_htiUPnP = NULL;
 	m_htiIsUPnPEnabled = NULL; //zz_fly :: add UPnP option in Tweaks
 	m_htiCloseUPnPPorts = NULL;
 	m_htiSkipWANIPSetup = NULL;
 	m_htiSkipWANPPPSetup = NULL;
+
+	//zz_fly :: Rebind UPnP on IP-change
+	m_htiUPnPRebindOnIPChange = NULL;
+	m_iUPnPRebindOnIPChange = 0;
+	//zz_fly :: end
+
 	m_htiShareeMule = NULL;
 	m_htiShareeMuleMultiUser = NULL;
 	m_htiShareeMulePublicUser = NULL;
@@ -885,6 +1038,13 @@ void CPPgTweaks::OnDestroy()
 	m_htiResolveShellLinks = NULL;
     
 	m_htiCryptTCPPaddingLength = NULL; //Xman Added PaddingLength to Extended preferences
+
+	//zz_fly
+	m_hti_TrustEveryHash = NULL; //TrustEveryHash
+
+	m_htiKnown2Buffer = NULL; //known2 buffer
+	m_htiKnown2Split = NULL; //known2 split
+	//zz_fly end
 
     CPropertyPage::OnDestroy();
 }
@@ -927,6 +1087,21 @@ LRESULT CPPgTweaks::OnTreeOptsCtrlNotify(WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
+
+		if(m_htiKnown2Split) m_ctrlTreeOptions.SetCheckBoxEnable(m_htiKnown2Split, thePrefs.GetRememberAICH()); //zz_fly :: known2 split, this feature only available when user want to remember unused AichHashSet.
+
+#ifdef DUAL_UPNP //zz_fly :: dual upnp
+		//ACAT UPnP
+		if (thePrefs.m_bUseACATUPnPCurrent && m_htiUPnPNat && pton->hItem == m_htiUPnPNat)
+		{
+			BOOL bCheck;
+			if (m_ctrlTreeOptions.GetCheckBox(m_htiUPnPNat, bCheck))
+			{
+				if (m_htiUPnPTryRandom)	m_ctrlTreeOptions.SetCheckBoxEnable(m_htiUPnPTryRandom, bCheck);
+				if (m_htiUPnPRebindOnIPChange)	m_ctrlTreeOptions.SetCheckBoxEnable(m_htiUPnPRebindOnIPChange, bCheck); //zz_fly :: Rebind UPnP on IP-change
+			}
+		}
+#endif //zz_fly :: dual upnp
 		SetModified();
 	}
 	return 0;

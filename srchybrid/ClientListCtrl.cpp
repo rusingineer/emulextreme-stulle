@@ -206,6 +206,7 @@ void CClientListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	GetClientRect(&rcClient);
 	const CUpDownClient *client = (CUpDownClient *)lpDrawItemStruct->itemData;
 
+	COLORREF crOldBackColor = dc->GetBkColor(); //Xman show LowIDs
 	CHeaderCtrl *pHeaderCtrl = GetHeaderCtrl();
 	int iCount = pHeaderCtrl->GetItemCount();
 	cur_rec.right = cur_rec.left - sm_iLabelOffset;
@@ -289,6 +290,7 @@ void CClientListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						if(client->IsObfuscatedConnectionEstablished() 
 							|| (!(client->socket != NULL && client->socket->IsConnected())
 							&& (client->SupportsCryptLayer() && thePrefs.IsClientCryptLayerSupported() && (client->RequestsCryptLayer() || thePrefs.IsClientCryptLayerRequested()))))
+						//Xman End
 							nOverlayImage |= 2;
 						int iIconPosY = (cur_rec.Height() > 16) ? ((cur_rec.Height() - 16) / 2) : 1;
 						POINT point = { cur_rec.left, cur_rec.top + iIconPosY };
@@ -304,7 +306,8 @@ void CClientListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						{
 							cur_rec.left+=20;
 							POINT point2= {cur_rec.left,cur_rec.top+1};
-							theApp.ip2country->GetFlagImageList()->Draw(dc, client->GetCountryFlagIndex(), point2, ILD_NORMAL);
+							//theApp.ip2country->GetFlagImageList()->Draw(dc, client->GetCountryFlagIndex(), point2, ILD_NORMAL);
+							theApp.ip2country->GetFlagImageList()->DrawIndirect(&theApp.ip2country->GetFlagImageDrawParams(dc,client->GetCountryFlagIndex(),point2));
 							cur_rec.left += sm_iLabelOffset;
 						}
 						//EastShare End - added by AndCycle, IP to Country
@@ -323,19 +326,13 @@ void CClientListCtrl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						break;
 					}
 
-					//Xman show LowIDs
-					case 5:
-					{
-						COLORREF crOldTxtColor = dc->GetTextColor();
-						if(client->HasLowID())
-							dc.SetBkColor(RGB(255,250,200));
-						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
-						dc->SetTextColor(crOldTxtColor);
-						break;
-					}
-					//Xman end
 					default:
+						//Xman show LowIDs
+						if(iColumn == 5 && client->HasLowID()) 
+							dc.SetBkColor(RGB(255,250,200));
+						//Xman End
 						dc.DrawText(szItem, -1, &cur_rec, MLC_DT_TEXT | uDrawTextAlignment);
+						dc.SetBkColor(crOldBackColor); //Xman show LowIDs
 						break;
 				}
 			}

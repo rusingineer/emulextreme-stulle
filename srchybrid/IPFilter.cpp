@@ -70,22 +70,6 @@ static int __cdecl CmpSIPFilterByStartAddr(const void* p1, const void* p2)
 	return CompareUnsigned(rng1->start, rng2->start);
 }
 
-//Xman dynamic IP-Filters
-void CIPFilter::AddIPTemporary(uint32 addip)
-{
-	SIPFilter* newFilter = new SIPFilter;
-	newFilter->start = addip;
-	newFilter->end = addip;
-	newFilter->level = 1;
-	newFilter->desc = "temporary";
-	newFilter->hits = 0;
-	newFilter->timestamp=::GetTickCount();
-	m_iplist.Add(newFilter);
-	// sort the IP filter list by IP range start addresses
-	qsort(m_iplist.GetData(), m_iplist.GetCount(), sizeof(m_iplist[0]), CmpSIPFilterByStartAddr);
-}
-//Xman end
-
 CString CIPFilter::GetDefaultFilePath() const
 {
 	return thePrefs.GetMuleDirectory(EMULE_CONFIGDIR) + DFLT_IPFILTER_FILENAME;
@@ -467,48 +451,6 @@ void CIPFilter::RemoveAllIPFilters()
 	m_pLastHit = NULL;
 }
 
-//Xman dynamic IP-Filters
-void CIPFilter::Process()
-{
-	if(m_iplist.GetCount()==0)
-		return;
-	if(theApp.ipdlgisopen)
-		return; //don't process if user is working on ipfilter
-	uint32 lasttick=::GetTickCount();
-	static uint32 m_lastcleanup;
-	if(lasttick - m_lastcleanup > (1000 * 60 * 60)) //every hour
-	{
-		m_lastcleanup=lasttick;
-		int countall=0;
-		int countdel=0;
-		for (int i=0;i<m_iplist.GetCount();)
-		{
-			SIPFilter* search = m_iplist[i];
-			if(search->timestamp>0 && ((lasttick - search->timestamp) >=  (1000 * 60 * 60 * 12))) //12 hours
-			{
-				countdel++;
-				//Xman Code Fix: deleting the description-String can throw an exception
-				try 
-				{
-					delete m_iplist[i];
-				}
-				catch(...)
-				{
-					//nothing
-				}
-				m_iplist.RemoveAt(i);
-			}
-			else
-			{
-				countall++;
-				i++;
-			}
-		}
-		AddDebugLogLine(false,_T("%u temporary IPFilters deleted, %u left"),countdel, countall)	;
-	}
-}
-//Xman end
-
 bool CIPFilter::IsFiltered(uint32 ip) /*const*/
 {
 	return IsFiltered(ip, thePrefs.GetIPFilterLevel());
@@ -590,6 +532,65 @@ bool CIPFilter::RemoveIPFilter(const SIPFilter* pFilter)
 	}
 	return false;
 }
+
+//Xman dynamic IP-Filters
+void CIPFilter::Process()
+{
+	if(m_iplist.GetCount()==0)
+		return;
+	if(theApp.ipdlgisopen)
+		return; //don't process if user is working on ipfilter
+	uint32 lasttick=::GetTickCount();
+	static uint32 m_lastcleanup;
+	if(lasttick - m_lastcleanup > (1000 * 60 * 60)) //every hour
+	{
+		m_lastcleanup=lasttick;
+		int countall=0;
+		int countdel=0;
+		for (int i=0;i<m_iplist.GetCount();)
+		{
+			SIPFilter* search = m_iplist[i];
+			if(search->timestamp>0 && ((lasttick - search->timestamp) >=  (1000 * 60 * 60 * 12))) //12 hours
+			{
+				countdel++;
+				//Xman Code Fix: deleting the description-String can throw an exception
+				try 
+				{
+					delete m_iplist[i];
+				}
+				catch(...)
+				{
+					//nothing
+				}
+				m_iplist.RemoveAt(i);
+			}
+			else
+			{
+				countall++;
+				i++;
+			}
+		}
+		AddDebugLogLine(false,_T("%u temporary IPFilters deleted, %u left"),countdel, countall)	;
+	}
+}
+//Xman end
+
+//Xman dynamic IP-Filters
+void CIPFilter::AddIPTemporary(uint32 addip)
+{
+	SIPFilter* newFilter = new SIPFilter;
+	newFilter->start = addip;
+	newFilter->end = addip;
+	newFilter->level = 1;
+	newFilter->desc = "temporary";
+	newFilter->hits = 0;
+	newFilter->timestamp=::GetTickCount();
+	m_iplist.Add(newFilter);
+	// sort the IP filter list by IP range start addresses
+	qsort(m_iplist.GetData(), m_iplist.GetCount(), sizeof(m_iplist[0]), CmpSIPFilterByStartAddr);
+}
+//Xman end
+
 //Xman auto update IPFilter
 void CIPFilter::UpdateIPFilterURL()
 {
