@@ -594,7 +594,7 @@ int CDownloadClientsCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParam
 				iResult = -(item1->GetClientSoft() - item2->GetClientSoft()); // invert result to place eMule's at top
 			*/
 			if(item1->GetClientSoft() == item2->GetClientSoft())
-				if(item1->GetVersion() == item2->GetVersion() && item1->GetClientSoft() == SO_EMULE){
+				if(item1->GetVersion() == item2->GetVersion() && (item1->GetClientSoft() == SO_EMULE || item1->GetClientSoft() == SO_AMULE)){
 					iResult = item2->DbgGetFullClientSoftVer().CompareNoCase( item1->DbgGetFullClientSoftVer());
 				}
 				else {
@@ -622,7 +622,15 @@ int CDownloadClientsCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParam
 			break;
 
 		case 4:
+			// ==> Sort progress bars by percentage [Fafner/Xman] - Stulle
+			/*
 			iResult = CompareUnsigned(item1->GetPartCount(), item2->GetPartCount());
+			*/
+			if (item1->GetHisCompletedPartsPercent_Down() == item2->GetHisCompletedPartsPercent_Down())
+				iResult=0;
+			else
+				iResult=item1->GetHisCompletedPartsPercent_Down() > item2->GetHisCompletedPartsPercent_Down()?1:-1;
+			// <== Sort progress bars by percentage [Fafner/Xman] - Stulle
 			break;
 
 		case 5:

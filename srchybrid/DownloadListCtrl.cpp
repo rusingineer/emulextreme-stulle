@@ -2911,7 +2911,16 @@ int CDownloadListCtrl::Compare(const CUpDownClient *client1, const CUpDownClient
 			return CompareUnsigned(client1->GetDownloadDatarate(), client2->GetDownloadDatarate());
 
 		case 5: //progress asc
+			// ==> Sort progress bars by percentage [Fafner/Xman] - Stulle
+			/*
 			return CompareUnsigned(client1->GetAvailablePartCount(), client2->GetAvailablePartCount());
+			*/
+
+			if (client1->GetHisCompletedPartsPercent_Down() == client2->GetHisCompletedPartsPercent_Down())
+				return 0;
+			else
+				return client1->GetHisCompletedPartsPercent_Down() > client2->GetHisCompletedPartsPercent_Down()?1:-1;
+			// <== Sort progress bars by percentage [Fafner/Xman] - Stulle
 
 		case 6:
 			//Xman
@@ -2923,7 +2932,7 @@ int CDownloadListCtrl::Compare(const CUpDownClient *client1, const CUpDownClient
 			*/
 			if (client1->GetClientSoft() == client2->GetClientSoft())
 			{
-				if(client2->GetVersion() == client1->GetVersion() && client1->GetClientSoft() == SO_EMULE)
+				if(client2->GetVersion() == client1->GetVersion() && (client1->GetClientSoft() == SO_EMULE || item1->GetClientSoft() == SO_AMULE))
 					return client2->DbgGetFullClientSoftVer().CompareNoCase( client1->DbgGetFullClientSoftVer());
 				else
 					return client1->GetVersion() - client2->GetVersion();

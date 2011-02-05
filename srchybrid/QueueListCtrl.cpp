@@ -717,13 +717,21 @@ int CQueueListCtrl::SortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 			break;
 		
 		case 9: 
+			// ==> Sort progress bars by percentage [Fafner/Xman] - Stulle
+			/*
 			iResult = CompareUnsigned(item1->GetUpPartCount(), item2->GetUpPartCount());
+			*/
+			if (item1->GetHisCompletedPartsPercent_UP() == item2->GetHisCompletedPartsPercent_UP())
+				iResult=0;
+			else
+				iResult=item1->GetHisCompletedPartsPercent_UP() > item2->GetHisCompletedPartsPercent_UP()?1:-1;
+			// <== Sort progress bars by percentage [Fafner/Xman] - Stulle
 			break;
 		//Xman version see clientversion in every window
 		case 10:
 			// Maella -Support for tag ET_MOD_VERSION 0x55-
 			if(item1->GetClientSoft() == item2->GetClientSoft())
-				if(item1->GetVersion() == item2->GetVersion() && item1->GetClientSoft() == SO_EMULE){
+				if(item1->GetVersion() == item2->GetVersion() && (item1->GetClientSoft() == SO_EMULE || item1->GetClientSoft() == SO_AMULE)){
 					iResult = item2->DbgGetFullClientSoftVer().CompareNoCase( item1->DbgGetFullClientSoftVer());
 				}
 				else {
