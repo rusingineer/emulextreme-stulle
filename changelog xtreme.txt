@@ -51,6 +51,8 @@ Xtreme 8.0
 - changed: only use narrow font in TransferWnd if enabled (like in 6.1) (Stulle)
 - fixed: Reset for BkColor after coloring LowID clients was broken (zz_fly)
 - fixed: Possibly crash fix on ShowComment (WiZaRd)
+- fixed: Fix broken HTTP downloads from SourceForge (WiZaRd)
+- removed: Send user agent for http downloads only when obfusc enabled code (redundant) (Xman)
 partially updated to 8.0 by zz_fly:
 - add: Fincan community hash detection (WiZaRd)
 - add: retrieve MTU from system (netfinity)

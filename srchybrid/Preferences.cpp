@@ -670,6 +670,8 @@ bool	CPreferences::m_bKnown2Split; //zz_fly :: known2 split
 bool	CPreferences::m_bKnown2Split_next; //zz_fly :: known2 split
 uint64	CPreferences::m_uAutoPreviewLimit; //zz_fly :: do not auto preview big archive
 
+CString CPreferences::m_strBrokenURLs; //MORPH - Added by WiZaRd, Fix broken HTTP downloads
+
 CPreferences::CPreferences()
 {
 #ifdef _DEBUG
@@ -2316,6 +2318,8 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"EnableKnown2Buffer", m_bKnown2Buffer); //zz_fly :: known2 buffer
 	ini.WriteBool(L"SplitKnown2DotMet", m_bKnown2Split_next); //zz_fly :: known2 split
 	ini.WriteUInt64(L"AutoPreviewLimit", m_uAutoPreviewLimit); //zz_fly :: do not auto preview big archive
+
+	ini.WriteString(L"BrokenURLs", m_strBrokenURLs); //MORPH - Added by WiZaRd, Fix broken HTTP downloads
 	//Xman end
 	//--------------------------------------------------------------------------
 }
@@ -3236,6 +3240,8 @@ void CPreferences::LoadPreferences()
 	m_bKnown2Buffer = ini.GetBool(L"EnableKnown2Buffer", false); //zz_fly :: known2 buffer
 	m_bKnown2Split = m_bKnown2Split_next = ini.GetBool(L"SplitKnown2DotMet", false); //zz_fly :: known2 split
 	m_uAutoPreviewLimit = ini.GetUInt64(L"AutoPreviewLimit", ((uint64)64)<<20); //zz_fly :: do not auto preview big archive
+
+	m_strBrokenURLs = ini.GetStringLong(L"BrokenURLs", L"sourceforge"); //MORPH - Added by WiZaRd, Fix broken HTTP downloads
 	//Xman end
 	//--------------------------------------------------------------------------
 }

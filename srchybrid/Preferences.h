@@ -646,7 +646,6 @@ public:
 	static	void SetUPnPNatRebind(bool on) { m_bUPnPRebindOnIPChange = on; }
 	//zz_fy :: end
 
-
 	// Spam
 	static bool		m_bEnableSearchResultFilter;
 
@@ -1006,6 +1005,12 @@ public:
 	static bool		IsKnown2SplitEnabled()	{return m_bKnown2Split && GetRememberAICH() && IsRememberingDownloadedFiles();} //this feature only available when user want to remember unused AichHashSet.
 	//zz_fly :: known2 split :: end
 	static uint64		m_uAutoPreviewLimit; //zz_fly :: do not auto preview big archive
+
+	//MORPH START - Added by WiZaRd, Fix broken HTTP downloads
+	static	CString	m_strBrokenURLs;
+	static	CString	GetBrokenURLs()						{return m_strBrokenURLs;}
+	static	void	SetBrokenURLs(const CString& str)	{m_strBrokenURLs = str;}
+	//MORPH END   - Added by WiZaRd, Fix broken HTTP downloads
 	//Xman end
 	//-----------------------------------------------------------------------------
 
