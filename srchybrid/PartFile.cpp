@@ -4430,6 +4430,12 @@ BOOL CPartFile::PerformFileComplete()
 		SetStatus(PS_ERROR);
 		m_bCompletionError = true;
 		SetFileOp(PFOP_NONE);
+
+		//MORPH START - Added by WiZaRd, FiX!
+		// explicitly unlock the file before posting something to the main thread.
+		sLock.Unlock();
+		//MORPH END   - Added by WiZaRd, FiX!
+
 		if (theApp.emuledlg && theApp.emuledlg->IsRunning())
 			VERIFY( PostMessage(theApp.emuledlg->m_hWnd, TM_FILECOMPLETED, FILE_COMPLETION_THREAD_FAILED, (LPARAM)this) );
 		return FALSE;

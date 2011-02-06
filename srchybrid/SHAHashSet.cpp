@@ -822,7 +822,7 @@ bool CAICHRecoveryHashSet::SaveHashSet(){
 	m_pHashTree.m_pLeftTree = NULL;
 	m_pHashTree.m_pRightTree = NULL;
 	//write to file if needed
-	return CAICHRecoveryHashSet::SaveHashSetToFile(!thePrefs.m_bKnown2Buffer);
+	return CAICHRecoveryHashSet::SaveHashSetToFile(!thePrefs.m_bKnown2Buffer || theApp.m_app_state != APP_STATE_RUNNING); // X: [BF] - [Bug Fix]
 }
 
 //get the lock of m_mutSaveHashSet before call this method. otherwise you may got synchronization problem
