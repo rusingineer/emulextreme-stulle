@@ -2092,9 +2092,6 @@ void CPreferences::SavePreferences()
 	ini.WriteBool(L"RememberDownloadedFiles", m_bRememberDownloadedFiles);
 	ini.WriteBool(L"PartiallyPurgeOldKnownFiles", m_bPartiallyPurgeOldKnownFiles);
 
-	if(!m_bTrustEveryHash) //zz_fly :: write this option when it disabled
-		ini.WriteBool(L"AICHTrustEveryHash", false);
-
 	ini.WriteBool(L"NotifierSendMail", m_bNotifierSendMail);
 	ini.WriteString(L"NotifierMailSender", m_strNotifierMailSender);
 	ini.WriteString(L"NotifierMailServer", m_strNotifierMailServer);

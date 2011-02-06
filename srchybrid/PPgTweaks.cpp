@@ -177,8 +177,6 @@ CPPgTweaks::CPPgTweaks()
 	m_htiCryptTCPPaddingLength=NULL; //Xman Added PaddingLength to Extended preferences
 
 	//zz_fly
-	m_hti_TrustEveryHash = NULL; //TrustEveryHash
-
 	m_htiKnown2Buffer = NULL; //known2 buffer
 	m_htiKnown2Split = NULL; //known2 split
 	//zz_fly end
@@ -372,8 +370,6 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 		    m_ctrlTreeOptions.Expand(m_htiVerboseGroup, TVE_EXPAND);
 
 		//zz_fly
-		m_hti_TrustEveryHash = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_TRUSTEVERYHASH),TVI_ROOT,m_bTrustEveryHash); //TrustEveryHash
-		
 		m_htiKnown2Buffer = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_ENABLEKNOWN2BUFFER),TVI_ROOT,m_bKnown2Buffer); //known2 buffer
 		m_htiKnown2Split = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_ENABLEKNOWN2SPLIT),TVI_ROOT,m_bKnown2Split); //known2 split
 		//zz_fly end
@@ -525,8 +521,6 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	//Xman end
 	
 	//zz_fly
-	if(m_hti_TrustEveryHash) DDX_TreeCheck(pDX,IDC_EXT_OPTS,m_hti_TrustEveryHash,m_bTrustEveryHash); //TrustEveryHash
-
 	if(m_htiKnown2Buffer) DDX_TreeCheck(pDX,IDC_EXT_OPTS,m_htiKnown2Buffer,m_bKnown2Buffer); //known2 buffer
 	 //known2 split
 	if(m_htiKnown2Split) {
@@ -614,8 +608,6 @@ BOOL CPPgTweaks::OnInitDialog()
 	//Xman end
 
 	//zz_fly
-	m_bTrustEveryHash=thePrefs.m_bTrustEveryHash; //TrustEveryHash
-
 	m_bKnown2Buffer = thePrefs.m_bKnown2Buffer; //known2 buffer
 	m_bKnown2Split = thePrefs.m_bKnown2Split_next; //known2 split
 	//zz_fly end
@@ -795,8 +787,6 @@ BOOL CPPgTweaks::OnApply()
 	//Xman end
 
 	//zz_fly
-	thePrefs.m_bTrustEveryHash = m_bTrustEveryHash; //TrustEveryHash
-
 	//known2 buffer
 	//there maybe something in buffer. don't worry, it will be wrote to file in uploadtimer.
 	thePrefs.m_bKnown2Buffer = m_bKnown2Buffer;
@@ -934,8 +924,6 @@ void CPPgTweaks::Localize(void)
 		if (m_htiResolveShellLinks) m_ctrlTreeOptions.SetItemText(m_htiResolveShellLinks, GetResString(IDS_RESOLVELINKS));
 
 		//zz_fly
-		if (m_hti_TrustEveryHash) m_ctrlTreeOptions.SetItemText(m_hti_TrustEveryHash, GetResString(IDS_TRUSTEVERYHASH)); //TrustEveryHash
-
 		if (m_htiKnown2Buffer) m_ctrlTreeOptions.SetItemText(m_htiKnown2Buffer, GetResString(IDS_ENABLEKNOWN2BUFFER)); //known2 buffer
 		if (m_htiKnown2Split) m_ctrlTreeOptions.SetItemText(m_htiKnown2Split, GetResString(IDS_ENABLEKNOWN2SPLIT)); //known2 split
 		//zz_fly end
@@ -1040,8 +1028,6 @@ void CPPgTweaks::OnDestroy()
 	m_htiCryptTCPPaddingLength = NULL; //Xman Added PaddingLength to Extended preferences
 
 	//zz_fly
-	m_hti_TrustEveryHash = NULL; //TrustEveryHash
-
 	m_htiKnown2Buffer = NULL; //known2 buffer
 	m_htiKnown2Split = NULL; //known2 split
 	//zz_fly end

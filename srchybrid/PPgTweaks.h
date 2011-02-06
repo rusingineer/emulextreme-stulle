@@ -162,10 +162,6 @@ protected:
 	HTREEITEM m_htiCryptTCPPaddingLength; //Xman Added PaddingLength to Extended preferences
 
 	//zz_fly
-	//TrustEveryHash
-	bool m_bTrustEveryHash; 
-	HTREEITEM m_hti_TrustEveryHash;
-
 	//zz_fly :: known2 buffer
 	bool m_bKnown2Buffer; 
 	HTREEITEM m_htiKnown2Buffer;
