@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------
-	How to compile eMule Xtreme (Stulle's Build) using Visual Studio 2008 SP1
+How to compile eMule Xtreme (Stulle's Build) using Visual Studio 2008 SP1
 -------------------------------------------------------------------------
 
 1. Download Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1 here:
