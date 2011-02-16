@@ -268,16 +268,16 @@ void CPPgStats::Localize(void)
 		//Xman end
 
 		iItem = m_colors.AddString(GetResString(IDS_SP_ACTCON));			m_colors.SetItemData(iItem, 8);
+		iItem = m_colors.AddString(GetResString(IDS_SP_ACTUL));				m_colors.SetItemData(iItem, 10);
 		//Xman Xtreme Upload: this graph isn't shown at xtreme
 		//Maella Bandwidth control
 		/*
-		iItem = m_colors.AddString(GetResString(IDS_SP_ACTUL));				m_colors.SetItemData(iItem, 10);
 		iItem = m_colors.AddString(GetResString(IDS_SP_TOTALUL));			m_colors.SetItemData(iItem, 9);
 		iItem = m_colors.AddString(GetResString(IDS_SP_ACTDL));				m_colors.SetItemData(iItem, 12);
 		*/
-		iItem = m_colors.AddString(GetResString(IDS_SP_ACTUL) + _T(" + Network"));	m_colors.SetItemData(iItem, 10);
 		iItem = m_colors.AddString(GetResString(IDS_SP_ACTDL));				m_colors.SetItemData(iItem, 9);
-		iItem = m_colors.AddString(_T("eMule control + data"));				m_colors.SetItemData(iItem, 12);
+		iItem = m_colors.AddString(GetResString(IDS_EMULE_CTRL_DATA));		m_colors.SetItemData(iItem, 12);
+		iItem = m_colors.AddString(GetResString(IDS_NETWORK_ADAPTER));		m_colors.SetItemData(iItem, 13);
 		//Xman end
 		iItem = m_colors.AddString(GetResString(IDS_SP_ICONBAR));			m_colors.SetItemData(iItem, 11);
 

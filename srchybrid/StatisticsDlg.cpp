@@ -807,7 +807,7 @@ void CStatisticsDlg::RepaintMeters()
 	m_DownloadOMeter.SetPlotColor(thePrefs.GetStatsColor(3), MINUTE);
 	m_DownloadOMeter.SetPlotColor(thePrefs.GetStatsColor(4), SESSION);
 	m_DownloadOMeter.SetPlotColor(thePrefs.GetStatsColor(12), OVERALL);
-	m_DownloadOMeter.SetPlotColor(thePrefs.GetStatsColor(10), ADAPTER);
+	m_DownloadOMeter.SetPlotColor(thePrefs.GetStatsColor(13), ADAPTER);
 	m_DownloadOMeter.SetBarsPlot(thePrefs.GetFillGraphs(), CURRENT);
 	m_DownloadOMeter.SetBarsPlot(thePrefs.GetFillGraphs() && !thePrefs.GetNAFCFullControl(), OVERALL);
 	m_DownloadOMeter.SetBarsPlot(thePrefs.GetFillGraphs() && thePrefs.GetNAFCFullControl(), ADAPTER);
@@ -838,8 +838,8 @@ void CStatisticsDlg::RepaintMeters()
 	Buffer.Format(_T(" (%u %s)"),thePrefs.GetStatsAverageMinutes(),GetResString(IDS_MINS));
 	m_DownloadOMeter.SetLegendLabel(GetResString(IDS_AVG)+Buffer,MINUTE);
 	m_DownloadOMeter.SetLegendLabel(GetResString(IDS_ST_SESSION),SESSION);
-	m_DownloadOMeter.SetLegendLabel(_T("eMule control + data"),OVERALL);
-	m_DownloadOMeter.SetLegendLabel(_T("Network Adapter"),ADAPTER);
+	m_DownloadOMeter.SetLegendLabel(GetResString(IDS_EMULE_CTRL_DATA),OVERALL);
+	m_DownloadOMeter.SetLegendLabel(GetResString(IDS_NETWORK_ADAPTER),ADAPTER);
 
 
 	m_UploadOMeter.SetYUnits(GetResString(IDS_ST_UPLOAD));
@@ -847,8 +847,8 @@ void CStatisticsDlg::RepaintMeters()
 	Buffer.Format(_T(" (%u %s)"),thePrefs.GetStatsAverageMinutes(),GetResString(IDS_MINS));
 	m_UploadOMeter.SetLegendLabel(GetResString(IDS_AVG)+Buffer,MINUTE);
 	m_UploadOMeter.SetLegendLabel(GetResString(IDS_ST_SESSION),SESSION);
-	m_UploadOMeter.SetLegendLabel(_T("eMule control + data"),OVERALL);
-	m_UploadOMeter.SetLegendLabel(_T("Network Adapter"),ADAPTER);
+	m_UploadOMeter.SetLegendLabel(GetResString(IDS_EMULE_CTRL_DATA),OVERALL);
+	m_UploadOMeter.SetLegendLabel(GetResString(IDS_NETWORK_ADAPTER),ADAPTER);
 	
 
 	m_Statistics.SetYUnits(GetResString(IDS_FSTAT_CONNECTION)); //Connections

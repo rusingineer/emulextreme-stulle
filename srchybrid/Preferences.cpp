@@ -256,7 +256,12 @@ uint32	CPreferences::maxGraphUploadRateEstimated = 0;
 bool	CPreferences::beepOnError;
 bool	CPreferences::m_bIconflashOnNewMessage;
 bool	CPreferences::confirmExit;
+//Maella Bandwidth control
+/*
 DWORD	CPreferences::m_adwStatsColors[15];
+*/
+DWORD	CPreferences::m_adwStatsColors[14];
+//Xman end
 bool	CPreferences::bHasCustomTaskIconColor;
 bool	CPreferences::splashscreen;
 bool	CPreferences::filterLANIPs;
@@ -2341,8 +2346,14 @@ void CPreferences::ResetStatsColor(int index)
 		case 10: m_adwStatsColors[10]=RGB(255,255,128);break;
 		case 11: m_adwStatsColors[11]=RGB(  0,  0,  0); bHasCustomTaskIconColor = false; break;
 		case 12: m_adwStatsColors[12]=RGB(255,255,255);break;
+		//Xman Xtreme Upload: this graph isn't shown at xtreme
+		//Maella Bandwidth control
+		/*
 		case 13: m_adwStatsColors[13]=RGB(255,255,255);break;
 		case 14: m_adwStatsColors[14]=RGB(255,190,190);break;
+		*/
+		case 13: m_adwStatsColors[13]=RGB(255,255,128);break;
+		//Xman end
 	}
 }
 

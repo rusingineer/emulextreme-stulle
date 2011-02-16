@@ -154,7 +154,14 @@ public:
 	//Xman end
 	static	bool	beepOnError;
 	static	bool	confirmExit;
+
+	//Xman Xtreme Upload: this graph isn't shown at xtreme
+	//Maella Bandwidth control
+	/*
 	static	DWORD	m_adwStatsColors[15];
+	*/
+	static	DWORD	m_adwStatsColors[14];
+	//Xman end
 	static	bool	bHasCustomTaskIconColor;
 	static  bool	m_bIconflashOnNewMessage;
 
