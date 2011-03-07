@@ -477,7 +477,6 @@ BEGIN
     IDS_PW_USS              "Ανανέωση λίστας στην εκκίνηση"
     IDS_PW_MISC             "Λοιπές επιλογές"
     IDS_PW_TRAY             "Περιορισμός στην περιοχή ρολογιού (systray)"
-    IDS_PW_BEEP             "Ηχητική ειδοποίηση στα λάθη"
     IDS_PW_PROMPT           "Επιβεβαίωση κατά την έξοδο"
     IDS_PW_SPLASH           "Προβολή αρχικής εικόνας"
     IDS_PW_DBLCLICK         "Διπλό κλικ για ξεδίπλωμα της λίστας κατεβάσματος"
@@ -676,7 +675,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Προτεραιότητα στα πρώτα και τα τελευταία κομμάτια"
-    IDS_UPDATEQUEUE         "Ανανέωση λίστας αναμονής σε μη πραγματικό χρόνο"
     IDS_RECOVER_SINGLE      "1 αρχείο ανακτήθηκε"
     IDS_RECOVER_MULTIPLE    "%u αρχεία ανακτήθηκαν"
     IDS_ATTEMPTING_RECOVERY "Έναρξη ανάκτησης αρχείου"
@@ -1058,7 +1056,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Εξυπηρετητής-Web: Αποτυχημένη προσπάθεια login"
     IDS_ERR_TOOLARGEFILE    "Αρχείο μεγαλύτερο από το υποστηριζόμενο του πρωτοκόλλου edonkey (>=256GB)"
     IDS_MSGONLYFRIENDS      "Λήψη μόνο από τους φίλους"
-    IDS_MSGONLYSEC          "Λήψη μόνο από έγκυρους χρήστες"
     IDS_DAY_MO_SA           "Δευτ-Σαβ"
     IDS_LIMITSOURCES        "Όριο πηγών"
     IDS_LIMITCONS5SEC       "Όριο συνδέσεων/5δευτ"
@@ -1107,7 +1104,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Έναρξη επόμενου αρχείου"
     IDS_STARTPRIO           "Προτεραιότητα κατηγορίας"
     IDS_PREF_STARTNEXTFILECAT "προτίμηση ίδιας κατηγορίας"
-    IDS_REPAINTGRAPHS       "Μη ανανέωση γραφημάτων σε μεταβολή παραθύρου"
     IDS_SOFTFILES           "Μαλακό όριο αρχείων"
 END
 
@@ -1512,7 +1508,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Αποτυχία κατά τη ρύθμιση του firewall των WinXP για τα επιλεγμένα ports!"
     IDS_FO_PREF_STARTUP     "’νοιγμα/κλείσιμο των ports του firewall των WinXP όταν ξεκινά/τερματίζει το eMule"
     IDS_LOG_LEVEL           "Επίπεδο καταγραφής"
-    IDS_DISABLEPEERACHE     "Απενεργοποίηση κατεβάσματος μέσω PeerCache"
     IDS_FO_TEMPTCP_S        "’νοιξε το port %u (TCP) στο firewall των WinXP, για αυτήν την περίοδο του eMule"
     IDS_FO_TEMPTCP_F        "Αποτυχία κατά το άνοιγμα του port %u (TCP) στο firewall των WinXP, για αυτήν την περίοδο του eMule"
     IDS_FO_TEMPUDP_S        "’νοιξε το port %u (UDP) στο firewall των WinXP, για αυτήν την περίοδο του eMule"
@@ -1607,7 +1602,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Αντιγραφή στο πρόχειρο"
     IDS_LD_HOSTNAME         "Χρήση του ονόματος υπολογιστή (από τις προτιμήσεις) αντί του IP κατά τη δημιουργία ενός link-πηγής"
     IDS_SAVEACFAILED        "Αποτυχία κατά το σώσιμο του AICH σετ υπογραφών!"
-    IDS_IACHHASH            "Υπογραφή AICH"
+    IDS_AICHHASH            "Υπογραφή AICH"
     IDS_BYTESPERSEC         "B/δ"
     IDS_KBYTESPERSEC        "KB/δ"
     IDS_MBYTESPERSEC        "MB/δ"
@@ -1795,7 +1790,7 @@ BEGIN
     IDS_RESTORESEARCHPARAMS "Επαναφορά παραμέτρων αναζήτησης"
     IDS_COMMAND             "Εντολή"
     IDS_ARGUMENTS           "Παράμετροι"
-    IDS_AP_CREATEPREVCOPY   "Δημιουργία αρχείου προεπισκόπισης"
+    IDS_AP_CREATEPREVCOPY   "Δημιουργία αρχείου προεπισκόπησης"
     IDS_ARCHIVEDETAILS      "Συμπιεσμένο-Λεπτομέρειες"
     IDS_ARCHTYPE            "Τύπος συμπιεσμένου"
     IDS_ATTRIBUTES          "Ιδιότητες"
@@ -1844,7 +1839,7 @@ BEGIN
     IDS_INVALIDFILEEXT      "Μη έγκυρη επέκταση αρχείου"
     IDS_UNKNOWNFILEEXT      "’γνωση επέκταση αρχείου"
     IDS_ENABLEMINIMULE      "Ενεργοποίηση του MiniMule"
-    IDS_DISABLE_AUTOARCHPREV "Απενεργοποίηση αυτόματης προεπισκόπισης συμπιεσμένου, στις λεπτομέρειες του αρχείου"
+    IDS_DISABLE_AUTOARCHPREV "Απενεργοποίηση αυτόματης προεπισκόπησης συμπιεσμένου, στις λεπτομέρειες του αρχείου"
     IDS_US_STALLEDW4BR      "Πάγωσε! Αναμονή αίτησης τμήματος."
     IDS_US_STALLEDREADINGFDISK "Πάγωσε! Ανάγνωση του δίσκου."
     IDS_SERVERFEATURE_INTTYPETAGS "Επικεφαλίδες: Ακέραιοι"
@@ -1901,8 +1896,7 @@ BEGIN
     IDS_EDITSPAMFILTERCOMMENTS "Επεξεργασία φίλτρου ανεπιθύμητων σχολίων..."
     IDS_WIZZARDOBFUSCATION  "Ενεργοποιήστε την επιλογή αυτή για απόκρυψη του πρωτοκόλλου.\n\nΑν ο παροχέας σας του Internet δοκιμάσει να περιορίσει ή να μπλοκάρει το eMule, ενεργοποιώντας την απόκρυψη θα βοηθήσει να παρακάμψετε αυτούς τους περιορισμούς."
     IDS_BETANAG             "Αυτή είναι μια προ-έκδοση του eMule! Παρακαλώ να αναφέρετε τα προβλήματα που συναντήσατε και να ελέγχετε συχνά για νέα έκδοση στο forum μας (http://forum.emule-project.net)."
-    IDS_CONFIRMNODESDOWNLOAD 
-                            "Θέλετε να κατεβάσετε και να χρησιμοποιήσετε τις επαφές Kad (nodes.dat) από αυτή τη διεύθυνση:\n%s ;"
+    IDS_CONFIRMNODESDOWNLOAD "Θέλετε να κατεβάσετε και να χρησιμοποιήσετε τις επαφές Kad (nodes.dat) από αυτή τη διεύθυνση:\n%s ;"
     IDS_AUTOMATIC           "Αυτόματα"
     IDS_NOTCONNECTEDANY     "Δεν έχετε συνδεθεί σε κάποιον εξυπηρετητή ή στο δίκτυο Kad!"
     IDS_ERR_SHARED_DIR      "Αποτυχία κατά την ανάγνωση του κοινόχρηστου φακέλου ""%s"" - %s"
@@ -1918,7 +1912,33 @@ BEGIN
     IDS_UNSHARE             "Αφαίρεση από τα κοινόχρηστα"
     IDS_WEBUPNPINCLUDE      "Να περιλαμβάνεται το port στις ρυθμίσεις του UPnP"
     IDS_ADDEDON             "Προστέθηκε στις"
-    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_RESOLVELINKS        "Χρήση των shell links σε κοινόχρηστους φακέλους"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Εντολές κατεβάσματος"
+    IDS_CLOSETOOLBAR        "Κλείσιμο μπάρας εργαλείων"
+    IDS_SHOWTOOLBAR         "Εμφάνιση μπάρας εργαλείων"
+    IDS_SEARCH_BADOPERATORCOMBINATION "Δεν μπορείτε να χρησιμοποιείσετε τον τελεστή OR με την πρώτη λέξη αναζήτησης στο δίκτυο Kad!\n\nΓια παράδειγμα το ""Keyword1 OR Keyword2"" δεν λειτουργεί. Δοκιμάστε κάτι σαν ""Keyword1 AND (Keyword2 OR Keyword3)"" ή διαφορετικά κάντε πολλαπλές αναζητήσεις."
+    IDS_DISCOVEREDBY        "Βρέθηκε μέσω"
+    IDS_NODES               "Node(s)" //!
+    IDS_ROUTINGTABLE        "Routing Table" //!
+    IDS_PROTOCOLVERSION     "Έκδοση πρωτοκόλλου"
+    IDS_FOUNDNODESUSEFUL    "Nodes που βρέθηκαν (χρήσιμα)"
+    IDS_NORESPONSE          "Χωρίς απάντηση"
+    IDS_NOTASKED            "Δεν ρωτήθηκε"
+    IDS_LOOKUPGRAPH         "Αναζήτηση λεπτομερειών"
+    IDS_AUTOKADLOOKUPGRAPH  "Αυτόματη προβολή ενεργών αναζητήσεων"
+    IDS_PAUSEONPREVIEW      "Παύση όταν μπορεί να προεπισκοπηθεί"
+    IDS_PREVIEWWITH         "Προεπισκόπηση με"
+    IDS_CLOSEEMULE          "Κλείσιμο του eMule"
+    IDS_DONOTASKAGAIN       "Να μην ξαναγίνει ερώτηση"
+    IDS_POPULARITY          "Δημοτικότητα"
+    IDS_SHOWWIN7TASKBARGOODIES "Ενεργοποίηση των Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Greek resources

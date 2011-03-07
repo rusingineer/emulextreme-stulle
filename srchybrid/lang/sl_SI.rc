@@ -492,7 +492,6 @@ BEGIN
     IDS_PW_USS              "Posodobi seznam strežnikov ob zagonu"
     IDS_PW_MISC             "Razno"
     IDS_PW_TRAY             "Pomanjšaj v sistemsko vrstico"
-    IDS_PW_BEEP             "Opozorilni zvok ob napakah"
     IDS_PW_PROMPT           "Opozori ob izhodu"
     IDS_PW_SPLASH           "Prikaži uvodno sliko"
     IDS_PW_DBLCLICK         "Z dvojnim klikom razširi seznam pri prenosih"
@@ -691,7 +690,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Najprej poskusi prenesti prvi in zadnji del"
-    IDS_UPDATEQUEUE         "Ne posodabljaj seznamov v realnem èasu"
     IDS_RECOVER_SINGLE      "Reševanje arhiva: rešena 1 datoteka."
     IDS_RECOVER_MULTIPLE    "Reševanje arhiva: rešenih %u datotek."
     IDS_ATTEMPTING_RECOVERY "Reševanje arhiva: zaèeto"
@@ -1077,7 +1075,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Spletni vmesnik: Neuspešna prijava"
     IDS_ERR_TOOLARGEFILE    "Datoteka prevelika za uporabo v eMule (>=256GB)"
     IDS_MSGONLYFRIENDS      "Sprejmi samo od prijateljev"
-    IDS_MSGONLYSEC          "Sprejmi samo od veljavnih odjemalcev"
     IDS_DAY_MO_SA           "Pon-Sob"
     IDS_LIMITSOURCES        "Omejitev virov"
     IDS_LIMITCONS5SEC       "Omejitev povezav/5 sek"
@@ -1126,7 +1123,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Nadaljuj naslednjo dat. na premoru"
     IDS_STARTPRIO           "Prioriteta te kategorije"
     IDS_PREF_STARTNEXTFILECAT "èe je možno, iz iste kategorije"
-    IDS_REPAINTGRAPHS       "Ob spremembi velikosti ne osveži grafov"
     IDS_SOFTFILES           "Mehka omejitev datotek"
 END
 
@@ -1538,7 +1534,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Ni bilo mogoèe nastaviti internega WinXP požarnega zidu za izbrana vrata!"
     IDS_FO_PREF_STARTUP     "Ob zagonu/izhodu eMule odpri/zapri vrata v internem WinXP požarnem zidu"
     IDS_LOG_LEVEL           "Stopnja beleženja"
-    IDS_DISABLEPEERACHE     "Onemogoèi prenose z PeerCache"
     IDS_FO_TEMPTCP_S        "Odprta vrata %u (TCP) v internem WinXP požarnem zidu za to sejo"
     IDS_FO_TEMPTCP_F        "Ni bilo mogoèe odpreti vrat %u (TCP) v internem WinXP požarnem zidu"
     IDS_FO_TEMPUDP_S        "Odprta vrata %u (UDP) v internem WinXP požarni zidu za to sejo"
@@ -1636,7 +1631,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Kopiraj na odložišèe"
     IDS_LD_HOSTNAME         "Uporabi ime gostitelja (iz nastavitev) namesto iz IP-ja med izdelavo izvirne povezave"
     IDS_SAVEACFAILED        "NI bilo mogoèe shraniti AICH hasha!"
-    IDS_IACHHASH            "AICH hash"
+    IDS_AICHHASH            "AICH hash"
     IDS_BYTESPERSEC         "B/s" //!
     IDS_KBYTESPERSEC        "KB/s" //!
     IDS_MBYTESPERSEC        "MB/s" //!
@@ -1974,7 +1969,34 @@ BEGIN
     IDS_UNSHARE             "Prenehaj deliti"
     IDS_WEBUPNPINCLUDE      "Dodaj vrata v UPnP nastavitve"
     IDS_ADDEDON             "Dodano"
-    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_RESOLVELINKS        "Sledi povezavam v deljenih mapah"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Ukazi za prenos dol"
+    IDS_CLOSETOOLBAR        "Zapri orodno vrstico"
+    IDS_SHOWTOOLBAR         "Prikaži orodno vrstico"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "Ne morete uporabiti operatorja OR s prvim iskalnim nizom kadar išèete v Kad omrežju!\n\nNa primer ""niz1 OR niz2"" ni mogoèe. Poskusite ""niz1 AND (niz2 OR niz3)"" ali izvedite veè iskanj."
+    IDS_DISCOVEREDBY        "Najditelj"
+    IDS_NODES               "Vozlišèa"
+    IDS_ROUTINGTABLE        "Usmerjevalna tabela"
+    IDS_PROTOCOLVERSION     "Razlièica protokola"
+    IDS_FOUNDNODESUSEFUL    "Najdenih vozlišè (uporabnih)"
+    IDS_NORESPONSE          "Ni odziva"
+    IDS_NOTASKED            "Ni bilo vprašano"
+    IDS_LOOKUPGRAPH         "Podrobnosti iskanja"
+    IDS_AUTOKADLOOKUPGRAPH  "Avtomatièno pokaži aktivna iskanja"
+    IDS_PAUSEONPREVIEW      "Pavziraj ko bo možen predogled"
+    IDS_PREVIEWWITH         "Predogled z"
+    IDS_CLOSEEMULE          "Zapri eMule"
+    IDS_DONOTASKAGAIN       "Ne vprašaj ponovno"
+    IDS_POPULARITY          "Popularnost"
+    IDS_SHOWWIN7TASKBARGOODIES "Vklopi efekte orodne vrstice v Windows 7"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Slovenian resources

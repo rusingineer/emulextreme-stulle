@@ -541,7 +541,6 @@ BEGIN
     IDS_PW_USS              "Auto-actualizar la llista de servidores al entamar"
     IDS_PW_MISC             "Delles opciones"
     IDS_PW_TRAY             "Minimizar nel área de notificación"
-    IDS_PW_BEEP             "Facer un soníu cuando heba un error"
     IDS_PW_PROMPT           "Entrugar al colar"
     IDS_PW_SPLASH           "Amosar pantalla d’aniciu"
     IDS_PW_DBLCLICK         "Facer doble click na llista pa enanchar"
@@ -760,7 +759,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Intentar baxar primero la primer y la cabera parte"
-    IDS_UPDATEQUEUE         "Nun actualizar la llista de cola d’espera en tiempu real"
     IDS_RECOVER_SINGLE      "Ún archivu recuperáu."
     IDS_RECOVER_MULTIPLE    "%u archivos recuperaos."
     IDS_ATTEMPTING_RECOVERY "Intentando recuperar l’achivu"
@@ -817,7 +815,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Error al configurar el cortafueos internu de WinXP pa los puertos seleccionaos!"
     IDS_FO_PREF_STARTUP     "Abrir/Pesllar puertos nel cortafueos de WinXP cuando s’inicia/pieslla eMule"
     IDS_LOG_LEVEL           "Nivel de rexistru"
-    IDS_DISABLEPEERACHE     "Desactivar baxada dende PeerCache"
     IDS_NEWMSG              "Nuevu mensaxe de '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "Namás na mesma categoría"
     IDS_LOG_ULDL_EVENTS     "Rexistrar eventos de subida/baxada"
@@ -1134,7 +1131,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Servidor Web: Fallu al iniciar sesión"
     IDS_ERR_TOOLARGEFILE    "Archivu más llargu que’l que soporta’l protocolu edonkey (>=256GB)"
     IDS_MSGONLYFRIENDS      "Solamente aceptar de collacios"
-    IDS_MSGONLYSEC          "Solamente aceptar de clientes válidos"
     IDS_DAY_MO_SA           "Llun-Sáb"
     IDS_LIMITSOURCES        "Llímite de fontes"
     IDS_LIMITCONS5SEC       "Llímite de conexiones/5segs"
@@ -1184,7 +1180,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Reanudar el siguiente archivu pausáu"
     IDS_STARTPRIO           "Prioridá pa esta categoría"
     IDS_PREF_STARTNEXTFILECAT "Prefer. mesma categoría"
-    IDS_REPAINTGRAPHS       "Nun redibuxar gráfiques d’estadístiques al camudar de tamañu"
     IDS_SOFTFILES           "Límite d’archivu baxu"
 END
 
@@ -1686,7 +1681,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_IACHHASH            "Hash AICH"
+    IDS_AICHHASH            "Hash AICH"
     IDS_BYTESPERSEC         "B/s"
     IDS_KBYTESPERSEC        "KB/s"
     IDS_MBYTESPERSEC        "MB/s"
@@ -1908,7 +1903,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Sharing eMule with other computer users"
     IDS_SHAREEMULEMULTI     "Each user has its own configuration and downloads"
     IDS_SHAREEMULEPUBLIC    "Everyone has the same configuration and downloads"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 
@@ -1956,6 +1951,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Asturian  resources

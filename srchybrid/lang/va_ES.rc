@@ -493,7 +493,6 @@ BEGIN
     IDS_PW_USS              "Actualitza automàticament la llista de servidors en iniciar"
     IDS_PW_MISC             "Miscel·lània"
     IDS_PW_TRAY             "Minimit&za a la safata"
-    IDS_PW_BEEP             "Reprodueix un so per als errors"
     IDS_PW_PROMPT           "Demana la confirmació en eixir"
     IDS_PW_SPLASH           "Mostra la pantalla d'inici"
     IDS_PW_DBLCLICK         "Feu doble clic sobre una baixada per a veure les fonts"
@@ -694,7 +693,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Intenta baixar abans la primera i última part"
-    IDS_UPDATEQUEUE         "No actualitzis la cua d'espera en temps real"
     IDS_RECOVER_SINGLE      "1 fitxer recuperat."
     IDS_RECOVER_MULTIPLE    "%u fitxers recuperats."
     IDS_ATTEMPTING_RECOVERY "S'està intentant recuperar fitxer "
@@ -1086,7 +1084,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Servidor web: Intent erroni d'inici de sessió"
     IDS_ERR_TOOLARGEFILE    "La mida del fitxer és major que el que el protocol eDonkey admet (>=256GB)"
     IDS_MSGONLYFRIENDS      "Accepta només d'amics"
-    IDS_MSGONLYSEC          "Accepta només de clients vàlids"
     IDS_DAY_MO_SA           "Dl-Ds."
     IDS_LIMITSOURCES        "Límit de fonts"
     IDS_LIMITCONS5SEC       "Límit connexions/5seg"
@@ -1136,7 +1133,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Reprén el següent fitxer en pausa"
     IDS_STARTPRIO           "Prioritat per a esta categoria"
     IDS_PREF_STARTNEXTFILECAT "Pref. mateixa categoria"
-    IDS_REPAINTGRAPHS       "No dibuixis els gràfics d'estadístiques en canviar de mida"
     IDS_SOFTFILES           "Límit de fitxer baix"
 END
 
@@ -1551,7 +1547,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "No s'ha pogut configurar el tallafocs intern del Windows XP per als ports seleccionats."
     IDS_FO_PREF_STARTUP     "Obri/tanca els ports al tallafocs del Windows XP quan l'eMule s'inici/isca"
     IDS_LOG_LEVEL           "Nivell de registre"
-    IDS_DISABLEPEERACHE     "Inhabilita les baixades de la cau-entre-iguals (PeerCache)"
     IDS_SOURCESWAPBLOCKED   "S'ha blocat l'intercanvi"
     IDS_A4AF_CHECK_THIS_NOW "Comprova esta font ara (depuració)"
     IDS_NEWMSG              "Missatge nou procedent de «%s» (IP:%s)"
@@ -1643,7 +1638,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Copia al porta-retalls"
     IDS_LD_HOSTNAME         "Empra el nom (obtingut de preferències) en comptes de la IP en crear un enllaç de font"
     IDS_SAVEACFAILED        "No s'ha pogut alçar el joc de resums AICH."
-    IDS_IACHHASH            "Resum AICH"
+    IDS_AICHHASH            "Resum AICH"
     IDS_BYTESPERSEC         "B/s"//.
     IDS_KBYTESPERSEC        "KB/s"//.
     IDS_MBYTESPERSEC        "MB/s"//.
@@ -1981,6 +1976,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Catalan resources

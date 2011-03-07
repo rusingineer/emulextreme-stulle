@@ -492,7 +492,6 @@ BEGIN
     IDS_PW_USS              "Kiszolgáló lista frissítése automatikusan induláskor"
     IDS_PW_MISC             "Egyéb lehetõségek"
     IDS_PW_TRAY             "Minimali&zál tálcára"
-    IDS_PW_BEEP             "Hibánál csipog"
     IDS_PW_PROMPT           "Kilépésnél megerõsítésre vár"
     IDS_PW_SPLASH           "Nyitóképernyõ megjelenítése"
     IDS_PW_DBLCLICK         "Letöltési listában duplaklikkel való kibontás"
@@ -693,7 +692,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Próbáld meg elõbb letölteni az elsõ és utolsó szeleteket"
-    IDS_UPDATEQUEUE         "Ne frissítse valós idõben a letöltési listát"
     IDS_RECOVER_SINGLE      "1 fájl megmentve."
     IDS_RECOVER_MULTIPLE    "%u fájl megmentve."
     IDS_ATTEMPTING_RECOVERY "Próbálkozás tömörítvény megmentésére..."
@@ -1086,7 +1084,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Webkiszolgáló: sikertelen belépés"
     IDS_ERR_TOOLARGEFILE    "Túl nagy fájl. Az edonkey protokol nem támogatja (>=256GB)"
     IDS_MSGONLYFRIENDS      "Csak barátoktól"
-    IDS_MSGONLYSEC          "Csak érvényes kliensektõl"
     IDS_DAY_MO_SA           "Hétfõ-Szombat"
     IDS_LIMITSOURCES        "Forrás korlát"
     IDS_LIMITCONS5SEC       "Kapcsolat korlát/5mp"
@@ -1136,7 +1133,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Következõ szünetelt folytatása"
     IDS_STARTPRIO           "Kategória prioritása"
     IDS_PREF_STARTNEXTFILECAT "Azonos kategóriát elõnyben részesít"
-    IDS_REPAINTGRAPHS       "Átméretezésnél ne rajzolja újra a grafikonokat"
     IDS_SOFTFILES           "Enyhe fájl korlát"
 END
 
@@ -1549,7 +1545,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Nem sikerült konfigurálni a Windows XP belsõ tûzfalát a kiválasztott portokhoz!"
     IDS_FO_PREF_STARTUP     "Portok megnyitása/zárása a Windows XP tûzfalban, amikor elindítom/bezárom az eMule-t"
     IDS_LOG_LEVEL           "Napló részletesség"
-    IDS_DISABLEPEERACHE     "PeerCache letöltés tiltása"
     IDS_FO_TEMPTCP_S        "A(z) %u (TCP) portot megnyitottam az eMule számára a Windows XP belsõ tûzfalában"
     IDS_FO_TEMPTCP_F        "Nem sikerült megnyitni a(z) %u (TCP) portot az eMule számára a Windows XP belsõ tûzfalában"
     IDS_FO_TEMPUDP_S        "A(z) %u (UDP) portot megnyitottam az eMule számára a Windows XP belsõ tûzfalában"
@@ -1647,7 +1642,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Másolás vágólapra"
     IDS_LD_HOSTNAME         "Használja a kiszolgáló nevét (a beállításokból) az IP cím helyett, mikor forráshivatkozást hoz létre"
     IDS_SAVEACFAILED        "Nem sikerült elmenteni az AICH Hash-készletet!"
-    IDS_IACHHASH            "AICH Hash"
+    IDS_AICHHASH            "AICH Hash"
     IDS_BYTESPERSEC         "B/s"
     IDS_KBYTESPERSEC        "KB/s"
     IDS_MBYTESPERSEC        "MB/s"
@@ -1932,7 +1927,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Sharing eMule with other computer users"
     IDS_SHAREEMULEMULTI     "Each user has its own configuration and downloads"
     IDS_SHAREEMULEPUBLIC    "Everyone has the same configuration and downloads"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 
@@ -1980,6 +1975,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Hungarian resources

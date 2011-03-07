@@ -558,7 +558,6 @@ BEGIN
     IDS_PW_USS              "“г«д ‘—жЏ »—д«ге бн”  ”—ж—е« ќжѕя«— »—ж“ —”«дн ‘жѕ"
     IDS_PW_MISC             "г Ё—ёе"
     IDS_PW_TRAY             "ѕ— едР«г ягнде (гнднг«н“)я—ѕд »е гдж жўнЁе (”н” —«н)»—ж"
-    IDS_PW_BEEP             "ѕ— гжёЏ ќЎ« »« »жё Бнџ«г »ѕе"
     IDS_PW_PROMPT           "ѕ— гжёЏ ќ—жћ ”ж«б яд"
 END
 
@@ -824,7 +823,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_UPDATEQUEUE         "бн”  «Ё—«ѕ ѕ— ’Ё —« ѕ— “г«д ж«ёЏн »е —ж“ дяд"
     IDS_RECOVER_SINGLE      "»«“н«Ё  ¬—‘нж: 1 Ё«нб »«“н«Ё  ‘ѕ."
     IDS_RECOVER_MULTIPLE    "»«“н«Ё  ¬—‘нж: %u Ё«нб »«“н«Ё  ‘ѕ"
     IDS_ATTEMPTING_RECOVERY "»«“н«Ё  ¬—‘нж: ‘—жЏ ‘ѕ"
@@ -907,7 +905,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_LOG_LEVEL           "гёѕ«—  ж÷нЌ«  Р“«—‘Р—"
-    IDS_DISABLEPEERACHE     "ѕ«дбжѕ я—ѕд «“ Ё÷«н дРеѕ«—н гжё  ѕ— ”—жн” ѕедѕе е« —« џн— ЁЏ«б яд.PeerCache"
     IDS_NEWMSG              "Бнџ«г ћѕнѕ «“ '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "ЁёЎ ѕ— ёЁ”е ѕ” е »дѕн ‘ѕе ня”«д"
     IDS_LOG_ULDL_EVENTS     "Р“«—‘  ¬Ббжѕ/ѕ«дбжѕ  џнн—« "
@@ -1154,7 +1151,6 @@ STRINGTABLE
 BEGIN
     IDS_ERR_TOOLARGEFILE    "Ё«нб »“—Р  — «“ «дѕ«“е «н «”  яе Ў»ё Б—ж яб е«н «нѕ«дян гн ‘жѕ Б‘ н»«дн я—ѕ (>=256GB)"
     IDS_MSGONLYFRIENDS      "ЁёЎ «“ Ў—Ё ѕж” «д ё»жб яд"
-    IDS_MSGONLYSEC          "ЁёЎ «“ Ў—Ё я«—»—«д г‘ —н Ќёнён ё»жб яд"
     IDS_DAY_MO_SA           "ѕж‘д»е-‘д»е"
     IDS_LIMITSOURCES        "гд«»Џ гЌѕжѕ"
     IDS_LIMITCONS5SEC       "гЌѕжѕн  « ’«б« /5Ћ«дне"
@@ -1204,7 +1200,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "‘—жЏ »е ѕ«дбжѕ ѕ«дбжѕ днге г жёЁ ‘ѕе »Џѕн »яд"
     IDS_STARTPRIO           "«жбжн  »—«н «нд ёЁ”е"
     IDS_PREF_STARTNEXTFILECAT " —ћнЌ« ѕ— ёЁ”е г‘«»е"
-    IDS_REPAINTGRAPHS       "«Р— «дѕ«“е Бдћ—е  џнн— я—ѕ ѕж»«—е дгжѕ«— е« —« «“ «жб —”г дяд"
     IDS_SOFTFILES           "гЌѕжѕн  яг —нд  Џѕ«ѕ гжћжѕ Ё«нбе«н «‘ —«ян"
     IDS_HARDFILES           "гЌѕжѕн  »н‘ —нд  Џѕ«ѕ гжћжѕ Ё«нбе«н «‘ —«ян"
     IDS_FILTER              "Ёнб —"
@@ -1676,7 +1671,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "ШБн"
     IDS_LD_HOSTNAME         "«“ «жбжн  е« ѕ— едР«г «нћ«ѕ Ш—ѕд гд»Џ бндШ »е ћ«н ¬н Бн «“ д«г гн“»«д «” Ё«ѕе Шднѕ"
     IDS_SAVEACFAILED        "!AICHќЎ« ѕ— –ќн—е Ш—ѕд Шѕ Р–«—н"
-    IDS_IACHHASH            "AICH ШѕР–«—н"
+    IDS_AICHHASH            "AICH ШѕР–«—н"
     IDS_BYTESPERSEC         "B/s" //!
     IDS_KBYTESPERSEC        "KB/s" //!
     IDS_MBYTESPERSEC        "MB/s" //!
@@ -1925,20 +1920,47 @@ BEGIN
                             "¬н« гнќж«енѕ Ё«нб  г«” Шѕ —« «“ «нд ¬ѕ—” ѕ«дбжѕ Шднѕ (nodes.dat):\n%s ?"
     IDS_AUTOMATIC           "ќжѕШ«—"
     IDS_NOTCONNECTEDANY     "‘г« »е ”—ж— ж н« ‘»Ше Шѕ г ’б д‘ѕе «нѕ"
-    IDS_ERR_SHARED_DIR      "Failed to read shared directory ""%s"" - %s"
-    IDS_FILE_WARNING_DRM    "The file ""%s"" seems to be protected with Digital Rights Management.\r\n\r\nYou will most likely not be able to use that file without a license from the originator. You should be aware that opening this file will most likely cause your media player to open a web browser which will transfer you automatically to the site of the originator of that file where you will get asked to acquire a license.\r\n\r\nDo you really want to continue opening the file?"
-    IDS_CHECK_FILE_OPEN     "Warn when opening untrusted files"
-    IDS_BOOTABLE            "bootable"
-    IDS_UNSUPPORTEDIMAGE    "unsupported image"
+    IDS_ERR_SHARED_DIR      "д« ж«дн ѕ— ќж«дѕд Бж‘е е«н «‘ —«Шн ""%s"" - %s"
+    IDS_FILE_WARNING_DRM    "Ё«нб ""%s"" »е дў— гн—”ѕ Ше «“ дў— дг«н‘ гЌ«Ёў  ‘ѕе гн»«‘ѕ.\r\n\r\nжѕ— »н‘ — гж«ёЏ ‘г« дгн ж«днѕ «нд Ё«нб —« »е дг«н‘ ѕ— ¬ж—нѕ. ‘г« »е — «“ «“ »«“ Ш—ѕд «нд Ё«нб «ћ д«» Шднѕ “н«— ѕ— гжёЏ дг«н‘ д—г «Ё“«— «“ ‘г« гнќж«еѕ ж«—ѕ ’ЁЌе ж» ‘ѕе ж гћж“ дг«н‘ ¬д —«  «ннѕ Шднѕ Ше гЏгжб« «“ Ў—нё ¬д ’ЁЌе Шѕ е«н гќ—» ”н” г ‘г« —« ¬бжѕе гнШдѕ.\r\n\r\n¬н« ‘г« едж“ гнќж«енѕ «нд Ё«нб —« ѕ«дбжѕ Шднѕ ?"
+    IDS_CHECK_FILE_OPEN     "«ќЎ«— ѕ— гжёЏ »«“ Ш—ѕд Ё«нб е«н д«гЎг∆д"
+    IDS_BOOTABLE            "—«е «дѕ«“"
+    IDS_UNSUPPORTEDIMAGE    " ’жн— џн— ё«»б «” Ё«ѕе"
 END
 
 
 STRINGTABLE 
 BEGIN
-    IDS_UNSHARE             "Unshare"
-    IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
-    IDS_ADDEDON             "Added On"
-    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_UNSHARE             "»ѕжд «‘ —«Ш"
+    IDS_WEBUPNPINCLUDE      "ѕ— Бж—  е«н «÷«Ёе Шд UPnP"
+    IDS_ADDEDON             "«÷«Ёе ‘ѕе ѕ—"
+    IDS_RESOLVELINKS        "—ЁЏ г‘Шб  жѕе бндШ е«н гжћжѕ ѕ— Бж‘е «‘ —«Шн"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Ё—«гнд ѕ«дбжѕ"
+    IDS_CLOSETOOLBAR        "»” д дж«—«»“«—"
+    IDS_SHOWTOOLBAR         "дг«н‘ дж«—«»“«—"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "‘г« гћж“ «” Ё«ѕе «“ ЏгбР— е«н (н«) ж (ж) —« ѕ— ћ” ћжн ‘»Ше Шѕ дѕ«—нѕ!\n\n»—«н гЋ«б ж«Ое Шбнѕн 1 or ж«Ое Шбнѕн 2 ё«»б «” Ё«ѕе дн” .  ""»е — «”  ж«Ое е«н гж—ѕ дў— —« ѕ— нШ Б—«д “ ћ” ћж Шднѕ н« ѕ— Бдћ—е ћѕ«Р«де «н гћ“« ћ” ћж Шднѕ."
+    IDS_DISCOVEREDBY        "Бнѕ« ‘ѕе  ж”Ў"
+    IDS_NODES               "Р—е (е«)"
+    IDS_ROUTINGTABLE        "ћѕжб г”н—н«»н"
+    IDS_PROTOCOLVERSION     "д”ќе Б—ж Шб"
+    IDS_FOUNDNODESUSEFUL    "Р—е е«н Бнѕ« ‘ѕе (ё«»б «” Ё«ѕе)"
+    IDS_NORESPONSE          "»ѕжд ж«Шд‘"
+    IDS_NOTASKED            "Б«”ќ ѕ«ѕе д‘ѕе"
+    IDS_LOOKUPGRAPH         "ћ” ћжн ћ“∆н« "
+    IDS_AUTOKADLOOKUPGRAPH  "»’ж—  ќжѕШ«— ћ” ћж е«н ЁЏ«б —« дг«н‘ »ѕе"
+    IDS_PAUSEONPREVIEW      "гШЋ ѕ— Ќ«б н Ше Бн‘ дг«н‘ ггШд «” "
+    IDS_PREVIEWWITH         "Бн‘ дг«н‘ »«"
+    IDS_CLOSEEMULE          "»” д «нгнжб"
+    IDS_DONOTASKAGAIN       "ѕнР— «“ гд дБ—”"
+    IDS_POPULARITY          "— »е гЌ»ж»н "
+    IDS_SHOWWIN7TASKBARGOODIES "ЁЏ«б Ш—ѕд ћбже ‘н‘е «н  ”Ш »«— жндѕж“ 7"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif

@@ -489,7 +489,6 @@ BEGIN
     IDS_PW_USS              "Uppdatera serverlistan automatiskt vid start"
     IDS_PW_MISC             "Övriga inställningar"
     IDS_PW_TRAY             "Minime&ra till meddelandefältet"
-    IDS_PW_BEEP             "Spela ljud vid fel"
     IDS_PW_PROMPT           "Fråga vid avstängning"
     IDS_PW_SPLASH           "Visa startbild"
     IDS_PW_DBLCLICK         "Dubbelklicka för att expandera nedladdning"
@@ -689,7 +688,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Försök att ladda hem första och sista delen först"
-    IDS_UPDATEQUEUE         "Uppdatera inte kölistan i realtid"
     IDS_RECOVER_SINGLE      "1 fil återställd."
     IDS_RECOVER_MULTIPLE    "%u filer återställda."
     IDS_ATTEMPTING_RECOVERY "Försöker återställa arkiv..."
@@ -1080,7 +1078,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Webserver: misslyckades att logga in"
     IDS_ERR_TOOLARGEFILE    "Filen är större än vad eMule protokollet stödjer (>=256GB)"
     IDS_MSGONLYFRIENDS      "Acceptera bara från kompisar"
-    IDS_MSGONLYSEC          "Acceptera bara från giltiga klienter"
     IDS_DAY_MO_SA           "Mån-Lör"
     IDS_LIMITSOURCES        "Gräns för källor"
     IDS_LIMITCONS5SEC       "Gräns för anslutn./5sek"
@@ -1130,7 +1127,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Forsätt nästa pausade"
     IDS_STARTPRIO           "Prioritet för denna kategori"
     IDS_PREF_STARTNEXTFILECAT "föredra samma kategori"
-    IDS_REPAINTGRAPHS       "Gör inte om statistikgraferna vid ändring av fönster"
     IDS_SOFTFILES           "Mjuk filgräns"
 END
 
@@ -1543,7 +1539,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Misslyckades att konfigurera den interna brandväggen i WinXP för dom valda portarna!"
     IDS_FO_PREF_STARTUP     "Öppna/stäng portar i WinXP:s brandvägg när eMule startar/stängs av"
     IDS_LOG_LEVEL           "Logga grad"
-    IDS_DISABLEPEERACHE     "Avaktivera nedladdning från PeerCache"
     IDS_FO_TEMPTCP_S        "Öppnade port %u (TCP) i WinXP:s interna brandvägg för denna eMule session"
     IDS_FO_TEMPTCP_F        "Misslyckades att öppna port %u (TCP) i WinXP interna brandvägg för denna eMule session"
     IDS_FO_TEMPUDP_S        "Öppnade port %u (UDP) i WinXP:s interna brandvägg för denna eMule session"
@@ -1641,7 +1636,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Kopiera till urklipp"
     IDS_LD_HOSTNAME         "Använd ett hostname (från inställningar) istället för ett IP när en sourcelink skapas"
     IDS_SAVEACFAILED        "Misslyckades att spara AICH-hashset!"
-    IDS_IACHHASH            "AICH-hash"
+    IDS_AICHHASH            "AICH-hash"
     IDS_BYTESPERSEC         "B/s" //!
     IDS_KBYTESPERSEC        "KB/s" //!
     IDS_MBYTESPERSEC        "MB/s" //!
@@ -1977,6 +1972,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Inkludera port i UPnP inställning"
     IDS_ADDEDON             "Tillagd"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Swedish resources

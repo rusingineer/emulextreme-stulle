@@ -499,7 +499,6 @@ BEGIN
     IDS_PW_USS              "Hasieran zerbitzari zerrenda eguneratu"
     IDS_PW_MISC             "Beste aukerak"
     IDS_PW_TRAY             "Erloju ondoan minimizatu"
-    IDS_PW_BEEP             "Soinua erroreetan"
     IDS_PW_PROMPT           "Irtetzerakoan galdetu"
     IDS_PW_SPLASH           "Hasierako pantaila erakutsi"
     IDS_PW_DBLCLICK         "Jaitsieretan klik bikoitzarekin zerrenda hedatu"
@@ -698,7 +697,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Lehen eta azken zatiak jaisten saiatu lehenengo"
-    IDS_UPDATEQUEUE         "Ilarak denbora errealean ez eguneratu"
     IDS_RECOVER_SINGLE      "Fitxategi bat berreskuratu da."
     IDS_RECOVER_MULTIPLE    "%u fitxategi berreskuratu dira."
     IDS_ATTEMPTING_RECOVERY "Fitxategia berreskuratzen.."
@@ -1090,7 +1088,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Web zerbitzaria: Errorea sesio irekitzerakoan"
     IDS_ERR_TOOLARGEFILE    "edonkey protokoloak onartzen duena baino fitxategi handiagoa (>=256GB)"
     IDS_MSGONLYFRIENDS      "Lagunengandik bakarrik onartu"
-    IDS_MSGONLYSEC          "Bezero ezagunengandik bakarrik onartu"
     IDS_DAY_MO_SA           "Astelehena-Larunbata"
     IDS_LIMITSOURCES        "Iturrien muga"
     IDS_LIMITCONS5SEC       "Konexio muga/5seg"
@@ -1139,7 +1136,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Pausatutako hurrengo fitxategia jarraitu"
     IDS_STARTPRIO           "Kategoria honentzako lehentasuna"
     IDS_PREF_STARTNEXTFILECAT "kategoria berbera hobetsi"
-    IDS_REPAINTGRAPHS       "Estatistiken grafikak berriz ez marraztu tamainuz aldatzean"
     IDS_SOFTFILES           "Fitxategi muga baxua"
 END
 
@@ -1558,7 +1554,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Errorea WinXP-ren suhesian aukeratutako portuak konfiguratzerakoan!"
     IDS_FO_PREF_STARTUP     "WinXP-ko suhesian portuak ireki/itxi eMule ireki/ixterakoan"
     IDS_LOG_LEVEL           "Log maila"
-    IDS_DISABLEPEERACHE     "PeerCache-tik jaitsiera desaktibatu"
     IDS_SOURCESWAPBLOCKED   "Iturrien trukea blokeatuta"
     IDS_A4AF_CHECK_THIS_NOW "Iturri hau aztertu orain (debug)"
     IDS_NEWMSG              "'%s' (IP:%s)-ren mezu berria"
@@ -1650,7 +1645,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Kopiatu"
     IDS_LD_HOSTNAME         "PC izena ('Hobespenak'-en) erabili IP-aren ordez iturri baten lotura sortzerakoan"
     IDS_SAVEACFAILED        "Errorea AICH Hashset-a gordetzerakoan!"
-    IDS_IACHHASH            "AICH hash-a"
+    IDS_AICHHASH            "AICH hash-a"
     IDS_BYTESPERSEC         "B/s"
     IDS_KBYTESPERSEC        "KB/s"
     IDS_MBYTESPERSEC        "MB/s"
@@ -1927,7 +1922,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Sharing eMule with other computer users"
     IDS_SHAREEMULEMULTI     "Each user has its own configuration and downloads"
     IDS_SHAREEMULEPUBLIC    "Everyone has the same configuration and downloads"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 
@@ -1975,6 +1970,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Basque resources

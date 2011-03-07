@@ -541,7 +541,6 @@ BEGIN
     IDS_PW_USS              "Ridato listën e serverave në nisje"
     IDS_PW_MISC             "Përzierë"
     IDS_PW_TRAY             "Zvogëlim në shirit"
-    IDS_PW_BEEP             "Tingëllo në gabime"
     IDS_PW_PROMPT           "Lajmëro në dalje"
     IDS_PW_SPLASH           "Trego ekranin pullë"
     IDS_PW_DBLCLICK         "Për zgjerim, kliko dy herë në listën e shkarkimit"
@@ -760,7 +759,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Në fillim, shkarko vetëm thelat"
-    IDS_UPDATEQUEUE         "Mos e ridato në kohë reale listën me të Papunët"
     IDS_RECOVER_SINGLE      "1 skedë u rikthye."
     IDS_RECOVER_MULTIPLE    "U rikthyen %u skeda."
     IDS_ATTEMPTING_RECOVERY "Në pritje për rikthimin e arkivit..."
@@ -817,7 +815,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Në WinXP dështoi kofigurimi i fajruollit të brendshëm për portin e zgjedhur!"
     IDS_FO_PREF_STARTUP     "Kur hyn/del nga eMule, hap/mbyll portet e fajruollit të WinXP"
     IDS_LOG_LEVEL           "Niveli i ditarit"
-    IDS_DISABLEPEERACHE     "Mos e lejo shkarkimin nga 'PeerCache'"
     IDS_NEWMSG              "Mesazh i Ri nga '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "Vetëm në të njëjtën kategori"
     IDS_LOG_ULDL_EVENTS     "Trego ngjarje mbi ngarkesën/shkarkesën"
@@ -1134,7 +1131,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Ndërfaqe Rrjeti: Orvatja për hyrje dështoi"
     IDS_ERR_TOOLARGEFILE    "Përmasa e skedës më e madhe sesa ajo e përkrahur nga protokolli edonkey (>=256GB)"
     IDS_MSGONLYFRIENDS      "Prano vetëm nga shokët"
-    IDS_MSGONLYSEC          "Prano vetëm nga klientët e vlefshëm"
     IDS_DAY_MO_SA           "Hën-Sht"
     IDS_LIMITSOURCES        "Kufizo burimet"
     IDS_LIMITCONS5SEC       "Kufizo lidhjet/5sek"
@@ -1184,7 +1180,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Rimerre kë pushon"
     IDS_STARTPRIO           "Parësia për këtë kategori"
     IDS_PREF_STARTNEXTFILECAT "Më pëlqen në të njëjtën kategori"
-    IDS_REPAINTGRAPHS       "Mos rikrijo grafikë statistikorë gjatë ripërmasimit"
     IDS_SOFTFILES           "Kufi i Dobët i Skedave"
 END
 
@@ -1683,7 +1678,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_IACHHASH            "Hash-i AICH"
+    IDS_AICHHASH            "Hash-i AICH"
     IDS_BYTESPERSEC         "B/s"//!
     IDS_KBYTESPERSEC        "KB/s"//!
     IDS_MBYTESPERSEC        "MB/s"//!
@@ -1970,6 +1965,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Përfshi portin në ndërtimin UPnP"
     IDS_ADDEDON             "Shtuar Në"
     IDS_RESOLVELINKS        "Zgjidhi linket bazë në direktoritë e shpërndara"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Albanisch resources

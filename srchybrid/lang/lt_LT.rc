@@ -491,7 +491,6 @@ BEGIN
     IDS_PW_USS              "Auto atnaujint serveriø sàraðà startuojant"
     IDS_PW_MISC             "Ávairûs nustatymai"
     IDS_PW_TRAY             "Maþinti á &trëjø"
-    IDS_PW_BEEP             "Pyptelt esant klaidai"
     IDS_PW_PROMPT           "Uþklausti iðeinant"
     IDS_PW_SPLASH           "Rodyti startiná paveiksliukà"
     IDS_PW_DBLCLICK         "Siuntimo lange dvigubas paspaudimas iðplëtimui"
@@ -691,7 +690,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Ið pradþiø bandyti gauti pirmà ir paskutinæ dalis"
-    IDS_UPDATEQUEUE         "Nenaujinti eilës sàraðo realiu laiku"
     IDS_RECOVER_SINGLE      "1 failas atstatytas."
     IDS_RECOVER_MULTIPLE    "%u failø atstatyta."
     IDS_ATTEMPTING_RECOVERY "Bandoma atstatyti archyvà..."
@@ -1083,7 +1081,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Web serveris: nepavyko bandymas prisiloginti"
     IDS_ERR_TOOLARGEFILE    "Failas yra didesnis nei palaiko eDonkey protokolas (>=256GB)"
     IDS_MSGONLYFRIENDS      "Priimti tik ið draugø"
-    IDS_MSGONLYSEC          "Priimti tik ið teisingø klientø"
     IDS_DAY_MO_SA           "Pirm-ðeðt"
     IDS_LIMITSOURCES        "Riboti ðaltinius"
     IDS_LIMITCONS5SEC       "Riboti susijungimus/5sek"
@@ -1133,7 +1130,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Tæsti kità sustabdytà"
     IDS_STARTPRIO           "Ðios kategorijos svarbumas"
     IDS_PREF_STARTNEXTFILECAT "pageidautinai tà paèia kategorijà"
-    IDS_REPAINTGRAPHS       "Neatnaujinti statistikos grafikus keièiant dydá"
     IDS_SOFTFILES           "Normalus failø limitas"
 END
 
@@ -1546,7 +1542,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Nepavyko sukonfiguruoti vidinio WinXP ugniasienës pasirinktiems portams!"
     IDS_FO_PREF_STARTUP     "Atidaryti/uþdaryti portus WinXP ugniasienëje kai startuoja/uþdaroma eMule"
     IDS_LOG_LEVEL           "Loginimo lygis"
-    IDS_DISABLEPEERACHE     "Uþdrausti krovimà ið PeerCache"
     IDS_FO_TEMPTCP_S        "Atidarytas %u portas (TCP) vidinëje WinXP ugniasienëje ðiai eMule sesijai"
     IDS_FO_TEMPTCP_F        "Nepavyko atidaryti %u portao (TCP) vidinëje WinXP ugniasienëje ðiai eMule sesijai"
     IDS_FO_TEMPUDP_S        "Atidarytas %u portas (UDP) vidinëje WinXP ugniasienëje ðiai eMule sesijai"
@@ -1644,7 +1639,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Kopijuoti á atmintinæ"
     IDS_LD_HOSTNAME         "Naudoti kompiuterio vardà (ið nustatymø) vietoj IP kai kuriama nuoroda su ðaltiniu"
     IDS_SAVEACFAILED        "Nepavyko iðsaugoti PIKT hað rinkinio!"
-    IDS_IACHHASH            "PIKT hað"
+    IDS_AICHHASH            "PIKT hað"
     IDS_BYTESPERSEC         "B/s"//!
     IDS_KBYTESPERSEC        "KB/s"//!
     IDS_MBYTESPERSEC        "MB/s"//!
@@ -1976,7 +1971,34 @@ BEGIN
     IDS_UNSHARE             "Neðarinti"
     IDS_WEBUPNPINCLUDE      "Naudotá ðá portà UPnP nustatymuose"
     IDS_ADDEDON             "Pridëta"
-    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_RESOLVELINKS        "Atpaþinti shell nuorodas ðarintuose kataloguose"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Gavimo komandos"
+    IDS_CLOSETOOLBAR        "Uþdaryti árankiø juostà"
+    IDS_SHOWTOOLBAR         "Rodyti árankiø juostà"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "Jûs negalite naudoti pirmo raktaþodþio su OR operatorium kai vykdot paieðkà per Kad!\n\nPavyzdþiui ""Raktaþodis1 OR Raktaþodis2"" nëra ámanomi. Bandykit ""Raktaþodis1 AND (Raktaþodis2 OR Raktaþodis3)"" arba tiesiog darykit kelias atskiras paieðkas."
+    IDS_DISCOVEREDBY        "Atrado"
+    IDS_NODES               "Taðkas(ai)"
+    IDS_ROUTINGTABLE        "Routinimo lentelë"
+    IDS_PROTOCOLVERSION     "Protokolo versija"
+    IDS_FOUNDNODESUSEFUL    "Rasti taðkai (naudingi)"
+    IDS_NORESPONSE          "Nëra atsakymo"
+    IDS_NOTASKED            "Neklausta"
+    IDS_LOOKUPGRAPH         "Paieðkos informacija"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatiðkai rodyti aktivias paieðkas"
+    IDS_PAUSEONPREVIEW      "Pauzë - ámanoma perþiûra"
+    IDS_PREVIEWWITH         "Perþiûrëti su"
+    IDS_CLOSEEMULE          "Uþdaryti eMule"
+    IDS_DONOTASKAGAIN       "Daugiau neklausti"
+    IDS_POPULARITY          "Populiarumo lygis"
+    IDS_SHOWWIN7TASKBARGOODIES "Ájungti Windows 7 uþduoèiø juostos efektus"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Lithuanian resources

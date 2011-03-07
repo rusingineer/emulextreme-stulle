@@ -128,7 +128,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "המשך עם המושהה הבא"
     IDS_STARTPRIO           "עדיפות לקטגוריה זו"
     IDS_PREF_STARTNEXTFILECAT "העדף קטגוריה זהה"
-    IDS_REPAINTGRAPHS       "אל תחדש גרפי סטטיסטיקות בשינוי גודל החלון"
     IDS_SOFTFILES           "מגבלת תוכנה"
 END
 
@@ -156,7 +155,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "שרת נט: נכשל בהתחברות"
     IDS_ERR_TOOLARGEFILE    "הקובץ גדול מגודל הנתמך ע""י פרוטוקול ed2k (>=4ג""ב)"
     IDS_MSGONLYFRIENDS      "קבל מחברים בלבד"
-    IDS_MSGONLYSEC          "קבל מקליינטים תקינים בלבד"
     IDS_DAY_MO_SA           "שני-שבת"
     IDS_LIMITSOURCES        "הגבל מקורות"
     IDS_LIMITCONS5SEC       "הגבל התחברויות ל-5 שניות"
@@ -435,7 +433,7 @@ BEGIN
     IDS_STATS_MAXDL         "מקס' קצב הורדה: %s ק""ב לשנייה"
     IDS_IRC_EMULEPROTO_IGNOREADDFRIEND 
                             "התעלם מהודעות פרוטוקול הוסף חבר של אימיול"
-    IDS_PW_FASTSRVCON       "התחברות בטוחה."
+    IDS_PW_FASTSRVCON       "התחברות בטוחה"
     IDS_SOURCELINKFAILED    "אתה צריך מזהה גבוה כדי ליצור קישור-מקור"
     IDS_ERR_LOADSERVERMET   "נכשל בטעינת server.met!"
     IDS_ERR_CORRUPTCOMPRPKG "התקבלה מנה מכווצת פגומה עבור %s (שגיאה %u)"
@@ -508,16 +506,16 @@ BEGIN
     IDS_IRC_PERFORM         "ביצוע"
     IDS_IRC_USEPERFORM      "השתמש במחרוזת ביצוע בעת התחברות"
     IDS_IRC_ADDTOFRIENDLIST "הוסף לרשימת חברים"
-    IDS_IRC_LOADCHANNELLISTONCON "הטען רשימת ערוצים של שרת בעת התחברות"
+    IDS_IRC_LOADCHANNELLISTONCON "טען רשימת ערוצים של שרת בעת התחברות"
     IDS_IRC_ADDASFRIEND     "הוסיף אותך כחבר!"
     IDS_PW_WARNING          "המספר שבחרת עבור ""%s"" גדול מידי מתמיכת מערכת ההפעלה:  %u\nהדבר יכול לגרום לאי-יציבות של המערכת.\n\nהאם אתה בטוח שברצונך לשנות?"
     IDS_TAKEOVER            "השתלט"
     IDS_CLEANUP             "נקה"
     IDS_RENAME              "שנה שם"
-    IDS_IRC_ADDLINKTOIRC    "הוסף לקליפבורד של IRC לשלוח לחברים"
+    IDS_IRC_ADDLINKTOIRC    "הוסף לקליפבורד IRC"
     IDS_IRC_SENDLINK        "שלח לחבר: "
     IDS_IRC_RECIEVEDLINK    "%s שלח (%s) שיתחיל אוטומטית."
-    IDS_IRC_ACCEPTLINKS     "קבל קישורי ED2K ב-IRC. (השתמש באפשרות זו בזהירות!)"
+    IDS_IRC_ACCEPTLINKS     "קבל קישורי ED2K ב-IRC (השתמש באפשרות זו בזהירות!)"
     IDS_SHARED              "משותף"
     IDS_DOWNLOADED          "הורד"
 END
@@ -537,7 +535,7 @@ BEGIN
     IDS_IRC_SEND            "שלח"
     IDS_IRC_NAME            "שם"
     IDS_IRC_SLAPMSGSEND     "PRIVMSG %s :\001ACTION סטר ל-%s עם דג טונה מסריח!\001"
-    IDS_IRC_ADDTIMESTAMP    "הוסף זמנים להודעות."
+    IDS_IRC_ADDTIMESTAMP    "הוסף זמנים להודעות"
 END
 
 STRINGTABLE 
@@ -595,7 +593,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "נסה להוריד חלקים ראשון ואחרון ראשונים"
-    IDS_UPDATEQUEUE         "אל תעדכן תור בזמן אמת"
     IDS_RECOVER_SINGLE      "קובץ אחר שוחזר."
     IDS_RECOVER_MULTIPLE    "%u קבצים שוחזרו"
     IDS_ATTEMPTING_RECOVERY "מנסה לשחזר ארכיון..."
@@ -663,7 +660,7 @@ BEGIN
     IDS_SF_USER             "סה""כ משתמשים"
     IDS_SF_FILE             "סה""כ קבצים"
     IDS_UPLOADTIME          "זמן העלאה"
-    IDS_LASTSEENCOMPL       "לאחרונה הושלם:"
+    IDS_LASTSEENCOMPL       "הושלם לאחרונה:"
     IDS_YES                 "כן"
     IDS_NO                  "לא"
     IDS_UNBAN               "בטל החרמה"
@@ -788,10 +785,9 @@ BEGIN
     IDS_PW_USC              "עדכן רשימת שרתים בהתחברות לשרת"
     IDS_PW_UCC              "עדכן רשימת שרתים בהתחברות של קליינט"
     IDS_PW_FILTER           "תמיד סנן שרתים עם איי פי שגוי"
-    IDS_PW_USS              "עדכן אוטומטית את רשימת השרתים בעת הפעלה"
+    IDS_PW_USS              "עדכן רשימת שרתים אוטומטית בעת הפעלה"
     IDS_PW_MISC             "שונות"
     IDS_PW_TRAY             "מזער למגש מערכת"
-    IDS_PW_BEEP             "צפצף בעת שגיאה"
     IDS_PW_PROMPT           "וודא יציאה"
     IDS_PW_SPLASH           "הצג מסך פתיחה"
     IDS_PW_DBLCLICK         "קליק כפול על הורדה להרחבה"
@@ -853,7 +849,7 @@ BEGIN
     IDS_SV_UPDATE           "עדכן"
     IDS_SF_FILES            "קבצים משותפים"
     IDS_SF_STATISTICS       "סטטיסטיקות"
-    IDS_SF_RELOAD           "הטען מחדש"
+    IDS_SF_RELOAD           "טען מחדש"
     IDS_SF_CURRENT          "הפעלה נוכחית"
 END
 
@@ -1445,7 +1441,7 @@ BEGIN
     IDS_KADUDPPORTERR       "פורט UDP של קדמליה מתנגש עם פורט UDP מורחב של אימיול או פורט UDP של שרת אימיול. הפורט שונה ל-%u."
     IDS_CONFIRM_FILEDELETE  "האם אתה בטוח שברצונך למחוק את כל הקבצים הנבחרים מהכונן?"
     IDS_OPENFOLDER          "פתח תיקייה"
-    IDS_RUNASUSER           "הפעל את אימיול כשמתמש ללא הרשאות"
+    IDS_RUNASUSER           "הפעל את אימיול כמשתמש ללא הרשאות"
     IDS_DELETE              "מחק מהדיסק"
     IDS_BOOTSTRAP           "התחבר"
     IDS_VIAED2KSQ           "באמצעות שרת ED2K/תור"
@@ -1541,7 +1537,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "נכשל בהגדרת חומת האש הפנימית של WinXP לפורטים שנבחרו!"
     IDS_FO_PREF_STARTUP     "פתח/סגור פורטים בחומת האש הפנימית של WinXP בעת הפעלה/סגירה של אימיול"
     IDS_LOG_LEVEL           "רמת יומן"
-    IDS_DISABLEPEERACHE     "בטל הורדה מ-PeerCache"
     IDS_FO_TEMPTCP_S        "נפתח הפורט %u (TCP) בחומת האש הפנימית של WinXP עבור ההפעלה הנוכחית של אימיול"
     IDS_FO_TEMPTCP_F        "נכשל בפתיחת פורט %u (TCP) בחומת האש הפנימית של WinXP עבור ההפעלה הנוכחית של אימיול"
     IDS_FO_TEMPUDP_S        "נפתח הפורט %u (UDP) בחומת האש הפנימית של WinXP עבור ההפעלה הנוכחית של אימיול"
@@ -1554,7 +1549,7 @@ BEGIN
     IDS_PREF_STARTNEXTFILECATONLY "רק מאותה קטגוריה"
     IDS_LOG_ULDL_EVENTS     "שמור ביומן אירועי העלאה/הורדה"
     IDS_PEERCACHE_ENABLED   "ספק האינטרנט שלך תומך בטכנולוגיית PeerCache, מפעיל הורדות מטמון!"
-    IDS_IRC_EMULEPROTO_ALLOWADDFRIEND "אפשר למשתמש להוסיף אותך כחבר."
+    IDS_IRC_EMULEPROTO_ALLOWADDFRIEND "אפשר למשתמש להוסיף אותך כחבר"
     IDS_DL_TRY_TO_GET_PREVIEW_PARTS "הורד ראשונים חלקים המשמשים לתצוגה מקדימה"
 END
 
@@ -1639,7 +1634,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "העתק לקליפבורד"
     IDS_LD_HOSTNAME         "השתמש בשם מארח (מהעדפות) במקום איי פי בעת יצירת קישור מקור"
     IDS_SAVEACFAILED        "נכשל בשמירת סט האש AICH!"
-    IDS_IACHHASH            "AICH האש"
+    IDS_AICHHASH            "AICH האש"
     IDS_BYTESPERSEC         "בתים לשנייה"
     IDS_KBYTESPERSEC        "ק""ב לשנייה"
     IDS_MBYTESPERSEC        "מ""ב לשנייה"
@@ -1965,7 +1960,34 @@ BEGIN
     IDS_UNSHARE             "בטל שיתוף"
     IDS_WEBUPNPINCLUDE      "הוסף פורט בהפעלת UPnP"
     IDS_ADDEDON             "נוסף בתאריך"
-    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_RESOLVELINKS        "אפשר שיתוף קבצים באמצעות קיצורי דרך בתיקיות משותפות"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "פקודות הורדה"
+    IDS_CLOSETOOLBAR        "סגור סרגל כלים"
+    IDS_SHOWTOOLBAR         "הצג סרגל כלים"
+    IDS_SEARCH_BADOPERATORCOMBINATION
+                            "לא ניתן להשתמש ב-OR במילת המפתח הראשונה בחיפוש בקדמליה!\n\nלדוגמה: חיפוש ""מילה1 OR מילה2"" אינו אפשרי. נסה ""מילה1 AND (מילה2 או מילה3)"" או בצע מספר חיפושים"
+    IDS_DISCOVEREDBY        "התגלה ע""י"
+    IDS_NODES               "איש/אנשי קשר"
+    IDS_ROUTINGTABLE        "טבלת ניתוב"
+    IDS_PROTOCOLVERSION     "גירסת פרוטוקול"
+    IDS_FOUNDNODESUSEFUL    "אנשי קשר (שימושיים) שנמצאו"
+    IDS_NORESPONSE          "אין תגובה"
+    IDS_NOTASKED            "לא נשאל"
+    IDS_LOOKUPGRAPH         "פרטי חיפוש"
+    IDS_AUTOKADLOOKUPGRAPH  "הצג חיפושים פעילים אוטומטית"
+    IDS_PAUSEONPREVIEW      "השהה כשתצוגה מקדימה זמינה"
+    IDS_PREVIEWWITH         "תצוגה מקדימה עם"
+    IDS_CLOSEEMULE          "סגור את אימיול"
+    IDS_DONOTASKAGAIN       "אל תשאל אותי שוב"
+    IDS_POPULARITY          "דירוג פופולריות"
+    IDS_SHOWWIN7TASKBARGOODIES "הפעל אפקטים של שורת מצב של חלונות 7"
+    IDS_LANMODE             "מצב רשת מקומית (LAN)"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Hebrew resources

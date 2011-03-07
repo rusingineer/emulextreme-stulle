@@ -499,7 +499,6 @@ BEGIN
     IDS_PW_USS              "Auto-actualizar lista de servidores al iniciar"
     IDS_PW_MISC             "Opciones varias"
     IDS_PW_TRAY             "Minimizar al área de notificación"
-    IDS_PW_BEEP             "Sonido en errores"
     IDS_PW_PROMPT           "Preguntar al salir"
     IDS_PW_SPLASH           "Mostrar pantalla de inicio"
     IDS_PW_DBLCLICK         "Pinchar dos veces sobre una descarga para ver sus fuentes"
@@ -698,7 +697,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Intentar descargar antes la primera y última parte"
-    IDS_UPDATEQUEUE         "No actualizar la lista de cola de espera en tiempo real"
     IDS_RECOVER_SINGLE      "1 archivo recuperado."
     IDS_RECOVER_MULTIPLE    "%u archivos recuperados."
     IDS_ATTEMPTING_RECOVERY "Intentando recuperar archivo"
@@ -1090,7 +1088,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Servidor Web: Intento erróneo de inicio de sesión"
     IDS_ERR_TOOLARGEFILE    "El tamaño del archivo es mayor que el soportado por el protocolo eDonkey (>=256GB)"
     IDS_MSGONLYFRIENDS      "Aceptar sólo de amigos"
-    IDS_MSGONLYSEC          "Aceptar sólo de clientes válidos"
     IDS_DAY_MO_SA           "Lun-Sab"
     IDS_LIMITSOURCES        "Límite de fuentes"
     IDS_LIMITCONS5SEC       "Límite conexiones/5seg"
@@ -1139,7 +1136,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Reanudar siguiente archivo pausado"
     IDS_STARTPRIO           "Prioridad para esta categoría"
     IDS_PREF_STARTNEXTFILECAT "Prefer. misma categoría"
-    IDS_REPAINTGRAPHS       "No redibujar gráficos de estadísticas al cambiar de tamaño"
     IDS_SOFTFILES           "Límite de archivo bajo"
 END
 
@@ -1558,7 +1554,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "¡Error al configurar el cortafuegos interno de WinXP para los puertos seleccionados!"
     IDS_FO_PREF_STARTUP     "Abrir/cerrar puertos en el cortafuegos de WinXP cuando se inicia/cierra eMule"
     IDS_LOG_LEVEL           "Nivel de registro"
-    IDS_DISABLEPEERACHE     "Desactivar descarga desde PeerCache"
     IDS_SOURCESWAPBLOCKED   "Intercambio bloqueado"
     IDS_A4AF_CHECK_THIS_NOW "Comprobar esta fuente ahora (debug)"
     IDS_NEWMSG              "Nuevo Mensaje de '%s' (IP:%s)"
@@ -1650,7 +1645,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Copiar al Portapapeles"
     IDS_LD_HOSTNAME         "Usar hostname (dirección de Red), desde Preferencias, en vez de la IP cuando se crea un enlace de fuente"
     IDS_SAVEACFAILED        "¡Error al guardar conjunto de hashes AICH!"
-    IDS_IACHHASH            "Hash AICH"
+    IDS_AICHHASH            "Hash AICH"
     IDS_BYTESPERSEC         "B/s"//!
     IDS_KBYTESPERSEC        "kB/s"
     IDS_MBYTESPERSEC        "MB/s"//!
@@ -1981,6 +1976,33 @@ BEGIN
     IDS_RESOLVELINKS        "Compartir archivos a partir de sus accesos directos"
 END
 
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Descargar comandos"
+    IDS_CLOSETOOLBAR        "Cerrar barra de herramientas"
+    IDS_SHOWTOOLBAR         "Mostrar barra de herramientas"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "¡Al buscar en Kad no se puede combinar la primera palabra clave con un operador OR!\n\nPor ejemplo, no se puede buscar ""PalabraClave1 OR PalabraClave2"". Prueba con ""PalabraClave1 AND (PalabraClave2 OR PalabraClave3)"" o haz búsquedas por separado."
+    IDS_DISCOVEREDBY        "Descubierto por"
+    IDS_NODES               "Nodo(s)"
+    IDS_ROUTINGTABLE        "Tabla de enrutamiento"
+    IDS_PROTOCOLVERSION     "Versión del protocolo"
+    IDS_FOUNDNODESUSEFUL    "Encontrar nodos (útil)"
+    IDS_NORESPONSE          "Sin respuesta"
+    IDS_NOTASKED            "No se ha preguntado"
+    IDS_LOOKUPGRAPH         "Detalles de la búsqueda"
+    IDS_AUTOKADLOOKUPGRAPH  "Mostrar automáticamente búsquedas activas"
+    IDS_PAUSEONPREVIEW      "Pausar si se puede previsualizar"
+    IDS_PREVIEWWITH         "Previsualizar con"
+    IDS_CLOSEEMULE          "Cerrar eMule"
+    IDS_DONOTASKAGAIN       "No preguntar de nuevo"
+    IDS_POPULARITY          "Popularidad"
+    IDS_SHOWWIN7TASKBARGOODIES "Activar efectos de la barra de tareas de Windows 7"
+    IDS_LANMODE             "Modo LAN"
+    IDS_OPENPREFINI         "Open preferences.ini"
+END
+
 STRINGTABLE 
 BEGIN
     IDS_DROPNONEEDEDSRCS    "Eliminar NNS"
@@ -2126,8 +2148,8 @@ BEGIN
     IDS_LOGPARTMISMATCH     "Logear solicitados con tamaños incorrectos"
     IDS_CN_UPNPTRYRANDOM    "Intentar puertos aleatorios en UPnP"
     IDS_CN_UPNPNAT          "Activar soporte UPnP "
-    IDS_CHUNKCHOOSER        "Método de selección de parte"
-    IDS_UPLOADINSTABLE      "Advertencia: La configuración de subida parece ser demasiado elevada. Por favor, revise la configuración! \n Mire el gráfico de subida, la línea blanca o amarilla (con NAFC) debería ser plana \n Este mensaje se genera una única vez"
+    IDS_CHUNKCHOOSER  "Método de selección de cada parte"
+    IDS_UPLOADINSTABLE "Aviso: Tu configuración de subida es excesiva. Por favor, ¡revísala! \n Fíjate en el gráfico de subida, la línea blanca o amarilla (con NAFC) debería ser plana \n Este mensaje aparece sólo una vez"
 END
 
 STRINGTABLE 

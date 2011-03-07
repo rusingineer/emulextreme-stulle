@@ -544,7 +544,6 @@ BEGIN
     IDS_PW_USS              "起動時にサーバーリストを自動更新"
     IDS_PW_MISC             "その他"
     IDS_PW_TRAY             "システムトレイに最小化"
-    IDS_PW_BEEP             "エラー時に音を鳴らす"
     IDS_PW_PROMPT           "終了時に確認ダイアログを表示する"
     IDS_PW_SPLASH           "スプラッシュスクリーンを表示"
     IDS_PW_DBLCLICK         "ダウンロードリストをダブルクリックで展開する"
@@ -764,7 +763,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "最初にプレビュー用チャンクをダウンロードする"
-    IDS_UPDATEQUEUE         "リアルタイムでキューリストを更新しない"
     IDS_RECOVER_SINGLE      "修復機能: 1ファイル修復"
     IDS_RECOVER_MULTIPLE    "修復機能: %uファイル修復"
     IDS_ATTEMPTING_RECOVERY "修復機能: 修復開始"
@@ -823,7 +821,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "選択されたポート用のWinXP内蔵ファイアーウォールの構成に失敗しました!"
     IDS_FO_PREF_STARTUP     "eMuleの開始/終了時にWinXPのファイアーウォール上のポートを開く/閉じる"
     IDS_LOG_LEVEL           "ログレベル"
-    IDS_DISABLEPEERACHE     "PeerCacheからのダウンロードを無効にする"
     IDS_NEWMSG              "'%s' (IP:%s)からの新しいメッセージ"
     IDS_PREF_STARTNEXTFILECATONLY "同じカテゴリ内のみ"
     IDS_LOG_ULDL_EVENTS     "アップロード/ダウンロードイベントのログを採る"
@@ -1142,7 +1139,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Webインターフェース: ログインに失敗しました"
     IDS_ERR_TOOLARGEFILE    "eDonkeyプロトコルでサポートされるファイルサイズよりも大きくなっています(>=256GB)"
     IDS_MSGONLYFRIENDS      "友達だけを受け付ける"
-    IDS_MSGONLYSEC          "正規クライアントからだけ受け付ける"
     IDS_DAY_MO_SA           "月-土"
     IDS_LIMITSOURCES        "ソース数の制限"
     IDS_LIMITCONS5SEC       "接続制限/5秒"
@@ -1192,7 +1188,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "次の一時停止を再開する"
     IDS_STARTPRIO           "このカテゴリの優先順位"
     IDS_PREF_STARTNEXTFILECAT "同じカテゴリーを選択する"
-    IDS_REPAINTGRAPHS       "サイズ変更しても統計グラフを書き換えない"
     IDS_SOFTFILES           "ソフトファイル制限"
 END
 
@@ -1667,7 +1662,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_IACHHASH            "AICHハッシュ"
+    IDS_AICHHASH            "AICHハッシュ"
     IDS_BYTESPERSEC         "B/秒"
     IDS_KBYTESPERSEC        "KB/秒"
     IDS_MBYTESPERSEC        "MB/秒"
@@ -1980,6 +1975,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // 日本語 (Japanese) resources

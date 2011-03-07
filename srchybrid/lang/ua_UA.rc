@@ -542,7 +542,6 @@ BEGIN
     IDS_PW_USS              "Авто-оновлення списку серверів при запуску"
     IDS_PW_MISC             "Інше"
     IDS_PW_TRAY             "Згорнути у панель завдань"
-    IDS_PW_BEEP             "Звуковий сигнал при помилках"
     IDS_PW_PROMPT           "Вікно підтвердження при виході"
     IDS_PW_SPLASH           "Показувати заставку"
     IDS_PW_DBLCLICK         "Розгортання списку завантаження при подвійному кліку"
@@ -761,7 +760,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Намагатися передавати спочатку першу частину"
-    IDS_UPDATEQUEUE         "Не оновлювати чергу у реальному часі"
     IDS_RECOVER_SINGLE      "Відновлення архіва: 1 файл відновлено."
     IDS_RECOVER_MULTIPLE    "Відновлення архіва: %u файлів відновлено."
     IDS_ATTEMPTING_RECOVERY "Відновлення архіва: Розпочато"
@@ -818,7 +816,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Не вдалося сконфігурувати необхідні порти брандмауераWinXP"
     IDS_FO_PREF_STARTUP     "Відкрити/Закрити порти брандмауера WinXP при запуску/виході eMule"
     IDS_LOG_LEVEL           "Рівень лоґу"
-    IDS_DISABLEPEERACHE     "Заборонити завантаження з PeerCache"
     IDS_NEWMSG              "Нове Повідомлення від '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "Тільки в тій же категорії"
     IDS_LOG_ULDL_EVENTS     "Лог відвантаження/завантаження"
@@ -1135,7 +1132,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Web сервер: Помилка при підключенні"
     IDS_ERR_TOOLARGEFILE    "Розмір файла перевищує дозволений для eDonkey протоколу (>=4Гб)"
     IDS_MSGONLYFRIENDS      "Приймати тільки від друзів"
-    IDS_MSGONLYSEC          "Приймати тільки від правильних клієнтів"
     IDS_DAY_MO_SA           "Пон-Суб"
     IDS_LIMITSOURCES        "Обмеження джерел"
     IDS_LIMITCONS5SEC       "Обмеження з'єднань/5сек"
@@ -1185,7 +1181,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Продовжити наступний на 'Паузі'"
     IDS_STARTPRIO           "Пріоритет для цієї категорії"
     IDS_PREF_STARTNEXTFILECAT "Бажано тієї ж категорії"
-    IDS_REPAINTGRAPHS       "Не відновлювати графік при зміні розміру вікна"
     IDS_SOFTFILES           "М'яке обмеження файлів"
 END
 
@@ -1687,7 +1682,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_IACHHASH            "AICH Хеш"
+    IDS_AICHHASH            "AICH Хеш"
     IDS_BYTESPERSEC         "Б/с"
     IDS_KBYTESPERSEC        "КБ/с"
     IDS_MBYTESPERSEC        "МB/с"
@@ -1922,7 +1917,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Sharing eMule with other computer users"
     IDS_SHAREEMULEMULTI     "Each user has its own configuration and downloads"
     IDS_SHAREEMULEPUBLIC    "Everyone has the same configuration and downloads"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 
@@ -1970,6 +1965,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Ukrainian resources

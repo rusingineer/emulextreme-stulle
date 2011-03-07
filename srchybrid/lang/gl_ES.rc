@@ -532,7 +532,6 @@ BEGIN
     IDS_PW_USS              "Actualizar a lista de servidores ao iniciar"
     IDS_PW_MISC             "Outras opcións"
     IDS_PW_TRAY             "Minimi&zar á barra de tarefas"
-    IDS_PW_BEEP             "Facer un son cando haxa algún erro"
     IDS_PW_PROMPT           "Preguntar ao sair"
     IDS_PW_SPLASH           "Mostrar pantalla de inicio"
     IDS_PW_DBLCLICK         "Expandir a lista de baixada con dobre click"
@@ -732,7 +731,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Intentar baixar primeiro a primeira e a última parte"
-    IDS_UPDATEQUEUE         "Non actualizar a lista de cola en tempo real"
     IDS_RECOVER_SINGLE      "1 arquivo recuperado."
     IDS_RECOVER_MULTIPLE    "%u arquivos recuperados."
     IDS_ATTEMPTING_RECOVERY "Intentando recuperar o arquivo..."
@@ -1088,7 +1086,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Servidor Web: Non se puido iniciar sesión"
     IDS_ERR_TOOLARGEFILE    "Arquivo máis longo do que soporta o protocolo edonkey (>=256GB)"
     IDS_MSGONLYFRIENDS      "Aceptar só de amigos"
-    IDS_MSGONLYSEC          "Aceptar só de clientes válidos"
     IDS_DAY_MO_SA           "Lun-Sáb"
     IDS_LIMITSOURCES        "Límite de fontes"
     IDS_LIMITCONS5SEC       "Límite de conexións/5seg"
@@ -1138,7 +1135,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Reanudar o seguinte arquivo pausado"
     IDS_STARTPRIO           "Prioridade para esta categoría"
     IDS_PREF_STARTNEXTFILECAT "da mesma categoría"
-    IDS_REPAINTGRAPHS       "Non redebuxar os gráficos de estatísticas ao cambiar de tamaño"
     IDS_SOFTFILES           "Límite inferior de arquivo"
 END
 
@@ -1552,7 +1548,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Erro ao configurar o cortalumes interno de Windows XP para os portos seleccionados!"
     IDS_FO_PREF_STARTUP     "Abrir/pechar portos do cortalumes de Windows XP ao abrir/pechar eMule"
     IDS_LOG_LEVEL           "Rexistrar Nivel"
-    IDS_DISABLEPEERACHE     "Desactivar descarga dende PeerCache"
     IDS_FO_TEMPTCP_S        "Porto %u (TCP) aberto no cortalumes interno de Windows XP para esta sesión de eMule"
     IDS_FO_TEMPTCP_F        "Erro ao abrir o porto %u (TCP) no cortalumes interno de Windows XP para esta sesión de eMule"
     IDS_FO_TEMPUDP_S        "Porto %u (UDP) aberto no cortalumes interno de Windows XP para esta sesión de eMule"
@@ -1650,7 +1645,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Copiar ao portapapeis"
     IDS_LD_HOSTNAME         "Usar o nome do host (en preferencias) en vez da IP ao crear un enlace de fonte"
     IDS_SAVEACFAILED        "Erro ao gardar o hashset AICH!"
-    IDS_IACHHASH            "Hash AICH"
+    IDS_AICHHASH            "Hash AICH"
     IDS_BYTESPERSEC         "B/s"//!
     IDS_KBYTESPERSEC        "kB/s"
     IDS_MBYTESPERSEC        "MB/s"//!
@@ -1983,6 +1978,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Incluír porto na configuración de UPnP"
     IDS_ADDEDON             "Engadido o"
     IDS_RESOLVELINKS        "Compartir arquivos a partir dos seus accesos directos"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Descargar comandos"
+    IDS_CLOSETOOLBAR        "Pechar barra de ferramentas"
+    IDS_SHOWTOOLBAR         "Mostrar barra de ferramentas"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "¡Ao pescudar en Kad non se pode combinar a primeira verba clave cun operador OR!\n\nPor exemplo, non se pode pescudar ""VerbaClave1 OR VerbaClave2"". Proba con ""VerbaClave1 AND (VerbaClave2 OR VerbaClave3)"" ou fai pescudas por separado."
+    IDS_DISCOVEREDBY        "Descuberto por"
+    IDS_NODES               "Nodo(s)"
+    IDS_ROUTINGTABLE        "Táboa de enrutamento"
+    IDS_PROTOCOLVERSION     "Versión do protocolo"
+    IDS_FOUNDNODESUSEFUL    "Encontrar nodos (útil)"
+    IDS_NORESPONSE          "Sen resposta"
+    IDS_NOTASKED            "Non se preguntou"
+    IDS_LOOKUPGRAPH         "Detalles da pescuda"
+    IDS_AUTOKADLOOKUPGRAPH  "Mostrar automaticamente pescudas activas"
+    IDS_PAUSEONPREVIEW      "Pausar se se pode previsualizar"
+    IDS_PREVIEWWITH         "Previsualizar con"
+    IDS_CLOSEEMULE          "Pechar eMule"
+    IDS_DONOTASKAGAIN       "Non preguntar de novo"
+    IDS_POPULARITY          "Popularidade"
+    IDS_SHOWWIN7TASKBARGOODIES "Activar efectos da barra de tarefas de Windows 7"
+    IDS_LANMODE             "Modo LAN"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Galego: 0x56, 0x1 resources

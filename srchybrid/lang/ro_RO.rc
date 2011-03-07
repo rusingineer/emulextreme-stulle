@@ -535,7 +535,6 @@ BEGIN
     IDS_PW_USS              "Actualizez automat lista de servere la pornire"
     IDS_PW_MISC             "Opþiuni diverse"
     IDS_PW_TRAY             "Micºorare ca icon în colþ pe barã"
-    IDS_PW_BEEP             "Bip în caz de eroare"
     IDS_PW_PROMPT           "Cer confirmare la ieºire"
     IDS_PW_SPLASH           "Arãt Splashscreen"
     IDS_PW_DBLCLICK         "Dublu-click deschide detaliile descãrcãrii"
@@ -755,7 +754,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "La început,încerc sã descarc întîi primul ºi ultimul chunk"
-    IDS_UPDATEQUEUE         "Nu actualiza rîndul în timp real"
     IDS_RECOVER_SINGLE      "1 fiºier recuperat."
     IDS_RECOVER_MULTIPLE    "%u fiºiere recuperate."
     IDS_ATTEMPTING_RECOVERY "Încerc sã recuperez arhiva..."
@@ -1109,7 +1107,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Interfaþã Web: Tentativã de logare eºuatã"
     IDS_ERR_TOOLARGEFILE    "Dimensiune fiºier prea mare ptr. protocolul eDonkey (>= 4Gb)"
     IDS_MSGONLYFRIENDS      "Doar de la prieteni"
-    IDS_MSGONLYSEC          "Doar de la clienþi valizi"
     IDS_DAY_MO_SA           "Luni-Sâmbãtã"
     IDS_LIMITSOURCES        "Limitã surse"
     IDS_LIMITCONS5SEC       "Maxim conexiuni în 5 secunde"
@@ -1159,7 +1156,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Descarcã urmãtorul fiºier din pauzã"
     IDS_STARTPRIO           "Schimbã prioritatea noilor fiºiere"
     IDS_PREF_STARTNEXTFILECAT "Prefer aceeaºi categorie"
-    IDS_REPAINTGRAPHS       "Nu re-crea graficele la redimensionare"
     IDS_SOFTFILES           "Limitã 'Soft' fiºiere"
 END
 
@@ -1556,7 +1552,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Nu pot configura firewall-ul intern al WinXP pentru porturile selectate!"
     IDS_FO_PREF_STARTUP     "Deschid/închid porturile din firewall-ul WinXP la pornirea/oprirea eMule"
     IDS_LOG_LEVEL           "Nivel Log"
-    IDS_DISABLEPEERACHE     "Dezactivez descãrcarea din PeerCache"
     IDS_NEWMSG              "Mesaj nou de la '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "doar din aceeaºi categorie"
     IDS_LOG_ULDL_EVENTS     "Loghez evenimentele upload/download"
@@ -1650,7 +1645,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Copiazã în Agendã"
     IDS_LD_HOSTNAME         "Foloseºte hostname (din preferinþe) în loc de IP la crearea unui link sursã"
     IDS_SAVEACFAILED        "Nu pot salva AICH Hashset!"
-    IDS_IACHHASH            "AICH Hash" //!
+    IDS_AICHHASH            "AICH Hash" //!
     IDS_BYTESPERSEC         "B/s" //!
     IDS_KBYTESPERSEC        "KB/s" //!
     IDS_MBYTESPERSEC        "MB/s" //!
@@ -1977,7 +1972,34 @@ BEGIN
     IDS_UNSHARE             "Scoate din share"
     IDS_WEBUPNPINCLUDE      "Include port în setãrile UPnP"
     IDS_ADDEDON             "Adãugat"
-    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_RESOLVELINKS        "Rezolvã link-urile (shell links) în dosarele partajate"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Comenzi descãrcare"
+    IDS_CLOSETOOLBAR        "Închide toolbar"
+    IDS_SHOWTOOLBAR         "Aratã toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "Nu poþi folosi primul cuvînt-cheie cu un operator SAU (OR) la cãutare pe Kad!\n\nSpre exemplu ""Keyword1 OR Keyword2"" nu este posibil. Încearcã în schimb ""Keyword1 AND (Keyword2 OR Keyword3)"" sau cautã de mai multe ori."
+    IDS_DISCOVEREDBY        "Descoperit de"
+    IDS_NODES               "Nod(uri)"
+    IDS_ROUTINGTABLE        "Tabelã rutãri"
+    IDS_PROTOCOLVERSION     "Versiune protocol"
+    IDS_FOUNDNODESUSEFUL    "Noduri gãsite (utile)"
+    IDS_NORESPONSE          "Fãrã rãspuns"
+    IDS_NOTASKED            "Neîntrebat"
+    IDS_LOOKUPGRAPH         "Detalii cãutare"
+    IDS_AUTOKADLOOKUPGRAPH  "Aratã automat cãutãrile active"
+    IDS_PAUSEONPREVIEW      "Pauzã cînd se poate previzualiza"
+    IDS_PREVIEWWITH         "Previzualizare cu"
+    IDS_CLOSEEMULE          "Închide eMule"
+    IDS_DONOTASKAGAIN       "Nu mã mai întreba"
+    IDS_POPULARITY          "Clasament popularitate"
+    IDS_SHOWWIN7TASKBARGOODIES "Activare efecte taskbar Windows 7"
+    IDS_LANMODE             "Mod LAN"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 /////////////////////////////////////////////////////////////////////////////

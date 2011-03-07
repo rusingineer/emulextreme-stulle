@@ -497,7 +497,6 @@ BEGIN
     IDS_PW_USS              "Autoopdater serverliste ved opstart"
     IDS_PW_MISC             "Forskellige indstillinger"
     IDS_PW_TRAY             "Minim&er til trayikon"
-    IDS_PW_BEEP             "Beep ved fejl"
     IDS_PW_PROMPT           "Bekræft lukning"
     IDS_PW_SPLASH           "Vis Splashscreen"
     IDS_PW_DBLCLICK         "Downloadliste udfolder ved dobbelt klik"
@@ -696,7 +695,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Forsøg at downloade første og sidste dele først"
-    IDS_UPDATEQUEUE         "Opdater ikke køliste i realtid"
     IDS_RECOVER_SINGLE      "1 fil genoprettet."
     IDS_RECOVER_MULTIPLE    "%u filer genoprettet."
     IDS_ATTEMPTING_RECOVERY "Forsøger arkivgenoprettelse..."
@@ -750,7 +748,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Mislykkedes at konfigurere den interne WinXP firewall for de valgte porte!"
     IDS_FO_PREF_STARTUP     "Åben/Luk porte på WinXP firewall ved start/lukning af eMule"
     IDS_LOG_LEVEL           "Log Niveau"
-    IDS_DISABLEPEERACHE     "Deaktiver downloading fra PeerCache"
     IDS_NEWMSG              "Ny besked fra '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "kun i samme kategori"
     IDS_LOG_ULDL_EVENTS     "Log upload/download begivenheder"
@@ -1100,7 +1097,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Webserver: Log ind forsøg fejlet"
     IDS_ERR_TOOLARGEFILE    "Filen er større end edonkey protokollen kan håndtere (>=256GB)"
     IDS_MSGONLYFRIENDS      "Accepter kun fra venner"
-    IDS_MSGONLYSEC          "Accepter kun fra gyldige klienter"
     IDS_DAY_MO_SA           "Man-Lør"
     IDS_LIMITSOURCES        "Begræns kilder"
     IDS_LIMITCONS5SEC       "Begræns forbindelser / 5 sek."
@@ -1150,7 +1146,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Fortsæt næste pauserede fil"
     IDS_STARTPRIO           "Prioritet for denne kategori"
     IDS_PREF_STARTNEXTFILECAT "foretræk samme kategori"
-    IDS_REPAINTGRAPHS       "Genskab ikke statistikgrafer ved resize"
     IDS_SOFTFILES           "Blød filgrænse"
 END
 
@@ -1648,7 +1643,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Kopier til Udklipsholder"
     IDS_LD_HOSTNAME         "Brug hostnavn (fra indstillinger) istedet for når der skal genereres kildelink"
     IDS_SAVEACFAILED        "Mislykkedes at gemme AICH Hashset!"
-    IDS_IACHHASH            "AICH Hash"
+    IDS_AICHHASH            "AICH Hash"
     IDS_BYTESPERSEC         "B/s"
     IDS_KBYTESPERSEC        "KB/s"
     IDS_MBYTESPERSEC        "MB/s"
@@ -1983,6 +1978,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Inkluder port i UPnP opsætningen"
     IDS_ADDEDON             "Tilføjet den"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Danish resources

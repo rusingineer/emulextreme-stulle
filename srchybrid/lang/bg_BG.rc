@@ -63,7 +63,7 @@ BEGIN
     IDS_HTTPDOWNLOAD_CONNECTED "Свързан с %s"
     IDS_HTTPDOWNLOAD_RESOLVING_NAME "Определяне на името: %s"
     IDS_HTTPDOWNLOAD_RESOLVED_NAME "Името е определено като %s"
-    IDS_HTTPDOWNLOAD_CONNECTING "Свързване със %s"
+    IDS_HTTPDOWNLOAD_CONNECTING "Свързване с %s"
     IDS_HTTPDOWNLOAD_REDIRECTING "Пренасочване към %s"
 END
 
@@ -122,8 +122,8 @@ BEGIN
     IDS_ERR_WRONGFILEID     "Грешка при изпращане ID на файла"
     IDS_ERR_BADHASHSET      "Приети са повредени или невалидни данни от проверката на хеша"
     IDS_ERR_BADDATABLOCK    "Приет е повреден или невалиден блок от данни"
-    IDS_ERR_ILLFORMEDHASH   "Лошо оформен хеш"
-    IDS_ERR_BADED2KLINK     "Не добре оформен ЕD2K линк"
+    IDS_ERR_ILLFORMEDHASH   "Грешен хеш"
+    IDS_ERR_BADED2KLINK     "Невалиден ЕD2K линк"
     IDS_ERR_NOSLLINK        "Няма ED2K сървър или линк към файла"
     IDS_ERR_WRONGPACKAGESIZE "Невалиден размер на пакета OP_FILEREQUEST" 
     IDS_ERR_WRONGHPACKAGESIZE "Невалиден размер на пакетите OP_HASHSETREQUEST"
@@ -144,7 +144,7 @@ BEGIN
     IDS_ERR_SAVESERVERMET   "Не може да се запише server.met!"
     IDS_PASSIVE             "Пасивен"
     IDS_MAIN_BTN_CANCEL     "Отказ"
-    IDS_AVAIL               "Части: %u, Достъпни: %u (%.1f%%)\n\n"
+    IDS_AVAIL               "Части: %u, Налични: %u (%.1f%%)\n\n"
     IDS_TYPE                "Тип"
     IDS_FILEID              "ID на Файла"
     IDS_FILE                "Файл"
@@ -203,7 +203,7 @@ BEGIN
     IDS_CONNECTING          "Свързване"
     IDS_FAILED              "неуспешно"
     IDS_ERR_BADSERVERREPLY  "Приет е невалиден или повреден отговор за влизане от сървъра"
-    IDS_NEWCLIENTID         "Новото ID на клиента е %u"
+    IDS_NEWCLIENTID         "Новият ID на клиента е %u"
     IDS_SHAREDFOLDERS       "Споделени папки"
     IDS_VIEW1               "Преглед"
     IDS_VIEW2               " (Не се споделя)"
@@ -253,8 +253,8 @@ BEGIN
     IDS_DL_PROGRESS         "Напредък"
     IDS_DL_SOURCES          "Източници"
     IDS_ERR_BADSERVERLISTRECEIVED "Получен е невалиден пакет за списъка със сървъри"
-    IDS_STATUS              "Състояние"
-    IDS_DL_REMAINS          "Остава"
+    IDS_STATUS              "Статус"
+    IDS_DL_REMAINS          "Остават"
     IDS_UPDATEFROM          "Обнови от URL: (формат filter.dat или PeerGuardian)"
     IDS_QL_USERNAME         "Потребителско име"
     IDS_LOADURL             "Свали"
@@ -356,7 +356,7 @@ BEGIN
     IDS_QUEUESIZE           "Размер на опашката"
     IDS_DAYS2               "дни"
     IDS_ERR_MAKEBAKCREDITFILE "Не можах да направя резервно копие на файла с кредити"
-    IDS_COMMENT             "Коментари"
+    IDS_COMMENT             "Коментар"
     IDS_IPFILTERED          "Филтрирани IP: %s (%s)"
     IDS_DL_TRANSFCOMPL      "Завършени"
     IDS_DL_ACTIVE_TIME      "Сваляне от"
@@ -384,7 +384,7 @@ BEGIN
     IDS_INDICATERATINGS     "Индикирай задачите с коментари/оценки чрез икона"
     IDS_ALLOTHERS           "Некаталогизирани"
     IDS_TOCAT               "Добави към категория"
-    IDS_CAT_UNASSIGN        "(неопределени)"
+    IDS_CAT_UNASSIGN        "(Неопределени)"
 END
 
 STRINGTABLE 
@@ -485,8 +485,8 @@ BEGIN
     IDS_FR                  "Петък"
     IDS_SA                  "Събота"
     IDS_SO                  "Неделя"
-    IDS_WEB_ADMINLOGIN      "Уебсървър-Админ. влизане"
-    IDS_WEB_GUESTLOGIN      "Уебсървър-Гост влизане"
+    IDS_WEB_ADMINLOGIN      "Уебсървър: Влизане като администратор"
+    IDS_WEB_GUESTLOGIN      "Уебсървър: Влизане като гост"
     IDS_WEB_SESSIONEND      "Уебсървър: Излизане"
     IDS_DETAILS             "Детайли"
     IDS_ACTION              "Действие"
@@ -517,7 +517,7 @@ STRINGTABLE
 BEGIN
     IDS_PW_DIR              "Папки"
     IDS_PW_NICK             "Прякор"
-    IDS_PW_INCOMING         "Сваляни файлове"
+    IDS_PW_INCOMING         "Свалени файлове"
     IDS_PW_TEMP             "Временни файлове"
     IDS_PW_BROWSE           "Преглед..."
     IDS_PW_SHARED           "Споделени папки (Натиснете Ctrl за да включите подпапките)"
@@ -542,7 +542,6 @@ BEGIN
     IDS_PW_USS              "Обнови списъка със сървъри при старт"
     IDS_PW_MISC             "Разни"
     IDS_PW_TRAY             "Минимизирай в системната област"
-    IDS_PW_BEEP             "Звуков сигнал при грешка"
     IDS_PW_PROMPT           "Потвърждение при изход"
     IDS_PW_SPLASH           "Покажи начален екран"
     IDS_PW_DBLCLICK         "Разгъни списъка със сваляните при двойно щракване"
@@ -635,7 +634,7 @@ BEGIN
     IDS_ASKED               "Запитан"
     IDS_LASTSEEN            "Последно видян"
     IDS_BANNED              "Забранени"
-    IDS_UUSERS              "Потребители"
+    IDS_UUSERS              "Клиенти"
     IDS_UFAILED             "Повредени"
     IDS_OPENFILE            "Отвори файла"
     IDS_DATE                "Дата"
@@ -667,7 +666,7 @@ BEGIN
     IDS_REMOVEALLSEARCH     "Премахни всички"
     IDS_ENTERQUEUE          "На опашката"
     IDS_SF_FAIL             "Неработещи сървъри"
-    IDS_SF_WUSER            "Потребители"
+    IDS_SF_WUSER            "Клиенти"
     IDS_SF_WFILE            "Файлове"
     IDS_SF_USER             "Общо потребители"
     IDS_SF_FILE             "Общо файлове"
@@ -761,7 +760,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Опитай да свалиш първо частите за преглед"
-    IDS_UPDATEQUEUE         "Не обновявай опашката в реално време"
     IDS_RECOVER_SINGLE      "1 файл е възстановен."
     IDS_RECOVER_MULTIPLE    "%u файла са възстановени."
     IDS_ATTEMPTING_RECOVERY "Опитвам възстановяване на архив..."
@@ -775,7 +773,7 @@ BEGIN
     IDS_ROUND               "заоблена"
     IDS_SAMEUSERHASH        "Клиента '%s' и '%s' имат еднакъв хеш или IP - премахване на '%s'"
     IDS_SEARCHEXTENTION     "Разширение"
-    IDS_SEARCHAVAIL         "Пълни източници"
+    IDS_SEARCHAVAIL         "Наличност"
 END
 
 STRINGTABLE 
@@ -818,7 +816,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Не можах да конфигурирам вградената защ. стена на WinXP за избраните портове!"
     IDS_FO_PREF_STARTUP     "Отвори/Затвори портовете на защ. стена на WinXP когато стартирам/затварям eMule"
     IDS_LOG_LEVEL           "Ниво на отчета"
-    IDS_DISABLEPEERACHE     "Не сваляй с PeerCache"
     IDS_NEWMSG              "Съобщение от '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "само в същата категория"
     IDS_LOG_ULDL_EVENTS     "Отчет за качване/сваляне"
@@ -986,7 +983,7 @@ BEGIN
     IDS_CMT_AIDE            "За филми, можете да кажете неговата продължителност, качество, език... Ако е измама, кажете на другите потребители..."
     IDS_CMT_ADD             "Промени коментара за файла..."
     IDS_CMT_NONE            "Няма коментар"
-    IDS_CMT_READ            "Коментари за файла:"
+    IDS_CMT_READ            "Коментар за файла:"
     IDS_CMT_SHOWALL         "Покажи всички коментари"
     IDS_CMT_READALL         "Всички коментари"
     IDS_CMT_RATEQUEST       "Качество на файла"
@@ -1066,9 +1063,9 @@ BEGIN
     IDS_FILTERCOMMENTSLABEL "Игнорирай коментари съдържащи: (разделител  | )"
     IDS_CLIENTLIST          "Известни клиенти"
     IDS_FOLDER              "Папка"
-    IDS_CL_UPLOADSTATUS     "Състояние на качването"
+    IDS_CL_UPLOADSTATUS     "Статус на качването"
     IDS_CL_TRANSFUP         "Качени"
-    IDS_CL_DOWNLSTATUS      "Състояние на свалянето"
+    IDS_CL_DOWNLSTATUS      "Статус на свалянето"
     IDS_CL_TRANSFDOWN       "Свалени"
 END
 
@@ -1077,7 +1074,7 @@ BEGIN
     IDS_CL_PENDING          "В очакване"
     IDS_CL_LOW2LOW          "Low към Low ID"
     IDS_ERROR               "Грешка"
-    IDS_OPENINC             "Отвори папката 'Свалени'"
+    IDS_OPENINC             "Отвори папката със свалени файлове"
     IDS_HOTMENU             "Бързо меню"
     IDS_DISABLEKNOWNLIST    "Не показвай известните клиенти"
     IDS_DISABLEQUEUELIST    "Не показвай списък в опашката"
@@ -1097,15 +1094,15 @@ BEGIN
     IDS_LOG2DISK            "Записвай отчет на диска"
     IDS_KAD_SEARCH_KEYWORD_ALREADY_SEARCHING "Вече е стартирано търсене в Kad мрежата за фразата ""%s"".\r\n\r\nЗа до търсите отново по тази фраза, трябва или да изчакате търсенето да приключи или да затворите панела с резултатите от това търсене."
     IDS_KAD_SEARCH_KEYWORD_INVALID "Невалидна фраза.\r\n\r\nИзразът за търсене в Kad мрежата трябва да има следният формат:\r\n\r\n\t<kad-keyword> [ <ed2k-search-expression> ]\r\n\r\n<kad-keyword> не трябва да съдържа нито един от следните символи:\r\n\r\n\t%s"
-    IDS_EDITCAT             "Редактирай настройките на категории"
-    IDS_PW_WS               "Уебсървър"
-    IDS_ENABLED             "Включи"
+    IDS_EDITCAT             "Редактиране на настройките за категория"
+    IDS_PW_WS               "Уеб сървър"
+    IDS_ENABLED             "Използвай"
     IDS_WEB_LOGIN           "Влизане"
-    IDS_WEB_ENTER_PASSWORD  "Въведете тук Вашата парола"
+    IDS_WEB_ENTER_PASSWORD  "Въведете парола"
     IDS_WEB_LOGIN_NOW       "Влизане"
     IDS_WEB_CONFIRM_REMOVE_SERVER 
                             "Сигурни ли сте че искате да премахнете този сървър от списъка?"
-    IDS_WEB_CONTROL         "Уебпанел"
+    IDS_WEB_CONTROL         "Уеб панел"
     IDS_WEB_LOGOUT          "Излизане"
     IDS_WEB_ACTIONS         "Действия"
 END
@@ -1113,7 +1110,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_WEB_SHOW_UPLOAD_QUEUE "Покажи опашката"
-    IDS_WEB_GZIP_COMPRESSION "Gzip  компресия"
+    IDS_WEB_GZIP_COMPRESSION "Gzip компресия"
     IDS_WEB_GZIP_COMMENT    "Намали трафика, особено за графиките"
     IDS_WEB_REFRESH_TIME    "Време за обновяване на страниците"
     IDS_WEB_REFRESH_COMMENT "Време в секунди (нула=забранено):"
@@ -1132,24 +1129,23 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Уебсървър: Неуспешен опит за влизане"
     IDS_ERR_TOOLARGEFILE    "Файлът е по-голям от поддържания размер за edonkey протокол (>=4ГБ)"
     IDS_MSGONLYFRIENDS      "Приемай само от приятели"
-    IDS_MSGONLYSEC          "Приемай само от валидни клиенти"
     IDS_DAY_MO_SA           "Пон-Съб"
-    IDS_LIMITSOURCES        "Огр. за източниците"
-    IDS_LIMITCONS5SEC       "Огр. за връзките/5 сек."
-    IDS_SCHED_CATSTOP       "Кат:Спри свалянето"
-    IDS_SCHED_CATRESUME     "Кат:Поднови свалянето"
+    IDS_LIMITSOURCES        "Лимит за източниците"
+    IDS_LIMITCONS5SEC       "Лимит за връзките/5 сек."
+    IDS_SCHED_CATSTOP       "Категория:Спри всички"
+    IDS_SCHED_CATRESUME     "Категория:Продължи всички"
     IDS_S_DAYS              "Дни"
     IDS_STARTTIME           "Начало от"
     IDS_VALUE               "Стойност"
-    IDS_SCHED_ENTERDATARATELIMIT "Въведете огр. за датата:"
-    IDS_SCHED_ENTERVAL      "Моля въведете нова стойност:"
+    IDS_SCHED_ENTERDATARATELIMIT "Въведете лимит за датата:"
+    IDS_SCHED_ENTERVAL      "Моля, въведете нова стойност:"
     IDS_SCHED_ACTCONFIG     "Конфигурирайте действие"
     IDS_SELECTCAT           "Изберете категория"
 END
 
 STRINGTABLE 
 BEGIN
-    IDS_ALLUNASSIGNED       "всички неопределени"
+    IDS_ALLUNASSIGNED       "Всички неопределени"
     IDS_ACTSESSIONS         "активна(и) сесия(и)"
     IDS_WEBSRV              "Уебсървър"
     IDS_SW_REFETCHRES       "Резултати от повт. търсене"
@@ -1180,8 +1176,7 @@ BEGIN
     IDS_WIZ1_UPLOAD_SUBTITLE "Трансфер на цели части"
     IDS_DL_RESUMENEXT       "Възобнови следващият прекъснат"
     IDS_STARTPRIO           "Приоритет за тази категория"
-    IDS_PREF_STARTNEXTFILECAT "предпочитам в същата категория"
-    IDS_REPAINTGRAPHS       "Не обновявай графиките при преоразм. на прозореца"
+    IDS_PREF_STARTNEXTFILECAT "Предпочитам в същата категория"
     IDS_SOFTFILES           "Мек лимит за файлове"
 END
 
@@ -1669,7 +1664,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_IACHHASH            "AICH хеш"
+    IDS_AICHHASH            "AICH хеш"
     IDS_BYTESPERSEC         "Б/с."
     IDS_KBYTESPERSEC        "КБ/с."
     IDS_MBYTESPERSEC        "МБ/с."
@@ -1724,7 +1719,7 @@ BEGIN
     IDS_STORENOTES          "Съхрани забележки"
     IDS_NOTES               "Забележки"
     IDS_KADSEARCHALREADY    "В ход е още едно търсене. Моля опитайте по-късно!"
-    IDS_WEB_SHUTDOWN        "Затвори eMule"
+    IDS_WEB_SHUTDOWN        "Затваряне на eMule"
     IDS_WEB_REBOOT          "Рестартиране на системата"
 END
 
@@ -1958,6 +1953,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Включи порта в UPnP настройките"
     IDS_ADDEDON             "Добавен на"
     IDS_RESOLVELINKS        "Разреши shell-връзки в споделените папки"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Команди за сваляне"
+    IDS_CLOSETOOLBAR        "Затвори лентата с инструменти"
+    IDS_SHOWTOOLBAR         "Покажи лентата с инструменти"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "Не можете да използвате оператор ИЛИ за първата ключова дума, когато търсите в Kad мрежата!\n\nНапример, търсене на ""Ключова дума 1 ИЛИ Ключова дума 2"" е невъзможно. Вместо това опитайте ""Ключова дума 1 И (Ключова дума 2 ИЛИ Ключова дума 3)"" или направете няколко търсения."
+    IDS_DISCOVEREDBY        "Открит от"
+    IDS_NODES               "Възел(ли)"
+    IDS_ROUTINGTABLE        "Таблица за маршрутизация"
+    IDS_PROTOCOLVERSION     "Версия на протокола"
+    IDS_FOUNDNODESUSEFUL    "Намерени възли (полезни)"
+    IDS_NORESPONSE          "Не отговаря"
+    IDS_NOTASKED            "Не е запитан"
+    IDS_LOOKUPGRAPH         "Детайли за търсенето"
+    IDS_AUTOKADLOOKUPGRAPH  "Автоматично показвай активните търсения"
+    IDS_PAUSEONPREVIEW      "Пауза при възможност за преглед"
+    IDS_PREVIEWWITH         "Преглед със"
+    IDS_CLOSEEMULE          "Затваряне на eMule"
+    IDS_DONOTASKAGAIN       "Повече не ме питай"
+    IDS_POPULARITY          "Популярност"
+    IDS_SHOWWIN7TASKBARGOODIES "Включи ефектите на Windows 7 за лентата със задачи"
+    IDS_LANMODE             "Режим LAN"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Bulgarian resources

@@ -455,7 +455,6 @@ BEGIN
 	IDS_PW_USS	"Nevesaat emgefre eus rollad ar servijerioù pa vez loc'hañ "
 	IDS_PW_MISC	"Dibaboù a-bep seurt"
 	IDS_PW_TRAY	"Bihanaat en &arlun"
-	IDS_PW_BEEP	"Bip pa c'hoarvez ur fazi"
 	IDS_PW_PROMPT	"Kadarnañ a-raok kuitaat"
 	IDS_PW_SPLASH	"Diskouez ar skramm loc'hañ"
 	IDS_PW_DBLCLICK	"Daou-glik evit gwelout an orinoù"
@@ -869,7 +868,6 @@ END
 STRINGTABLE FIXED IMPURE 
 BEGIN
 	IDS_DOWNLOADMOVIECHUNKS	"Tevet war lodennoù ret d'an alberz"
-	IDS_UPDATEQUEUE	"Na nevesaat al lostennad en amzer werc'hel"
 	IDS_RECOVER_SINGLE	"1 restr dastumet."
 	IDS_RECOVER_MULTIPLE	"%u restr dastumet."
 	IDS_ATTEMPTING_RECOVERY	"Oc'h arnodiñ da zastum dielloù..."
@@ -1074,7 +1072,6 @@ BEGIN
 	IDS_WEB_BADLOGINATTEMPT	"Servijer Web : Fazi o klask kennaskañ"
 	IDS_ERR_TOOLARGEFILE	"Re vras eo ment ar restr. N'eo ket skoret gant ar protokol war ar rouedad eDonkey (>=4 Ge)"
 	IDS_MSGONLYFRIENDS	"Nemet aotreañ ar vignoned"
-	IDS_MSGONLYSEC	"Nemet aotreañ an ostizien reizh"
 	IDS_DAY_MO_SA	"Lun-Sul"
 	IDS_LIMITSOURCES	"Harz an orinoù"
 	IDS_LIMITCONS5SEC	"Harz ar c'hennaskañ/5eil"
@@ -1123,7 +1120,6 @@ BEGIN
 	IDS_DL_RESUMENEXT	"Kenderc'hel gant an hini o tont a zo ehanet"
 	IDS_STARTPRIO	"Tevet evit ar rummad-mañ"
 	IDS_PREF_STARTNEXTFILECAT	"Kavout gwelloc'h ar memes rummad"
-	IDS_REPAINTGRAPHS	"Na adsevel ar grafoù feurioù pa vez kemmet ment ar prenestr"
 	IDS_SOFTFILES	"Harz gwan ar restroù"
 END
 
@@ -1531,7 +1527,6 @@ BEGIN
 	IDS_FO_PREF_FAILED	"Fazi gant kefluniañ an harz-tan XP evit ar porzhioù diuzet!"
 	IDS_FO_PREF_STARTUP	"Digeriñ/Serriñ porzhioù an harz-tan XP e-ser loc'hañ/serriñ eMule"
 	IDS_LOG_LEVEL	"Live enskrivañ"
-	IDS_DISABLEPEERACHE	"Diweredekaat ar pellgargañ adalek ar PeerCache"
 	IDS_NEWMSG	"Kemennadenn nevez a-berzh '%s' (IP:%s)"
 	IDS_PREF_STARTNEXTFILECATONLY	"Nemet er memes rummad"
 	IDS_LOG_ULDL_EVENTS	"Enskrivañ an darvoudoù kas/degemer"
@@ -1624,7 +1619,7 @@ END
 
 STRINGTABLE FIXED IMPURE 
 BEGIN
-	IDS_IACHHASH	"Drailherezh AICH"
+	IDS_AICHHASH	"Drailherezh AICH"
 	IDS_BYTESPERSEC	"e/s"
 	IDS_KBYTESPERSEC	"Ke/s"
 	IDS_MBYTESPERSEC	"Me/s"
@@ -1890,7 +1885,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Sharing eMule with other computer users"
     IDS_SHAREEMULEMULTI     "Each user has its own configuration and downloads"
     IDS_SHAREEMULEPUBLIC    "Everyone has the same configuration and downloads"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 
@@ -1938,6 +1933,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Breton (France) resources

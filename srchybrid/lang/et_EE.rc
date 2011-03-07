@@ -485,7 +485,6 @@ BEGIN
     IDS_PW_USS              "Uuenda serverite loendit käivitamisel automaatselt"
     IDS_PW_MISC             "Muud valikud"
     IDS_PW_TRAY             "Minimiseeri Tray'sse"
-    IDS_PW_BEEP             "Piiksu vea korral"
     IDS_PW_PROMPT           "Kinnita lahkumist"
     IDS_PW_SPLASH           "Näita splashscreeni"
     IDS_PW_DBLCLICK         "Topeltklõps tõmmatava faili allikate näitamiseks"
@@ -684,7 +683,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Proovi esimene ja viimane osa kiiremini tõmmata"
-    IDS_UPDATEQUEUE         "Ära uuenda järjekorda reaalajas"
     IDS_RECOVER_SINGLE      "1 fail taastatud."
     IDS_RECOVER_MULTIPLE    "%u faili taastatud."
     IDS_ATTEMPTING_RECOVERY "Püüan arhiivi taastada..."
@@ -1073,7 +1071,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Veebiserver: Ebaõnnestunud logimine"
     IDS_ERR_TOOLARGEFILE    "Fail on suurem, kui eDonkey protokoll lubab (>=256GB)"
     IDS_MSGONLYFRIENDS      "Võta vastu ainult sõpradelt"
-    IDS_MSGONLYSEC          "Võta vastu ainult legaalsetelt klientidelt"
     IDS_DAY_MO_SA           "E-L"
     IDS_LIMITSOURCES        "Piira allikaid"
     IDS_LIMITCONS5SEC       "Piira ühendusi/5sekundis"
@@ -1123,7 +1120,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Jätka järgmist pausitut"
     IDS_STARTPRIO           "Prioriteet samale kategooriale"
     IDS_PREF_STARTNEXTFILECAT "Eelista sama kategooriat"
-    IDS_REPAINTGRAPHS       "Ära uuenda statistikat akna suuruse muutmisel"
     IDS_SOFTFILES           "Algne failipiirang"
 END
 
@@ -1538,7 +1534,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Luhtund seadsitamine WinXP tulemüüri valitud portidele!"
     IDS_FO_PREF_STARTUP     "Ava/sulge portid WinXP tulemüüris kui käivtub/sulgub eMule"
     IDS_LOG_LEVEL           "Logi tasand"
-    IDS_DISABLEPEERACHE     "Plokeeri allalaadimine PeerCache-ist"
     IDS_FO_TEMPTCP_S        "Avatud port %u (TCP) on sisend WinXP tulemüüris selle eMule seansiks"
     IDS_FO_TEMPTCP_F        "Luhtunud pordi avmine %u (TCP) on sisend WinXP tulemüüris selle eMule seansiks"
     IDS_FO_TEMPUDP_S        "Avatud port %u (UDP) on sisend WinXP tulemüüris selle eMule seansiks"
@@ -1636,7 +1631,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Kopeeri lõikelauale"
     IDS_LD_HOSTNAME         "Kasuta hostnime (häälestuses) asemel IP kuni tekitab lähtelinki"
     IDS_SAVEACFAILED        "Nurjunud salvestus AICH Hashset!!"
-    IDS_IACHHASH            "AICH Hash"
+    IDS_AICHHASH            "AICH Hash"
     IDS_BYTESPERSEC         "B/s"
     IDS_KBYTESPERSEC        "KB/s"
     IDS_MBYTESPERSEC        "MB/s"
@@ -1922,7 +1917,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Jagan emulet teiste arvutitega"
     IDS_SHAREEMULEMULTI     "Igal kasutajal on enda konfrikatsoon ja allalaadimised"
     IDS_SHAREEMULEPUBLIC    "Igalühel on sama konfikatsoon ja allalaadimised"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 
@@ -1970,6 +1965,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
     IDS_ADDEDON             "Added On"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Estonian resources

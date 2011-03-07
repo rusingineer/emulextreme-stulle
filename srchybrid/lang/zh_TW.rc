@@ -461,7 +461,6 @@ BEGIN
     IDS_PW_USS              "在啟動時自動更新伺服器清單"
     IDS_PW_MISC             "多方面的"
     IDS_PW_TRAY             "最小化時縮到系統列"
-    IDS_PW_BEEP             "錯誤時發出聲音"
     IDS_PW_PROMPT           "離開時提示"
     IDS_PW_SPLASH           "顯示啟動畫面"
     IDS_PW_DBLCLICK         "下載清單點二下來擴展"
@@ -875,7 +874,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "嘗試首先下載預覽區塊"
-    IDS_UPDATEQUEUE         "不要即時更新等候中清單"
     IDS_RECOVER_SINGLE      "1 個檔案已還原."
     IDS_RECOVER_MULTIPLE    "%u 個檔案已還原."
     IDS_ATTEMPTING_RECOVERY "嘗試還原檔案中..."
@@ -1083,7 +1081,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Web-界面: 登入嘗試已經失敗"
     IDS_ERR_TOOLARGEFILE    "檔案超過 eDonkey 協定支援的大小 (>=256GB)"
     IDS_MSGONLYFRIENDS      "只接受好友訊息"
-    IDS_MSGONLYSEC          "只接受有效的客戶端訊息"
     IDS_DAY_MO_SA           "一-六"
     IDS_LIMITSOURCES        "限制來源數"
     IDS_LIMITCONS5SEC       "限制連線數/5秒"
@@ -1132,7 +1129,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "繼續下一個已暫停"
     IDS_STARTPRIO           "改變新分配檔案的優先權"
     IDS_PREF_STARTNEXTFILECAT "偏好使用相同類別"
-    IDS_REPAINTGRAPHS       "在改變視窗大小時不重新建立統計圖形"
     IDS_SOFTFILES           "軟性檔案限制"
 END
 
@@ -1544,7 +1540,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "在 WinXP 內部防火牆設定已選擇的連接埠失敗!"
     IDS_FO_PREF_STARTUP     "當 啟動/離開 eMule 時 開啟/關閉 在 WinXP 防火牆的連接埠"
     IDS_LOG_LEVEL           "記錄標準"
-    IDS_DISABLEPEERACHE     "停用從 PeerCache 下載"
     IDS_NEWMSG              "新的訊息來自 '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "只在相同的類別"
     IDS_LOG_ULDL_EVENTS     "記錄 上載/下載 事件"
@@ -1639,7 +1634,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_IACHHASH            "AICH 切細值"
+    IDS_AICHHASH            "AICH 切細值"
     IDS_BYTESPERSEC         "位元組/秒"
     IDS_KBYTESPERSEC        "KB/秒"
     IDS_MBYTESPERSEC        "MB/秒"
@@ -1953,6 +1948,33 @@ BEGIN
     IDS_RESOLVELINKS        "解析在已分享資內的捷徑"
 END
 
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "下載指令"
+    IDS_CLOSETOOLBAR        "關閉工具列"
+    IDS_SHOWTOOLBAR         "顯示工具列"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "您不能在 Kad 搜尋的第一個關鍵字使用 OR 運算元!\n\n例如 ""關鍵字1 OR 關鍵字2"" 是不被允許. 試著使用 ""關鍵字1 AND (關鍵字2 OR 關鍵字3)"" 或是使用多次搜尋來替代這個動作."
+    IDS_DISCOVEREDBY        "探索經由"
+    IDS_NODES               "節點"
+    IDS_ROUTINGTABLE        "路由表"
+    IDS_PROTOCOLVERSION     "協定版本"
+    IDS_FOUNDNODESUSEFUL    "發現節點 (有用的)"
+    IDS_NORESPONSE          "沒有回應"
+    IDS_NOTASKED            "尚未詢問"
+    IDS_LOOKUPGRAPH         "搜尋明細"
+    IDS_AUTOKADLOOKUPGRAPH  "自動地顯示作用中搜尋"
+    IDS_PAUSEONPREVIEW      "在有可能預覽時暫停"
+    IDS_PREVIEWWITH         "預覽使用"
+    IDS_CLOSEEMULE          "關閉 eMule"
+    IDS_DONOTASKAGAIN       "不要再次詢問我"
+    IDS_POPULARITY          "人氣排名"
+    IDS_SHOWWIN7TASKBARGOODIES "啟用 Windows 7 工作列效果"
+    IDS_LANMODE             "LAN 模式"
+    IDS_OPENPREFINI         "開? preferences.ini"
+END
+
 STRINGTABLE 
 BEGIN
     IDS_DROPNONEEDEDSRCS    "剔除無需求的來源"
@@ -2156,9 +2178,9 @@ BEGIN
                             "檔比 AICH 能處理的最小分塊還要小 - 導入不會有任何效果."
     IDS_SR13_IMPORTPARTS_IMPORTFINISH "導入完成. %i 個分塊被導入到文件 %s."
     IDS_OBFUSCATION_PADDING_LENGTH "協定加密附加長度 [10-254]"
-    IDS_PUSH_SMALL          "推送小文件"
-    IDS_SMALL               "小文件"
-    IDS_PUSH_SMALL_FILE_SIZE "小文件大小上限 [1-2048 kb] "
+//    IDS_PUSH_SMALL          "推送小文件"
+//    IDS_SMALL               "小文件"
+//    IDS_PUSH_SMALL_FILE_SIZE "小文件大小上限 [1-2048 kb] "
 END
 
 STRINGTABLE 
@@ -2172,10 +2194,19 @@ BEGIN
 	IDS_DOWNLOADEMFRIENDSMET "下載 emfriends.met"
     IDS_EMFRIENDSMETURL     "請輸入 emfriends.met 的 URL:"
 	IDS_USER_ALREADY_FRIEND "用戶 ""%s"" 已經存在于你的好友列表之中"
-	IDS_TRUSTEVERYHASH      "信任每一個AICHHash (只在本次任務有效, 不保存, 不推薦)"
+//	IDS_TRUSTEVERYHASH      "信任每一個AICHHash (只在本次任務有效, 不保存, 不推薦)"
 END
 
-
+STRINGTABLE 
+BEGIN
+	IDS_PROGRESSHASHDONE    "Hash檔案完成: %s"
+    IDS_USEACATUPNPNEXTSTART1 "在下次 eMule 運行時繼續使用 ACAT UPnP"
+    IDS_USEACATUPNPNEXTSTART2 "在下次 eMule 運行時切換至 ACAT UPnP"
+    IDS_RETRIEVEMTUFROMSOCKET "自動獲取 MTU"
+	IDS_ENABLEKNOWN2BUFFER	"在 Hashing 檔案時減少 Known2_64.met 的讀寫頻率"
+	IDS_ANTILEECHERFINCAN_CHECK "檢測: Fincan 社區用戶 (會增加 CPU 佔用)"
+    IDS_ENABLEKNOWN2SPLIT   "將已刪除檔案的 Hashset 從 Known2_64.met 中分離, 單獨保存"
+END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // Chinese (Taiwan) resources

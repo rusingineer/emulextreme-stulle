@@ -556,7 +556,6 @@ BEGIN
     IDS_PW_USS              "프로그램 시작 시 서버 목록 자동 업데이트"
     IDS_PW_MISC             "기타"
     IDS_PW_TRAY             "트레이 아이콘으로 최소화"
-    IDS_PW_BEEP             "오류 발생 시 소리 재생"
     IDS_PW_PROMPT           "프로그램 종료 시 확인"
 END
 
@@ -822,7 +821,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_UPDATEQUEUE         "큐 목록을 실시간으로 업데이트하지 않음"
     IDS_RECOVER_SINGLE      "압축 복구: 1개 파일 복구됨."
     IDS_RECOVER_MULTIPLE    "압축 복구: %u개 파일 복구됨."
     IDS_ATTEMPTING_RECOVERY "압축 복구: 시작됨"
@@ -905,7 +903,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_LOG_LEVEL           "로그 레벨"
-    IDS_DISABLEPEERACHE     "PeerCache로부터 다운로드하지 않음"
     IDS_NEWMSG              "'%s'님으로부터의 새로운 메시지 (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "같은 카테고리에서만"
     IDS_LOG_ULDL_EVENTS     "업/다운 이벤트 기록"
@@ -1152,7 +1149,6 @@ STRINGTABLE
 BEGIN
     IDS_ERR_TOOLARGEFILE    "파일이 edonkey 프로토콜이 지원하는 크기보다 큼 (>=256GB)"
     IDS_MSGONLYFRIENDS      "친구에게만 허용"
-    IDS_MSGONLYSEC          "유효한 클라이언트만 허용"
     IDS_DAY_MO_SA           "월-토"
     IDS_LIMITSOURCES        "소스 제한"
     IDS_LIMITCONS5SEC       "접속 제한/5초"
@@ -1202,7 +1198,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "다음 일시 중지 파일 시작"
     IDS_STARTPRIO           "이 카테고리의 우선 순위"
     IDS_PREF_STARTNEXTFILECAT "동일 카테고리 선호"
-    IDS_REPAINTGRAPHS       "크기 조정 시 통계 그래프를 새로 만들지 않음"
     IDS_SOFTFILES           "소프트 파일 제한"
     IDS_HARDFILES           "하드 파일 제한"
     IDS_FILTER              "필터"
@@ -1674,7 +1669,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "복사"
     IDS_LD_HOSTNAME         "소스 링크를 생성할 때 IP 대신 (설정된) 호스트명 사용"
     IDS_SAVEACFAILED        "AICH 해시셋 저장 실패!"
-    IDS_IACHHASH            "AICH 해시"
+    IDS_AICHHASH            "AICH 해시"
     IDS_BYTESPERSEC         "B/s"
     IDS_KBYTESPERSEC        "KB/s"
     IDS_MBYTESPERSEC        "MB/s"
@@ -1899,43 +1894,70 @@ BEGIN
     IDS_MARKNOTSPAM         "스팸 아님으로 표시"
     IDS_SEARCHSPAMFILTER    "검색 결과에 스팸 필터 사용"
     IDS_SHOWSMILEYS         "이모티콘 보이기"
-    IDS_CAPTCHAREQUEST      "In order to avoid spam messages, this user requires you to solve a captcha before you can send him a message. Please enter the letters you see on this image as response:"
-    IDS_CAPTCHAFAILED       "Your response to the captcha was wrong and your message has been ignored. You can request a new captcha by sending a new message."
-    IDS_CAPTCHASOLVED       "You have passed the captcha check and the user has received your message."
-    IDS_USECAPTCHAS         "Require captcha authentication"
-    IDS_BOOTSRAPNODESDAT    "Nodes.dat from URL:"
-    IDS_DOWNLOADING_NODESDAT_FROM "Downloading nodes.dat from %s"
-    IDS_DOWNLOADING_NODESDAT "Downloading nodes.dat..."
-    IDS_ERR_FAILEDDOWNLOADNODES "Failed to download nodes.dat from %s"
-    IDS_PREVENTSTANDBY      "Prevent Standby mode while eMule is running"
+    IDS_CAPTCHAREQUEST      "스팸 메시지를 피하기 위하여, 메시지를 보내기 전에 captcha를 풀어야 합니다. 그림에서 보이는 문자를 입력하십시오:"
+    IDS_CAPTCHAFAILED       "captcha에 대한 응답이 잘못되어 메시지가 무시됩니다. 새 메시지를 보냄으로써 새로운 captcha를 요청할 수 있습니다."
+    IDS_CAPTCHASOLVED       "captcha 확인을 통과하여 메시지가 수신되었습니다."
+    IDS_USECAPTCHAS         "captcha 인증이 필요함"
+    IDS_BOOTSRAPNODESDAT    "URL에서 Nodes.dat:"
+    IDS_DOWNLOADING_NODESDAT_FROM "%s에서 nodes.dat  파일 다운로드 중"
+    IDS_DOWNLOADING_NODESDAT "nodes.dat 파일 다운로드 중..."
+    IDS_ERR_FAILEDDOWNLOADNODES "%s에서 nodes.dat 파일 다운로드 실패"
+    IDS_PREVENTSTANDBY      "eMule이 실행되는 동안 대기 모드 방지"
     IDS_KADID               "KadID"
-    IDS_SEARCHINGFRIENDKAD  "Searching in Kad Network for friend"
-    IDS_FOUND               "found"
-    IDS_EXTERNUDPPORT       "Extern UDP Port"
-    IDS_STORESEARCHES       "Remember open searches between restarts"
-    IDS_WRN_INCFILE_EXISTS  "You have selected a new directory for your incoming files which is not empty. All existing files in this directory will be automatically shared by eMule."
-    IDS_EDITSPAMFILTER      "Edit spam filter..."
-    IDS_EDITSPAMFILTERCOMMENTS "Edit spam filter for comments"
-    IDS_WIZZARDOBFUSCATION  "Enable this option if you want to enable protocol obfuscation\n\nIf your ISP tries throttle or block eMule, enabling obfuscation will help to circumvent such restrictions."
-    IDS_BETANAG             "This is a beta version of eMule. Please report problems and check regulary for updates in our forum (http://forum.emule-project.net)."
+    IDS_SEARCHINGFRIENDKAD  "Kad 네트워크에서 친구를 찾는 중"
+    IDS_FOUND               "찾음"
+    IDS_EXTERNUDPPORT       "외부 UDP 포트"
+    IDS_STORESEARCHES       "재시작 사이 열려진 검색을 기억"
+    IDS_WRN_INCFILE_EXISTS  "다운로드받는 파일에 대한 비어 있지 않은 새 디렉토리를 선택하였습니다. 디렉토리에 있는 모든 파일은 자동으로 eMule에서 공유됩니다."
+    IDS_EDITSPAMFILTER      "스팸 필터 편집..."
+    IDS_EDITSPAMFILTERCOMMENTS "주석에 대한 스팸 필터 편집"
+    IDS_WIZZARDOBFUSCATION  "프로토콜 암호화를 활성화하기 원한다면 이 설정을 선택하십시오.\n\nISP에서 eMule의 실행을 방해하거나 막으려한다면, 암호화 활성화는 그러한 제한을 교묘히 회피하는 데 도움을 줍니다."
+    IDS_BETANAG             "eMule의 베타 버전입니다. 문제점을 보고하고 포럼에서 정기적으로 업데이트를 확인해주십시오. (http://forum.emule-project.net)"
     IDS_CONFIRMNODESDOWNLOAD 
-                            "Do you want to download and use Kad contacts (nodes.dat) from this address:\n%s ?"
-    IDS_AUTOMATIC           "Automatic"
-    IDS_NOTCONNECTEDANY     "You are not connected to a server or the Kad network!"
+                            "\n%s 주소에서 Kad 연결(nodes.dat)을 사용해서 다운로드받으시겠습니까?"
+    IDS_AUTOMATIC           "자동"
+    IDS_NOTCONNECTEDANY     "서버나 Kad 네트워크에 접속되어 있지 않습니다!"
     IDS_ERR_SHARED_DIR      "Failed to read shared directory ""%s"" - %s"
     IDS_FILE_WARNING_DRM    "The file ""%s"" seems to be protected with Digital Rights Management.\r\n\r\nYou will most likely not be able to use that file without a license from the originator. You should be aware that opening this file will most likely cause your media player to open a web browser which will transfer you automatically to the site of the originator of that file where you will get asked to acquire a license.\r\n\r\nDo you really want to continue opening the file?"
-    IDS_CHECK_FILE_OPEN     "Warn when opening untrusted files"
-    IDS_BOOTABLE            "bootable"
-    IDS_UNSUPPORTEDIMAGE    "unsupported image"
+    IDS_CHECK_FILE_OPEN     "신뢰되지 않은 파일을 열 때 경고"
+    IDS_BOOTABLE            "부팅 가능"
+    IDS_UNSUPPORTEDIMAGE    "지원되지 않는 이미지"
 END
 
 
 STRINGTABLE 
 BEGIN
-    IDS_UNSHARE             "Unshare"
-    IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
-    IDS_ADDEDON             "Added On"
-    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_UNSHARE             "공유 해제"
+    IDS_WEBUPNPINCLUDE      "UPnP 설치에 포트 포함"
+    IDS_ADDEDON             "추가됨"
+    IDS_RESOLVELINKS        "공유 디렉토리에 쉘 링크 해결"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Korean resources

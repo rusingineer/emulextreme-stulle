@@ -532,7 +532,6 @@ BEGIN
     IDS_PW_USS              "Aktualizovat seznam serverù po spuštìní"
     IDS_PW_MISC             "Rùzné"
     IDS_PW_TRAY             "Minimalizovat do oznamovací oblasti"
-    IDS_PW_BEEP             "Zvukovì signalizovat chybu"
     IDS_PW_PROMPT           "Dotázat se pøi ukonèení"
     IDS_PW_SPLASH           "Zobrazovat splash screen pøi spouštìní"
     IDS_PW_DBLCLICK         "Rozbalit seznam serverù po dvoj-kliku"
@@ -732,7 +731,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Pokusit se nejdøíve stáhnout první a poslední díl"
-    IDS_UPDATEQUEUE         "Neaktualizovat frontu v reálném èase"
     IDS_RECOVER_SINGLE      "1 soubor obnoven."
     IDS_RECOVER_MULTIPLE    "%u souborù obnoveno."
     IDS_ATTEMPTING_RECOVERY "Pokus o obnovení archivu..."
@@ -1086,7 +1084,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Webové rozhraní: Neplatný pokus o pøihlášení"
     IDS_ERR_TOOLARGEFILE    "Soubor vìtší, než je podporovaná velikost edonkey protokolu (>=256GB)"
     IDS_MSGONLYFRIENDS      "Pøijímat pouze od pøátel"
-    IDS_MSGONLYSEC          "Pøijímat pouze od platných klientù"
     IDS_DAY_MO_SA           "Po-So"
     IDS_LIMITSOURCES        "Limit zdrojù"
     IDS_LIMITCONS5SEC       "Limit pøipojení/5sek"
@@ -1136,7 +1133,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Obnovit další zastavený"
     IDS_STARTPRIO           "Priorita této kategorie"
     IDS_PREF_STARTNEXTFILECAT "upøednostòovat stejnou kategorii"
-    IDS_REPAINTGRAPHS       "Nepøetváøet statistické grafy pøi zmìnì velikosti"
     IDS_SOFTFILES           "Volný limit souborù"
 END
 
@@ -1550,7 +1546,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Nepodaøilo se nastavit interní WinXP firewall pro vybrané porty!"
     IDS_FO_PREF_STARTUP     "Otevøít/zavøít porty WinXP firewallu bìhem spouštìní/ukonèování eMule"
     IDS_LOG_LEVEL           "Úroveò Logu"
-    IDS_DISABLEPEERACHE     "Zakázat stahování z PeerCache"
     IDS_NEWMSG              "Zpráva od '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "pouze ve stejné kategorii"
     IDS_LOG_ULDL_EVENTS     "Logovat události uploadu/downloadu"
@@ -1643,7 +1638,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Zkopírovat do schránky"
     IDS_LD_HOSTNAME         "Pøi vytváøení odkazu na zdroj použít hostname (z preferencí) namísto IP."
     IDS_SAVEACFAILED        "Nepodaøilo se uložit AICH Hashset!"
-    IDS_IACHHASH            "AICH Hash" //!
+    IDS_AICHHASH            "AICH Hash" //!
     IDS_BYTESPERSEC         "B/s" //!
     IDS_KBYTESPERSEC        "KB/s" //!
     IDS_MBYTESPERSEC        "MB/s" //!
@@ -1973,6 +1968,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Zaøadit port do UPnP nastavení"
     IDS_ADDEDON             "Pøidán"
     IDS_RESOLVELINKS        "Rozluštit shell links ve sdílených adresáøích"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Pøíkazy downloadu"
+    IDS_CLOSETOOLBAR        "Zavøít panel nástrojù"
+    IDS_SHOWTOOLBAR         "Zobrazit panel nástrojù"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "V Kad první klíèové slovo nemùže být použito v kombinaci s OR operátorem!\n\nNapøíklad ""Keyword1 OR Keyword2"" nelze použít. Zkuste ""Keyword1 AND (Keyword2 OR Keyword3)"" nebo opakované vyhledávání."
+    IDS_DISCOVEREDBY        "Objeven"
+    IDS_NODES               "Uzly"
+    IDS_ROUTINGTABLE        "Smìrovací tabulka"
+    IDS_PROTOCOLVERSION     "Verze protokolu"
+    IDS_FOUNDNODESUSEFUL    "Nalezené uzly (použitelné)"
+    IDS_NORESPONSE          "Bez odezvy"
+    IDS_NOTASKED            "Nedotázaný"
+    IDS_LOOKUPGRAPH         "Detaily vyhledávání"
+    IDS_AUTOKADLOOKUPGRAPH  "Zobrazovat aktivní hledání automaticky"
+    IDS_PAUSEONPREVIEW      "Pozastavit v momentì, kdy lze pøehrát ukázku"
+    IDS_PREVIEWWITH         "Pøehrát ukázku s"
+    IDS_CLOSEEMULE          "Zavøít eMule"
+    IDS_DONOTASKAGAIN       "Pøíštì se již nedotazovat"
+    IDS_POPULARITY          "Míra oblíbenosti"
+    IDS_SHOWWIN7TASKBARGOODIES "Povolit efekty hlavního panelu ve Windows 7"
+    IDS_LANMODE             "LAN mód"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 STRINGTABLE 

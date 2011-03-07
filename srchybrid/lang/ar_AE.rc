@@ -542,7 +542,6 @@ BEGIN
     IDS_PW_USS              " ÕœÌÀ ﬁ«∆„… «·Œœ«„ ⁄‰œ «·»œ√"
     IDS_PW_MISC             "„ ‰Ê⁄"
     IDS_PW_TRAY             "’€— «·Ï «·»«—"
-    IDS_PW_BEEP             "«⁄ÿÌ ’Ê  ⁄‰œ ÊÃÊœ Œÿ√"
     IDS_PW_PROMPT           "Œ—ÊÃ ”—Ì⁄"
     IDS_PW_SPLASH           "«ŸÂ— ”»·«‘ ”ﬂ—Ì‰"
     IDS_PW_DBLCLICK         "«·÷€ÿ „— Ì‰ ·› Õ ﬁ«∆„… «· Õ„Ì·"
@@ -761,7 +760,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Õ«Ê·  Õ„Ì· «·ﬁÿ⁄ «·Ÿ«Â—… «Ê·«"
-    IDS_UPDATEQUEUE         "·«  ÕœÀ ﬁ«∆„… «·«‰ Ÿ«— ›Ì «·Êﬁ  «·ÕﬁÌﬁÌ"
     IDS_RECOVER_SINGLE      "1 „·›  „ „⁄«·Ã Â."
     IDS_RECOVER_MULTIPLE    "%u „·›«  „⁄«·Ã…."
     IDS_ATTEMPTING_RECOVERY "„Õ«Ê·… «” ⁄«œ… «·«—‘Ì›..."
@@ -818,7 +816,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "›‘· ›Ì «⁄«œ… «⁄«œ«… «·Ãœ«— «·‰«—Ì ·‰Ÿ«„ «ﬂ” »Ì · «·»Ê— «  «·„⁄Ì‰…!"
     IDS_FO_PREF_STARTUP     "«› Õ/«€·ﬁ »Ê— «  ›Ì ‰Ÿ«„ «ﬂ” »Ì ›Ì— Ê«· Ì»œ«¡/ÌŒ—Ã «Ì„Ê·"
     IDS_LOG_LEVEL           "«·„” ÊÏ"
-    IDS_DISABLEPEERACHE     "⁄œ„ ”„«Õ «· Õ„Ì· „‰ »ÌÌ—ﬂ«‘Ì"
     IDS_NEWMSG              "—”«·… ÃœÌœ… „‰ '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "›ﬁÿ ›Ì ‰›” «·ÃœÊ·"
     IDS_LOG_ULDL_EVENTS     "—›⁄\ Õ„Ì· ÕœÀ"
@@ -1134,7 +1131,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "ÊÃÂ «·„Êﬁ⁄: ›‘· ›Ì „Õ«Ê· «·œŒÊ·"
     IDS_ERR_TOOLARGEFILE    "«·„·› «ﬂ»— „‰ «·ÕÃ„ «·„’„ÊÕ »Â  (>=256GB)"
     IDS_MSGONLYFRIENDS      "«ﬁ»· „‰ «·«’œﬁ«¡ ›ﬁÿ"
-    IDS_MSGONLYSEC          "«ﬁ»· „‰ «·⁄„·«¡ «·›⁄«·Ì‰ ›ﬁÿ"
     IDS_DAY_MO_SA           "«À‰Ì‰ ‹ «Õœ"
     IDS_LIMITSOURCES        "Õœ «·„’«œ—"
     IDS_LIMITCONS5SEC       "Õœ «·« ’«·« "
@@ -1184,7 +1180,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "«” „— «·„Êﬁ› «· «·Ì"
     IDS_STARTPRIO           "«›÷·Ì… ·Â–Â «·ﬁ«∆„…"
     IDS_PREF_STARTNEXTFILECAT "›÷· ‰›” «·ﬁ«∆„…"
-    IDS_REPAINTGRAPHS       "·«  ’‰⁄ «·Ã—«›Ìﬂ ⁄‰œ «· ’€Ì— «Ê «· ﬂ»Ì— "
     IDS_SOFTFILES           "Õœ «·„·› «·Œ›Ì›"
 END
 
@@ -1668,7 +1663,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_IACHHASH            "«Ì «Ì ”Ì « ‘ Â«‘"
+    IDS_AICHHASH            "«Ì «Ì ”Ì « ‘ Â«‘"
     IDS_BYTESPERSEC         "»«Ì /À«‰Ì…"
     IDS_KBYTESPERSEC        "ﬂÌ·Ê »«Ì /À«‰Ì…"
     IDS_MBYTESPERSEC        "„ÌÃ« »«Ì /À«‰Ì…"
@@ -1968,6 +1963,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "«÷› «·»Ê—  «·Ï ÌÊ »Ì «‰ »Ì"
     IDS_ADDEDON             "«÷Ì› ›Ì"
     IDS_RESOLVELINKS        "⁄Ì‰ —Ê«»ÿ «·‘Ì· ›Ì «·„Ã·œ«  «·„‘ —ﬂ…"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Arabic (IQ) resources

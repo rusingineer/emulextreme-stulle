@@ -496,7 +496,6 @@ BEGIN
     IDS_PW_USS              "Auto-actualizar lista de servidores no arranque"
     IDS_PW_MISC             "Opções Várias"
     IDS_PW_TRAY             "Minimi&zar para a Barra de Sistema"
-    IDS_PW_BEEP             "Emitir som nos erros"
     IDS_PW_PROMPT           "Confirmar fecho do programa"
     IDS_PW_SPLASH           "Mostrar logótipo no arranque"
     IDS_PW_DBLCLICK         "Clicar 2 vezes mostra lista de fontes"
@@ -696,7 +695,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_DOWNLOADMOVIECHUNKS "Tentar receber primeiro o início e o final dos ficheiros"
-    IDS_UPDATEQUEUE         "Não actualizar a Fila de Espera em tempo real"
     IDS_RECOVER_SINGLE      "1 ficheiro recuperado."
     IDS_RECOVER_MULTIPLE    "%u ficheiros recuperados."
     IDS_ATTEMPTING_RECOVERY "A tentar recuperar o arquivo..."
@@ -1085,7 +1083,6 @@ BEGIN
     IDS_WEB_BADLOGINATTEMPT "Servidor Web: Falhou a tentativa de ligação"
     IDS_ERR_TOOLARGEFILE    "Ficheiro maior que o tamanho suportado pelo protocolo edonkey (>=256GB)"
     IDS_MSGONLYFRIENDS      "Apenas aceitar de amigos"
-    IDS_MSGONLYSEC          "Apenas aceitar de clientes válidos"
     IDS_DAY_MO_SA           "Seg-Sáb"
     IDS_LIMITSOURCES        "Limite de fontes"
     IDS_LIMITCONS5SEC       "Limite de ligações/5secs"
@@ -1135,7 +1132,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Começar o próximo em pausa"
     IDS_STARTPRIO           "Prioridade desta categoria"
     IDS_PREF_STARTNEXTFILECAT "Preferir a mesma categoria"
-    IDS_REPAINTGRAPHS       "Não refazer os gráficos de estatística ao redimensionar"
     IDS_SOFTFILES           "Limite de Ficheiros (Soft)"
 END
 
@@ -1549,7 +1545,6 @@ BEGIN
     IDS_FO_PREF_FAILED      "Não foi possível configurar as portas seleccionadas na firewall interna do WinXP!"
     IDS_FO_PREF_STARTUP     "Abrir/fechar as portas na firewall interna do Windows XP durante o arranque/fecho do eMule"
     IDS_LOG_LEVEL           "Nível do Registo"
-    IDS_DISABLEPEERACHE     "Desactivas as transferências a partir da PeerCache"
     IDS_FO_TEMPTCP_S        "Foi aberta a porta %u (TCP) na firewall interna do Windows XP, para a duração desta sessão do eMule"
     IDS_FO_TEMPTCP_F        "Não foi possível abrir a porta %u (TCP) na firewall interna do Windows XP, para a duração desta sessão do eMule"
     IDS_FO_TEMPUDP_S        "Foi aberta a porta %u (UDP) na firewall interna do Windows XP, para a duração desta sessão do eMule"
@@ -1647,7 +1642,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Copiar para o Clipboard"
     IDS_LD_HOSTNAME         "Usar hostname (estabelecido nas preferências) em vez do IP ao criar uma ligação de fonte"
     IDS_SAVEACFAILED        "Não foi possível guardar a hashset RIAC!"
-    IDS_IACHHASH            "Hash RIAC"
+    IDS_AICHHASH            "Hash RIAC"
     IDS_BYTESPERSEC         "B/s"//!
     IDS_KBYTESPERSEC        "KB/s"//!
     IDS_MBYTESPERSEC        "MB/s"//!
@@ -1984,6 +1979,33 @@ BEGIN
     IDS_WEBUPNPINCLUDE      "Incluir porta na configuração UPnP"
     IDS_ADDEDON             "Adicionado em"
     IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
+    IDS_LANMODE             "LAN Mode"
+    IDS_OPENPREFINI         "Open preferences.ini"
 END
 
 #endif    // Portuguese (Portugal) resources

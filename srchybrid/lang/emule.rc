@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
@@ -506,7 +507,6 @@ BEGIN
     IDS_PW_USS              "Auto-update server list at startup"
     IDS_PW_MISC             "Miscellaneous"
     IDS_PW_TRAY             "Minimize to system tray"
-    IDS_PW_BEEP             "Beep on errors"
     IDS_PW_PROMPT           "Prompt on exit"
 END
 
@@ -772,7 +772,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_UPDATEQUEUE         "Don't update Queue list in real time"
     IDS_RECOVER_SINGLE      "Archive recovery: 1 file recovered."
     IDS_RECOVER_MULTIPLE    "Archive recovery: %u files recovered."
     IDS_ATTEMPTING_RECOVERY "Archive recovery: Started"
@@ -855,7 +854,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_LOG_LEVEL           "Log level"
-    IDS_DISABLEPEERACHE     "Disable downloading from PeerCache"
     IDS_NEWMSG              "New Message from '%s' (IP:%s)"
     IDS_PREF_STARTNEXTFILECATONLY "Only in same category"
     IDS_LOG_ULDL_EVENTS     "Log upload/download events"
@@ -1103,7 +1101,6 @@ STRINGTABLE
 BEGIN
     IDS_ERR_TOOLARGEFILE    "File larger than the supported size of the edonkey protocol (>=256GB)"
     IDS_MSGONLYFRIENDS      "Accept from friends only"
-    IDS_MSGONLYSEC          "Accept from valid clients only"
     IDS_DAY_MO_SA           "Mon-Sat"
     IDS_LIMITSOURCES        "Limit sources"
     IDS_LIMITCONS5SEC       "Limit connections/5secs"
@@ -1153,7 +1150,6 @@ BEGIN
     IDS_DL_RESUMENEXT       "Resume Next Paused"
     IDS_STARTPRIO           "Priority for this category"
     IDS_PREF_STARTNEXTFILECAT "Prefer same category"
-    IDS_REPAINTGRAPHS       "Don't recreate statistic graphs on resize"
     IDS_SOFTFILES           "Soft File Limit"
     IDS_HARDFILES           "Hard File Limit"
     IDS_FILTER              "Filter"
@@ -1625,7 +1621,7 @@ BEGIN
     IDS_LD_COPYCLIPBOARD    "Copy"
     IDS_LD_HOSTNAME         "Use host name (from Options) instead of IP when creating a source link"
     IDS_SAVEACFAILED        "Failed to save AICH Hashset!"
-    IDS_IACHHASH            "AICH Hash"
+    IDS_AICHHASH            "AICH Hash"
     IDS_BYTESPERSEC         "B/s"
     IDS_KBYTESPERSEC        "KB/s"
     IDS_MBYTESPERSEC        "MB/s"
@@ -1839,7 +1835,7 @@ BEGIN
     IDS_SHAREEMULELABEL     "Sharing eMule with other computer users"
     IDS_SHAREEMULEMULTI     "Each user has its own configuration and downloads"
     IDS_SHAREEMULEPUBLIC    "Everyone has the same configuration and downloads"
-    IDS_SHAREEMULEOLD       "Store config and downloads in the programm directory"
+    IDS_SHAREEMULEOLD       "Store config and downloads in the program directory"
 END
 
 STRINGTABLE 
@@ -1887,6 +1883,32 @@ STRINGTABLE
 BEGIN
     IDS_UNSHARE             "Unshare"
     IDS_WEBUPNPINCLUDE      "Include port into UPnP setup"
+    IDS_ADDEDON             "Added On"
+    IDS_RESOLVELINKS        "Resolve shell links in shared directories"
+    IDS_PAUSEONPREVIEW      "Pause when preview possible"
+    IDS_PREVIEWWITH         "Preview with"
+    IDS_DOWNLOADCOMMANDS    "Download Commands"
+    IDS_CLOSETOOLBAR        "Close Toolbar"
+    IDS_SHOWTOOLBAR         "Show Toolbar"
+    IDS_SEARCH_BADOPERATORCOMBINATION 
+                            "You cannot use the first keyword with an OR operator when searching on Kad!\n\nFor example ""Keyword1 OR Keyword2"" is not possible. Try ""Keyword1 AND (Keyword2 OR Keyword3)"" or do multiple searches instead."
+    IDS_DISCOVEREDBY        "Discovered by"
+    IDS_NODES               "Node(s)"
+    IDS_ROUTINGTABLE        "Routing Table"
+    IDS_PROTOCOLVERSION     "Protocol Version"
+    IDS_FOUNDNODESUSEFUL    "Found Nodes (useful)"
+    IDS_NORESPONSE          "No Response"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NOTASKED            "Not Asked"
+    IDS_LOOKUPGRAPH         "Search Details"
+    IDS_AUTOKADLOOKUPGRAPH  "Automatically show active searches"
+    IDS_CLOSEEMULE          "Close eMule"
+    IDS_DONOTASKAGAIN       "Don't ask me again"
+    IDS_POPULARITY          "Popularity Rank"
+    IDS_SHOWWIN7TASKBARGOODIES "Enable Windows 7 taskbar effects"
 END
 
 STRINGTABLE 
