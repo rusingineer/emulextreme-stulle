@@ -2221,6 +2221,8 @@ BEGIN
     IDS_ENABLEKNOWN2BUFFER  "AICH Adresleme Grubu tamponu (çoklu dosya adreslerken diskio deðerini azalt)"
     IDS_ANTILEECHERFINCAN_CHECK "Fincan Grup Adreslemelerini sapta (CPU yükü!)"
     IDS_ENABLEKNOWN2SPLIT   "Known2_64.met dosyasýný böl, paylaþýlmamýþ AICH Adresleme Gruplarýný ayrý dosyada tut"
+    IDS_EMULE_CTRL_DATA     "eMule control + data"
+    IDS_NETWORK_ADAPTER     "Network Adapter"
 END
 
 //STRINGTABLE 

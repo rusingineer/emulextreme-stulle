@@ -2202,6 +2202,8 @@ BEGIN
     IDS_ENABLEKNOWN2BUFFER  "Abilita buffer Hash AICH (riduce lo sforzo del disco se hai molti file condivisi)"
     IDS_ANTILEECHERFINCAN_CHECK "Rileva Hash Community Fincan (Alza consumo CPU!)"
     IDS_ENABLEKNOWN2SPLIT  "Dividi il file Known2_64.met, separa gli Hash AICH di file non condivisi in un file diverso"//this feature only available when you want to remember unshared AICHHashsets. it means purge unshared AICHHashset from known2_64.met, save them in another file
+    IDS_EMULE_CTRL_DATA     "eMule control + data"
+    IDS_NETWORK_ADAPTER     "Scheda di rete"
 END
 
 //STRINGTABLE

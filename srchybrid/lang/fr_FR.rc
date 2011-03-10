@@ -1994,8 +1994,8 @@ BEGIN
     IDS_DONOTASKAGAIN       "Ne pas me le redemander"
     IDS_POPULARITY          "Rang de popularité"
     IDS_SHOWWIN7TASKBARGOODIES "Activer les effets Windows 7 de la barre des tâches"
-    IDS_LANMODE             "LAN Mode"
-    IDS_OPENPREFINI         "Open preferences.ini"
+    IDS_LANMODE             "Mode LAN"
+    IDS_OPENPREFINI         "Ouvrir preferences.ini"
 END
 
 STRINGTABLE 
@@ -2135,6 +2135,8 @@ BEGIN
     IDS_SHOWADDITIONALGRAPH "Montrer lignes de graphique additionnelles"
     IDS_CHECK4UPDATEMOD     "Vérifier si nouvelle Xtreme version tous les"
     IDS_ANTILEECHEREMCRYPT_CHECK "Détection des emcrypt"
+    IDS_UPLOADMANAGEMENT_FRAME "Gestion de l'Upload"
+    IDS_UPLOADSLOTSPEED_LABEL "Vitesse de Slots d'Upload"
     IDS_USENARROWFONT       "Utilisation de police condensé dans la fenètre transfert"
     IDS_SHOWBLOCKINGRATIO   "Affiche le ratio des sockets bloquants"
     IDS_FUNNYNICK           "Surnom rigolo"
@@ -2165,7 +2167,56 @@ BEGIN
     IDS_IDENTICALFILENAMES  "Deux ou plus, noms identiques dans le même répertoire n'est pas autorisé (Ligne %d). Impossible de renommer."
     IDS_MR                  "Renommer les fichiers sélectionnés..."
     IDS_MASSRENAME_TITLE    "Renommer les fichiers sélectionnés"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_STATIC_DOWNINFO     "Réception à 0 = illimitée"
+    IDS_ANTILEECHERUSERHASH_CHECK "Détecter utilisateur de hachages incorrect"
+END
+
+
+STRINGTABLE 
+BEGIN
+    IDS_IMPORTPARTS         "Importer des Parties aux fichiers..."
+    IDS_IMPORTPARTS_STOP    "Stopper l'import des fichiers parts"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_SR13_IMPORTPARTS_ERR_ALREADYCOMPLETE "Importation abandonnée: Impossible d'importer vers un fichier complet."
+    IDS_SR13_IMPORTPARTS_ERR_HASHSETINCOMPLETE "Importation abandonnée: jeu de hash incomplet pour %s (%i hash pour %i parties)."
+    IDS_SR13_IMPORTPARTS_ERR_CANTOPENFILE "Importation abandonnée: Impossible d'ouvrir %s."
+    IDS_SR13_IMPORTPARTS_IMPORTSTART "Importation de %i parties (depuis 0 à %i) vers %s."
+    IDS_SR13_IMPORTPARTS_PARTIMPORTEDGOOD "Partie %i: importée."
+    IDS_SR13_IMPORTPARTS_PARTIMPORTEDBAD "Partie %i: importée pour restauration ICH."
+    IDS_SR13_IMPORTPARTS_PARTSKIPPEDDONTMATCH "Partie %i: ignorée, ne correspond pas au bloc partiellement complet."
+    IDS_SR13_IMPORTPARTS_BADPARTSREHASH "%i mauvaises parties ont été importées pour A/ICH. Lancement du re-hash."
+    IDS_SR13_IMPORTPARTS_ERR_FILETOOSMALL "Fichier plus petit que le bloc de récupération minimal pour AICH - l'importation est inutile"
+    IDS_SR13_IMPORTPARTS_IMPORTFINISH "Importation terminée. %i parties ont été importées vers %s."
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_OBFUSCATION_PADDING_LENGTH "Obscurcissement-Remplissage-Longueur [10-254]"
+    //Friendlinks
+    IDS_GETFRIENDED2KLINK   "Copier le lien de l'ami vers le presse-papiers"
+    IDS_GETHTMLFRIENDED2KLINK "Copier le lien de l'ami vers le presse-papiers (HTML)"
+    IDS_DOWNLOADEMFRIENDSMET "Téléchargement emfriends.met"
+    IDS_EMFRIENDSMETURL     "Entrez ici l'adresse URL de emfriends.met"
+    IDS_ERR_FAILEDDOWNLOADEMFRIENDS "Echec du téléchargement de la liste d'amis depuis %s"
+    IDS_GETMYFRIENDED2KLINK "Copier mon lien ami vers le presse-papiers"
+    IDS_GETMYHTMLFRIENDED2KLINK "Copier mon lien ami vers le presse-papiers (HTML)"
+    IDS_FRIENDLINKMENUTITLE "Lien des amis"
+    IDS_USER_ALREADY_FRIEND "L'utilisateur ""%s"" est déjà dans ta liste d'amis"
+    IDS_PROGRESSHASHDONE	"Hachage fait: %s"
+    IDS_RETRIEVEMTUFROMSOCKET "Tenter de Récupérer les MTU dans le System"
+    IDS_ENABLEKNOWN2BUFFER  "Activer le Tampon de l'AICHHashset (Limiter l'accès au Disque lorsque de nombreux hashs ont lieu)"
+    IDS_ANTILEECHERFINCAN_CHECK 
+                            "Détecter le Hash de la Communauté Fincan (Gourmand en CPU!)"
+    IDS_ENABLEKNOWN2SPLIT   "Diviser Known2_64.met, Laisser les AICHHashsets non-partagés dans un fichier unique"
+    IDS_EMULE_CTRL_DATA     "eMule Overhead + Datas des DLs"
+    IDS_NETWORK_ADAPTER     "Adaptateur de Réseau"
 END
 
 #endif    // French (France) resources

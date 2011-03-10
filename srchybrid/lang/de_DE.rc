@@ -2110,6 +2110,7 @@ BEGIN
     IDS_SHOWADDITIONALGRAPH "Zeige zusätzliche Graphlinien"
     IDS_CHECK4UPDATEMOD     "Auf neuere Xtreme-Version prüfen"
     IDS_ANTILEECHEREMCRYPT_CHECK "Erkenne emcrypt"
+    IDS_UPLOADMANAGEMENT_FRAME "Upload Verwaltung"
     IDS_UPLOADSLOTSPEED_LABEL "Upload Slot Geschwindigkeit"
     IDS_USENARROWFONT       "Benutze enge Schrift im Transfer-Fenster"
     IDS_SHOWBLOCKINGRATIO   "Zeige Socket Blockier-Verhältnis"
@@ -2142,6 +2143,7 @@ BEGIN
     IDS_MR                  "Mehrfach-Umbenennung.."
     IDS_MASSRENAME_TITLE    "Mehrfach-Umbenennung"
     IDS_STATIC_DOWNINFO     "Download 0 = unlimitiert"
+    IDS_ANTILEECHERUSERHASH_CHECK "Erkenne schlechte Userhashe"
 END
 
 STRINGTABLE 
@@ -2171,6 +2173,7 @@ END
 
 STRINGTABLE 
 BEGIN
+	IDS_OBFUSCATION_PADDING_LENGTH	"Obfuskation-Füll-Länge [10-254]"
 	//Friendlinks
 	IDS_GETFRIENDED2KLINK   "Kopiere Freund-Link in Zwischenablage"
     IDS_GETHTMLFRIENDED2KLINK "Kopiere Freund-Link in Zwischenablage (HTML)"
@@ -2178,7 +2181,18 @@ BEGIN
                             "Download der Freunde-Liste von %s fehlgeschlagen"
     IDS_GETMYFRIENDED2KLINK "Kopiere Freund-Link in Zwischenablage"
     IDS_GETMYHTMLFRIENDED2KLINK "Kopiere Freund-Link in Zwischenablage (HTML)"
-    IDS_FRIENDLINKMENUTITLE "FreundLinks"
+    IDS_FRIENDLINKMENUTITLE "Freund-Links"
+    IDS_DOWNLOADEMFRIENDSMET "emfriends.met herunterladen"
+    IDS_EMFRIENDSMETURL     "Bitte gib die URL der emfriends.met ein:"
+	IDS_USER_ALREADY_FRIEND "Nutzer ""%s"" ist bereits in der Freunde-Liste"
+	IDS_PROGRESSHASHDONE	"Überprüfung erledigt: %s"
+    IDS_RETRIEVEMTUFROMSOCKET "Versuche MTU von System zu ermitteln"
+    IDS_ENABLEKNOWN2BUFFER  "AICHHashset Puffer aktivieren (reduziert Festplattenzugriff beim hashen vieler Dateien)"
+    IDS_ANTILEECHERFINCAN_CHECK 
+                            "Erkenne Fincan Community Hash (CPU intensiv!)"
+    IDS_ENABLEKNOWN2SPLIT   "Known2_64.met aufteilen, hält nicht freigegebene AICHHashsets in einer einzelnen Datei"
+    IDS_EMULE_CTRL_DATA     "eMule Overhead + Daten"
+    IDS_NETWORK_ADAPTER     "Netzwerkadapter"
 END
 
 #endif    // German (Germany) resources

@@ -2140,6 +2140,8 @@ BEGIN
     IDS_SHOWADDITIONALGRAPH "Mostrar líneas de gráfico adicionales"
     IDS_CHECK4UPDATEMOD     "Comprobar si hay una nueva Xtreme versión"
     IDS_ANTILEECHEREMCRYPT_CHECK "Detectar emcrypt"
+    IDS_UPLOADMANAGEMENT_FRAME "Upload Management"
+    IDS_UPLOADSLOTSPEED_LABEL "Upload Slot Speed"
     IDS_USENARROWFONT       "Caracteres estrechos en ventana de tráfico"
     IDS_SHOWBLOCKINGRATIO   "Mostrar ratio de conexiones bloquedas"
     IDS_FUNNYNICK           "Activar nicks graciosos"
@@ -2171,6 +2173,49 @@ BEGIN
     IDS_MR                  "Renombrado Masivo..."
     IDS_MASSRENAME_TITLE    "Renombrado Masivo"
     IDS_STATIC_DOWNINFO     "Descarga 0 = sin límite"
+    IDS_ANTILEECHERUSERHASH_CHECK "Detectar Hash de Usuarios defectuosos"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_IMPORTPARTS         "Importar partes al arhivo"
+    IDS_IMPORTPARTS_STOP    "Parar importación de partes al archivo"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_SR13_IMPORTPARTS_ERR_ALREADYCOMPLETE "Importación cancelada: No se puede importar a un archivo completado"
+    IDS_SR13_IMPORTPARTS_ERR_HASHSETINCOMPLETE "Importación cancelada: Hashset no completado para %s (%i Hashes para %i partes)"
+    IDS_SR13_IMPORTPARTS_ERR_CANTOPENFILE "Importación cancelada: No se pudo abrir %s"
+    IDS_SR13_IMPORTPARTS_IMPORTSTART "Importando %i partes a %s"
+    IDS_SR13_IMPORTPARTS_PARTIMPORTEDGOOD "Parte %i: importada"
+    IDS_SR13_IMPORTPARTS_PARTIMPORTEDBAD "Parte %i: importada para manejo de AICH"
+    IDS_SR13_IMPORTPARTS_PARTSKIPPEDDONTMATCH  "Parte %i: ignorada, no cuadra con el bloque parcialmente completo"
+    IDS_SR13_IMPORTPARTS_BADPARTSREHASH  "%i partes corruptas fueron importadas para AICH. Iniciando nuevo Hash"
+    IDS_SR13_IMPORTPARTS_ERR_FILETOOSMALL "El archivo es más pequeño que el mínimo de un bloque que el AICH pueda recuperar - no tiene sentido importarle esa información"
+    IDS_SR13_IMPORTPARTS_IMPORTFINISH  "Importación finalizada. %i partes fueron importadas a %s"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_OBFUSCATION_PADDING_LENGTH  "Octetos Ofuscados [10-254]"
+    IDS_GETFRIENDED2KLINK   "Copiar link de amigo en el portapapeles"
+    IDS_GETHTMLFRIENDED2KLINK "Copiar link de amigo en el portapapeles (HTML)"
+    IDS_DOWNLOADEMFRIENDSMET "Descargar emfriends.met"
+    IDS_EMFRIENDSMETURL     "Por favor introduzca la URL de emfriends.met:"
+    IDS_ERR_FAILEDDOWNLOADEMFRIENDS "No se pudo descargar la lista de amigos de %s"
+    IDS_GETMYFRIENDED2KLINK "Copiar link de mi amigo en el portapapeles"
+    IDS_GETMYHTMLFRIENDED2KLINK "Copiar link de mi amigo en el portapapeles (HTML)"
+    IDS_FRIENDLINKMENUTITLE "Links de amigos"
+    IDS_USER_ALREADY_FRIEND "Usuario ""%s"" ya esta en tu lista de amigos"
+    IDS_PROGRESSHASHDONE    "Hash finalizado: %s"
+    IDS_RETRIEVEMTUFROMSOCKET "Try to Retrieve MTU from System"
+    IDS_ENABLEKNOWN2BUFFER  "Enable AICHHashset buffer (reduce diskio while hashing tons of files)"
+    IDS_ANTILEECHERFINCAN_CHECK 
+                            "Detect Fincan Community Hash (CPU intensive!)"
+    IDS_ENABLEKNOWN2SPLIT   "Split Known2_64.met, let unshared AICHHashsets in a single file"
+    IDS_EMULE_CTRL_DATA     "eMule control + data"
+    IDS_NETWORK_ADAPTER     "Network Adapter"
 END
 
 #endif    // Spanish (Castilian) resources

@@ -2206,6 +2206,8 @@ BEGIN
 	IDS_ENABLEKNOWN2BUFFER	"在 Hashing 檔案時減少 Known2_64.met 的讀寫頻率"
 	IDS_ANTILEECHERFINCAN_CHECK "檢測: Fincan 社區用戶 (會增加 CPU 佔用)"
     IDS_ENABLEKNOWN2SPLIT   "將已刪除檔案的 Hashset 從 Known2_64.met 中分離, 單獨保存"
+    IDS_EMULE_CTRL_DATA     "eMule 控制封包+資料傳輸"
+    IDS_NETWORK_ADAPTER     "網路卡"
 END
 
 /////////////////////////////////////////////////////////////////////////////
