@@ -2000,7 +2000,7 @@ BEGIN
     IDS_POPULARITY          "Popularidad"
     IDS_SHOWWIN7TASKBARGOODIES "Activar efectos de la barra de tareas de Windows 7"
     IDS_LANMODE             "Modo LAN"
-    IDS_OPENPREFINI         "Open preferences.ini"
+    IDS_OPENPREFINI         "Abrir preferences.ini"
 END
 
 STRINGTABLE 
@@ -2140,8 +2140,8 @@ BEGIN
     IDS_SHOWADDITIONALGRAPH "Mostrar líneas de gráfico adicionales"
     IDS_CHECK4UPDATEMOD     "Comprobar si hay una nueva Xtreme versión"
     IDS_ANTILEECHEREMCRYPT_CHECK "Detectar emcrypt"
-    IDS_UPLOADMANAGEMENT_FRAME "Upload Management"
-    IDS_UPLOADSLOTSPEED_LABEL "Upload Slot Speed"
+    IDS_UPLOADMANAGEMENT_FRAME "Administración de subida"
+    IDS_UPLOADSLOTSPEED_LABEL "Velocidad de subida por slot"
     IDS_USENARROWFONT       "Caracteres estrechos en ventana de tráfico"
     IDS_SHOWBLOCKINGRATIO   "Mostrar ratio de conexiones bloquedas"
     IDS_FUNNYNICK           "Activar nicks graciosos"
@@ -2209,13 +2209,13 @@ BEGIN
     IDS_FRIENDLINKMENUTITLE "Links de amigos"
     IDS_USER_ALREADY_FRIEND "Usuario ""%s"" ya esta en tu lista de amigos"
     IDS_PROGRESSHASHDONE    "Hash finalizado: %s"
-    IDS_RETRIEVEMTUFROMSOCKET "Try to Retrieve MTU from System"
-    IDS_ENABLEKNOWN2BUFFER  "Enable AICHHashset buffer (reduce diskio while hashing tons of files)"
+    IDS_RETRIEVEMTUFROMSOCKET "Intentar recibir el MTU del sistema"
+    IDS_ENABLEKNOWN2BUFFER  "Activar el búfer AICHHashset (reduce el uso del disco al hacer hash de muchos archivos)"
     IDS_ANTILEECHERFINCAN_CHECK 
-                            "Detect Fincan Community Hash (CPU intensive!)"
-    IDS_ENABLEKNOWN2SPLIT   "Split Known2_64.met, let unshared AICHHashsets in a single file"
-    IDS_EMULE_CTRL_DATA     "eMule control + data"
-    IDS_NETWORK_ADAPTER     "Network Adapter"
+                            "Detectar el hash de comunidad Fincan (¡Uso intensivo de CPU!)"
+    IDS_ENABLEKNOWN2SPLIT   "Separar Known2_64.met, deja los AICHHashsets no compartidos en un único archivo"
+    IDS_EMULE_CTRL_DATA     "eMule control + datos"
+    IDS_NETWORK_ADAPTER     "Adaptador de Red"
 END
 
 #endif    // Spanish (Castilian) resources
