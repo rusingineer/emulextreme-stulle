@@ -72,8 +72,12 @@ static uint32 igraph, istats, i2Secs;
 */
 //Xman end
 
+//Xman
+/*
 #define HIGHSPEED_UPLOADRATE_START 500*1024
 #define HIGHSPEED_UPLOADRATE_END   300*1024
+*/
+//Xman end
 
 
 CUploadQueue::CUploadQueue()
@@ -128,7 +132,7 @@ CUploadQueue::CUploadQueue()
 	/*
 	m_hHighSpeedUploadTimer = NULL;
 	*/
-	m_bUseHighSpeedUpload = false;
+	//m_bUseHighSpeedUpload = false;
 	//Xman end
 	m_bStatisticsWaitingListDirty = true;
 
@@ -611,10 +615,12 @@ void CUploadQueue::Process() {
 	}
 	uint32 realallowedDatarate = (uint32)(theApp.pBandWidthControl->GetMaxUpload()*1024)-AvgOverhead;
 
+	/*
 	if (realallowedDatarate > HIGHSPEED_UPLOADRATE_START)
 		m_bUseHighSpeedUpload = true;
 	else if (realallowedDatarate < HIGHSPEED_UPLOADRATE_END)
 		m_bUseHighSpeedUpload = false;
+	*/
 	//Xman end
 };
 

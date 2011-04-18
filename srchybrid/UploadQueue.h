@@ -102,7 +102,7 @@ public:
 	bool		AcceptNewClient(bool addOnNextConnect = false); //Xman 4.8.2 must be punlic because of access in ClientUDPSocket
 
 	void	UploadTimer(); //Xman process timer code via messages (Xanatos)
-	bool	UseHighSpeedUpload()					{return m_bUseHighSpeedUpload;} //Xman for SiRoB: ReadBlockFromFileThread
+	//bool	UseHighSpeedUpload()					{return m_bUseHighSpeedUpload;} //Xman for SiRoB: ReadBlockFromFileThread
 	bool		AddUpNextClient(LPCTSTR pszReason, CUpDownClient* directadd = 0);
 
 protected:
@@ -177,7 +177,7 @@ private:
 	/*
 	UINT_PTR m_hHighSpeedUploadTimer;
 	*/
-	bool	m_bUseHighSpeedUpload;
+	//bool	m_bUseHighSpeedUpload;
 	//Xman end
 	uint32	successfullupcount;
 	uint32	failedupcount;

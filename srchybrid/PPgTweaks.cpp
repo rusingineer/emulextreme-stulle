@@ -178,7 +178,6 @@ CPPgTweaks::CPPgTweaks()
 
 	//zz_fly
 	m_htiKnown2Buffer = NULL; //known2 buffer
-	m_htiKnown2Split = NULL; //known2 split
 	//zz_fly end
 }
 
@@ -371,7 +370,6 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 
 		//zz_fly
 		m_htiKnown2Buffer = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_ENABLEKNOWN2BUFFER),TVI_ROOT,m_bKnown2Buffer); //known2 buffer
-		m_htiKnown2Split = m_ctrlTreeOptions.InsertCheckBox(GetResString(IDS_ENABLEKNOWN2SPLIT),TVI_ROOT,m_bKnown2Split); //known2 split
 		//zz_fly end
 
 		m_ctrlTreeOptions.Expand(m_htiCommit, TVE_EXPAND);
@@ -522,12 +520,6 @@ void CPPgTweaks::DoDataExchange(CDataExchange* pDX)
 	
 	//zz_fly
 	if(m_htiKnown2Buffer) DDX_TreeCheck(pDX,IDC_EXT_OPTS,m_htiKnown2Buffer,m_bKnown2Buffer); //known2 buffer
-	 //known2 split
-	if(m_htiKnown2Split) {
-		DDX_TreeCheck(pDX,IDC_EXT_OPTS,m_htiKnown2Split,m_bKnown2Split);
-		m_ctrlTreeOptions.SetCheckBoxEnable(m_htiKnown2Split, thePrefs.GetRememberAICH()); //this feature only available when user want to remember unused AichHashSet.
-	}
-	//zz_fly end
 }
 
 BOOL CPPgTweaks::OnInitDialog()
@@ -609,7 +601,6 @@ BOOL CPPgTweaks::OnInitDialog()
 
 	//zz_fly
 	m_bKnown2Buffer = thePrefs.m_bKnown2Buffer; //known2 buffer
-	m_bKnown2Split = thePrefs.m_bKnown2Split_next; //known2 split
 	//zz_fly end
 
 	m_ctrlTreeOptions.SetImageListColorFlags(theApp.m_iDfltImageListColorFlags);
@@ -791,12 +782,6 @@ BOOL CPPgTweaks::OnApply()
 	//there maybe something in buffer. don't worry, it will be wrote to file in uploadtimer.
 	thePrefs.m_bKnown2Buffer = m_bKnown2Buffer;
 
-	//known2 split
-	if(thePrefs.m_bKnown2Split != m_bKnown2Split && thePrefs.m_bKnown2Split_next != m_bKnown2Split)
-		AfxMessageBox(_T("The changes in knwon2.met will not take effects until you restart emule!"));
-	thePrefs.m_bKnown2Split_next = m_bKnown2Split;
-	//zz_fly end
-
 	if (thePrefs.GetEnableVerboseOptions())
 	{
 	    theApp.emuledlg->serverwnd->ToggleDebugWindow();
@@ -925,7 +910,6 @@ void CPPgTweaks::Localize(void)
 
 		//zz_fly
 		if (m_htiKnown2Buffer) m_ctrlTreeOptions.SetItemText(m_htiKnown2Buffer, GetResString(IDS_ENABLEKNOWN2BUFFER)); //known2 buffer
-		if (m_htiKnown2Split) m_ctrlTreeOptions.SetItemText(m_htiKnown2Split, GetResString(IDS_ENABLEKNOWN2SPLIT)); //known2 split
 		//zz_fly end
 
         CString temp;
@@ -1029,7 +1013,6 @@ void CPPgTweaks::OnDestroy()
 
 	//zz_fly
 	m_htiKnown2Buffer = NULL; //known2 buffer
-	m_htiKnown2Split = NULL; //known2 split
 	//zz_fly end
 
     CPropertyPage::OnDestroy();
@@ -1073,8 +1056,6 @@ LRESULT CPPgTweaks::OnTreeOptsCtrlNotify(WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
-
-		if(m_htiKnown2Split) m_ctrlTreeOptions.SetCheckBoxEnable(m_htiKnown2Split, thePrefs.GetRememberAICH()); //zz_fly :: known2 split, this feature only available when user want to remember unused AichHashSet.
 
 #ifdef DUAL_UPNP //zz_fly :: dual upnp
 		//ACAT UPnP
