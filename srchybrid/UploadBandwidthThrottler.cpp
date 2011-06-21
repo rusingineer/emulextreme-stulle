@@ -847,6 +847,7 @@ UINT UploadBandwidthThrottler::RunInternal() {
 				for(uint16 i=0;i<m_StandardOrder_list.GetSize();i++)
 				{
 					ThrottledFileSocket* socket = m_StandardOrder_list.GetAt(i);
+					if(!socket) continue;
 					socket->SetFull();
 					m_StandardOrder_list_full.AddTail(socket); 
 					m_highestNumberOfFullyActivatedSlots++;
@@ -864,6 +865,7 @@ UINT UploadBandwidthThrottler::RunInternal() {
 				for(uint16 i=0;i<m_StandardOrder_list.GetSize();i++)
 				{
 					ThrottledFileSocket* socket = m_StandardOrder_list.GetAt(i);
+					if(!socket) continue;
 					if(i<slots)
 					{
 						socket->SetFull();
@@ -895,10 +897,13 @@ UINT UploadBandwidthThrottler::RunInternal() {
 			{
 				nexttrickletofull=false;
 				ThrottledFileSocket* socket = m_StandardOrder_list.GetAt(m_highestNumberOfFullyActivatedSlots);
-				socket->SetFull();
-				m_StandardOrder_list_full.AddTail(socket); 
-				m_highestNumberOfFullyActivatedSlots++;
-				SetNumberOfFullyActivatedSlots();
+				if(socket)
+				{
+					socket->SetFull();
+					m_StandardOrder_list_full.AddTail(socket); 
+					m_highestNumberOfFullyActivatedSlots++;
+					SetNumberOfFullyActivatedSlots();
+				}
 			}
 		}
 
